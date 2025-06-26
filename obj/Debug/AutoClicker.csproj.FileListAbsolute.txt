@@ -1,0 +1,11 @@
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\bin\Debug\AutoClicker.exe.config
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\bin\Debug\AutoClicker.exe
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\bin\Debug\AutoClicker.pdb
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.csproj.AssemblyReference.cache
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.Properties.Resources.resources
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.csproj.GenerateResource.cache
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.csproj.CoreCompileInputs.cache
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.exe
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.pdb
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.exe.config
+C:\Users\EMİR EREN ZEYNEP\source\repos\AutoClicker\AutoClicker\obj\Debug\AutoClicker.MainMenu.resources
