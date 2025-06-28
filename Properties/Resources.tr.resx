@@ -118,102 +118,102 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="interval_groupbox" xml:space="preserve">
-    <value>Interval</value>
+    <value>Aralık</value>
   </data>
   <data name="interval_hours" xml:space="preserve">
-    <value>hours</value>
+    <value>saat</value>
   </data>
   <data name="interval_millis" xml:space="preserve">
-    <value>milliseconds</value>
+    <value>milisaniye</value>
   </data>
   <data name="interval_mins" xml:space="preserve">
-    <value>minutes</value>
+    <value>dakika</value>
   </data>
   <data name="interval_secs" xml:space="preserve">
-    <value>seconds</value>
+    <value>saniye</value>
   </data>
   <data name="opt_clicktype" xml:space="preserve">
-    <value>Click Type</value>
+    <value>Tıklama Tipi</value>
   </data>
   <data name="opt_mb_left" xml:space="preserve">
-    <value>Left</value>
+    <value>Sol</value>
   </data>
   <data name="opt_mb_mid" xml:space="preserve">
-    <value>Mid</value>
+    <value>Sağ</value>
   </data>
   <data name="opt_mb_right" xml:space="preserve">
-    <value>Right</value>
+    <value>Orta</value>
   </data>
   <data name="opt_gb" xml:space="preserve">
-    <value>Options</value>
+    <value>Ayarlar</value>
   </data>
   <data name="opt_lang" xml:space="preserve">
-    <value>Language</value>
+    <value>Dil</value>
   </data>
   <data name="opt_msbtn" xml:space="preserve">
-    <value>Mouse Button</value>
+    <value>Fare Düğmesi</value>
   </data>
   <data name="opt_ct_double" xml:space="preserve">
-    <value>Double</value>
+    <value>Çift</value>
   </data>
   <data name="opt_ct_quadruple" xml:space="preserve">
-    <value>Quadruple</value>
+    <value>Dörtlü</value>
   </data>
   <data name="opt_ct_single" xml:space="preserve">
-    <value>Single</value>
+    <value>Tek</value>
   </data>
   <data name="opt_ct_triple" xml:space="preserve">
-    <value>Triple</value>
+    <value>Üçlü</value>
   </data>
   <data name="pos_current" xml:space="preserve">
-    <value>Current Position</value>
+    <value>Geçerli Konum</value>
   </data>
   <data name="pos_gb" xml:space="preserve">
-    <value>Position</value>
+    <value>Konum</value>
   </data>
   <data name="pos_spec" xml:space="preserve">
-    <value>Specified Location</value>
+    <value>Belirli Konum</value>
   </data>
   <data name="rep_forever" xml:space="preserve">
-    <value>Repeat Until Stopped</value>
+    <value>Durdurana Kadar</value>
   </data>
   <data name="rep_gb" xml:space="preserve">
-    <value>Repeat</value>
+    <value>Tekrar</value>
   </data>
   <data name="rep_times" xml:space="preserve">
-    <value>times</value>
+    <value>kez</value>
   </data>
   <data name="start" xml:space="preserve">
-    <value>START</value>
+    <value>BAŞLAT</value>
   </data>
   <data name="stop" xml:space="preserve">
-    <value>STOP</value>
+    <value>DURDUR</value>
   </data>
   <data name="sethtk" xml:space="preserve">
-    <value>SET HOTKEY</value>
+    <value>TUŞ ATA</value>
   </data>
   <data name="waiting" xml:space="preserve">
-    <value>WAITING...</value>
+    <value>BEKLİYOR...</value>
   </data>
   <data name="cancel_setting_htk" xml:space="preserve">
-    <value>Click this to cancel setting hotkey</value>
+    <value>Tuş atamasını iptal etmek için tıkla</value>
   </data>
   <data name="title_waiting" xml:space="preserve">
-    <value>Auto Clicker (WAITING FOR HOTKEY)</value>
+    <value>Oto Tıklayıcı (TUŞ BEKLİYOR)</value>
   </data>
   <data name="title" xml:space="preserve">
-    <value>Auto Clicker</value>
+    <value>Oto Tıklayıcı</value>
   </data>
   <data name="err_assignmodifier_txt" xml:space="preserve">
-    <value>You can't assign Ctrl, Shift and Alt keys.</value>
+    <value>Ctrl, Shift ve Alt tuşlarını atayamazsınız.</value>
   </data>
   <data name="done_htkset_txt" xml:space="preserve">
-    <value>Hotkey set to #HTK successfully.</value>
+    <value>Tuş başarıyla #HTK olarak atandı.</value>
   </data>
   <data name="err_invalid_pos" xml:space="preserve">
-    <value>Please type a valid position</value>
+    <value>Lütfen geçerli bir konum yazın.</value>
   </data>
   <data name="err_title" xml:space="preserve">
-    <value>Error</value>
+    <value>Hata</value>
   </data>
 </root>

@@ -118,102 +118,102 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="interval_groupbox" xml:space="preserve">
-    <value>Interval</value>
+    <value>Intervall</value>
   </data>
   <data name="interval_hours" xml:space="preserve">
-    <value>hours</value>
+    <value>stunden</value>
   </data>
   <data name="interval_millis" xml:space="preserve">
-    <value>milliseconds</value>
+    <value>millisekunden</value>
   </data>
   <data name="interval_mins" xml:space="preserve">
-    <value>minutes</value>
+    <value>minuten</value>
   </data>
   <data name="interval_secs" xml:space="preserve">
-    <value>seconds</value>
+    <value>sekunden</value>
   </data>
   <data name="opt_clicktype" xml:space="preserve">
-    <value>Click Type</value>
+    <value>Klicktyp</value>
   </data>
   <data name="opt_mb_left" xml:space="preserve">
-    <value>Left</value>
+    <value>Links</value>
   </data>
   <data name="opt_mb_mid" xml:space="preserve">
-    <value>Mid</value>
+    <value>Rechts</value>
   </data>
   <data name="opt_mb_right" xml:space="preserve">
-    <value>Right</value>
+    <value>Mitte</value>
   </data>
   <data name="opt_gb" xml:space="preserve">
-    <value>Options</value>
+    <value>Optionen</value>
   </data>
   <data name="opt_lang" xml:space="preserve">
-    <value>Language</value>
+    <value>Sprache</value>
   </data>
   <data name="opt_msbtn" xml:space="preserve">
-    <value>Mouse Button</value>
+    <value>Maustaste</value>
   </data>
   <data name="opt_ct_double" xml:space="preserve">
-    <value>Double</value>
+    <value>Doppelzimmer</value>
   </data>
   <data name="opt_ct_quadruple" xml:space="preserve">
-    <value>Quadruple</value>
+    <value>Vierbettzimmer</value>
   </data>
   <data name="opt_ct_single" xml:space="preserve">
-    <value>Single</value>
+    <value>Einzelzimmer</value>
   </data>
   <data name="opt_ct_triple" xml:space="preserve">
-    <value>Triple</value>
+    <value>Dreibettzimmer</value>
   </data>
   <data name="pos_current" xml:space="preserve">
-    <value>Current Position</value>
+    <value>Aktuelle Position</value>
   </data>
   <data name="pos_gb" xml:space="preserve">
     <value>Position</value>
   </data>
   <data name="pos_spec" xml:space="preserve">
-    <value>Specified Location</value>
+    <value>Angegebener Ort</value>
   </data>
   <data name="rep_forever" xml:space="preserve">
-    <value>Repeat Until Stopped</value>
+    <value>Wiederholen bis Stopp</value>
   </data>
   <data name="rep_gb" xml:space="preserve">
-    <value>Repeat</value>
+    <value>Wiederholen</value>
   </data>
   <data name="rep_times" xml:space="preserve">
-    <value>times</value>
+    <value>mal</value>
   </data>
   <data name="start" xml:space="preserve">
-    <value>START</value>
+    <value>BEGINN</value>
   </data>
   <data name="stop" xml:space="preserve">
-    <value>STOP</value>
+    <value>STOPPEN</value>
   </data>
   <data name="sethtk" xml:space="preserve">
-    <value>SET HOTKEY</value>
+    <value>HOTKEY FESTLEGEN</value>
   </data>
   <data name="waiting" xml:space="preserve">
-    <value>WAITING...</value>
+    <value>WARTEN...</value>
   </data>
   <data name="cancel_setting_htk" xml:space="preserve">
-    <value>Click this to cancel setting hotkey</value>
+    <value>Klicken Sie hier, um das Festlegen des Hotkeys zu deaktivieren</value>
   </data>
   <data name="title_waiting" xml:space="preserve">
-    <value>Auto Clicker (WAITING FOR HOTKEY)</value>
+    <value>Auto-Clicker (WARTET AUF HOTKEY)</value>
   </data>
   <data name="title" xml:space="preserve">
-    <value>Auto Clicker</value>
+    <value>Auto-Clicker</value>
   </data>
   <data name="err_assignmodifier_txt" xml:space="preserve">
-    <value>You can't assign Ctrl, Shift and Alt keys.</value>
+    <value>Sie können keine Ctrl-, Shift- und Alt-Tasten zuweisen.</value>
   </data>
   <data name="done_htkset_txt" xml:space="preserve">
-    <value>Hotkey set to #HTK successfully.</value>
+    <value>Hotkey #HTK wurde erfolgreich gesetzt.</value>
   </data>
   <data name="err_invalid_pos" xml:space="preserve">
-    <value>Please type a valid position</value>
+    <value>Bitte geben Sie eine gültige Position ein.</value>
   </data>
   <data name="err_title" xml:space="preserve">
-    <value>Error</value>
+    <value>Fehler</value>
   </data>
 </root>

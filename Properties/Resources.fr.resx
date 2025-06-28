@@ -118,40 +118,40 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="interval_groupbox" xml:space="preserve">
-    <value>Interval</value>
+    <value>Intervalle</value>
   </data>
   <data name="interval_hours" xml:space="preserve">
-    <value>hours</value>
+    <value>heures</value>
   </data>
   <data name="interval_millis" xml:space="preserve">
-    <value>milliseconds</value>
+    <value>millisecondes</value>
   </data>
   <data name="interval_mins" xml:space="preserve">
     <value>minutes</value>
   </data>
   <data name="interval_secs" xml:space="preserve">
-    <value>seconds</value>
+    <value>secondes</value>
   </data>
   <data name="opt_clicktype" xml:space="preserve">
-    <value>Click Type</value>
+    <value>Type de clic</value>
   </data>
   <data name="opt_mb_left" xml:space="preserve">
-    <value>Left</value>
+    <value>Gauche</value>
   </data>
   <data name="opt_mb_mid" xml:space="preserve">
-    <value>Mid</value>
+    <value>Droite</value>
   </data>
   <data name="opt_mb_right" xml:space="preserve">
-    <value>Right</value>
+    <value>Milieu</value>
   </data>
   <data name="opt_gb" xml:space="preserve">
     <value>Options</value>
   </data>
   <data name="opt_lang" xml:space="preserve">
-    <value>Language</value>
+    <value>Langue</value>
   </data>
   <data name="opt_msbtn" xml:space="preserve">
-    <value>Mouse Button</value>
+    <value>Bouton de la souris</value>
   </data>
   <data name="opt_ct_double" xml:space="preserve">
     <value>Double</value>
@@ -160,60 +160,60 @@
     <value>Quadruple</value>
   </data>
   <data name="opt_ct_single" xml:space="preserve">
-    <value>Single</value>
+    <value>Simple</value>
   </data>
   <data name="opt_ct_triple" xml:space="preserve">
     <value>Triple</value>
   </data>
   <data name="pos_current" xml:space="preserve">
-    <value>Current Position</value>
+    <value>Position actuelle</value>
   </data>
   <data name="pos_gb" xml:space="preserve">
     <value>Position</value>
   </data>
   <data name="pos_spec" xml:space="preserve">
-    <value>Specified Location</value>
+    <value>Position spécifié</value>
   </data>
   <data name="rep_forever" xml:space="preserve">
-    <value>Repeat Until Stopped</value>
+    <value>Répéter jusqu'à l'arrêt</value>
   </data>
   <data name="rep_gb" xml:space="preserve">
-    <value>Repeat</value>
+    <value>Répéter</value>
   </data>
   <data name="rep_times" xml:space="preserve">
-    <value>times</value>
+    <value>fois</value>
   </data>
   <data name="start" xml:space="preserve">
-    <value>START</value>
+    <value>COMMENCER</value>
   </data>
   <data name="stop" xml:space="preserve">
-    <value>STOP</value>
+    <value>ARRÊT</value>
   </data>
   <data name="sethtk" xml:space="preserve">
-    <value>SET HOTKEY</value>
+    <value>DÉFINIR LE RACCOURCI</value>
   </data>
   <data name="waiting" xml:space="preserve">
-    <value>WAITING...</value>
+    <value>EN ATTENDANT...</value>
   </data>
   <data name="cancel_setting_htk" xml:space="preserve">
-    <value>Click this to cancel setting hotkey</value>
+    <value>Cliquez sur ce lien pour annuler la configuration du raccourci clavier</value>
   </data>
   <data name="title_waiting" xml:space="preserve">
-    <value>Auto Clicker (WAITING FOR HOTKEY)</value>
+    <value>Auto Clicker (EN ATTENTE D'UN CLAVIER RAPIDE)</value>
   </data>
   <data name="title" xml:space="preserve">
     <value>Auto Clicker</value>
   </data>
   <data name="err_assignmodifier_txt" xml:space="preserve">
-    <value>You can't assign Ctrl, Shift and Alt keys.</value>
+    <value>Vous ne pouvez pas attribuer les touches Ctrl, Shift et Alt.</value>
   </data>
   <data name="done_htkset_txt" xml:space="preserve">
-    <value>Hotkey set to #HTK successfully.</value>
+    <value>La touche de raccourci #HTK a été définie avec succès.</value>
   </data>
   <data name="err_invalid_pos" xml:space="preserve">
-    <value>Please type a valid position</value>
+    <value>Veuillez saisir une position valide.</value>
   </data>
   <data name="err_title" xml:space="preserve">
-    <value>Error</value>
+    <value>Erreur</value>
   </data>
 </root>
