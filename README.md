@@ -11,6 +11,6 @@ It automatically clicks anywhere any type and any mouse button with any interval
 
 ## About
 Developed by ilpeN. FOLLOW ME:
-- !(Instagram)[https://instagram.com/ilpenwastaken]
+- ![Instagram](https://instagram.com/ilpenwastaken)
 - !(X)[https://x.com/ilpenwastaken]
 - !(YouTube)[https://youtube.com/@ilpenwastaken]
