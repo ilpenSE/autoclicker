@@ -10,7 +10,11 @@ Here is the version 1.2! Brand new feature, UI changes, bug fixes and more. Inst
 - Hotkey support for quick start/stop
 - Mouse button selection (left, right, middle)
 - Multi language interface support
-- Save and manage macros easily
+- Save and manage macros easily by clicking Ctrl + S
+- Delete a macro by clicking Del
+- Select a macro by clicking Enter
+- Double click to macro name or description to edit them
+- You can also right-click on the macro list to perform these operations.
 
 #### 🗃 Settings Location:
 Settings and macros are stored in:
@@ -43,6 +47,10 @@ Hazırlayan: ilpeN
 - Sol, sağ veya orta fare tuşu seçimi
 - Çoklu dil arayüz desteği
 - Makro kayıt/saklama özelliği
+- Del'e basarak makroyu silin
+- Enter'a basarak bir makro seçin
+- Bir makro ismine ya da açıklamasına çift tıklayarak onları düzenleyin
+- Makro listesinde bu işlemleri sağ tıklayarak da yapabilirsiniz
 
 #### 🗃 Ayar Dosyaları:
 Ayarlar ve makrolar, bilgisayarınızda şu dizine kaydedilir:
