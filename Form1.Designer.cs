@@ -60,7 +60,8 @@
             this.startBtn = new System.Windows.Forms.Button();
             this.stopBtn = new System.Windows.Forms.Button();
             this.setHtkBtn = new System.Windows.Forms.Button();
-            this.cancelSettingHotkey = new System.Windows.Forms.Label();
+            this.activemacrolbl = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.interval.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.irvMillis)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.irvSecs)).BeginInit();
@@ -84,7 +85,8 @@
             this.interval.Controls.Add(this.hrslbl);
             this.interval.Controls.Add(this.irvMins);
             this.interval.Controls.Add(this.irvHrs);
-            this.interval.Location = new System.Drawing.Point(12, 12);
+            this.interval.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+            this.interval.Location = new System.Drawing.Point(12, 54);
             this.interval.Name = "interval";
             this.interval.Size = new System.Drawing.Size(468, 75);
             this.interval.TabIndex = 0;
@@ -102,6 +104,8 @@
             // 
             // irvMillis
             // 
+            this.irvMillis.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.irvMillis.ForeColor = System.Drawing.Color.White;
             this.irvMillis.Location = new System.Drawing.Point(337, 36);
             this.irvMillis.Maximum = new decimal(new int[] {
             1000,
@@ -111,7 +115,6 @@
             this.irvMillis.Name = "irvMillis";
             this.irvMillis.Size = new System.Drawing.Size(51, 20);
             this.irvMillis.TabIndex = 6;
-            this.irvMillis.ValueChanged += new System.EventHandler(this.irvMillis_ValueChanged);
             // 
             // seclbl
             // 
@@ -124,6 +127,8 @@
             // 
             // irvSecs
             // 
+            this.irvSecs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.irvSecs.ForeColor = System.Drawing.Color.White;
             this.irvSecs.Location = new System.Drawing.Point(224, 36);
             this.irvSecs.Maximum = new decimal(new int[] {
             1000,
@@ -133,7 +138,6 @@
             this.irvSecs.Name = "irvSecs";
             this.irvSecs.Size = new System.Drawing.Size(51, 20);
             this.irvSecs.TabIndex = 4;
-            this.irvSecs.ValueChanged += new System.EventHandler(this.irvSecs_ValueChanged);
             // 
             // minlbl
             // 
@@ -155,6 +159,8 @@
             // 
             // irvMins
             // 
+            this.irvMins.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.irvMins.ForeColor = System.Drawing.Color.White;
             this.irvMins.Location = new System.Drawing.Point(116, 36);
             this.irvMins.Maximum = new decimal(new int[] {
             1000,
@@ -164,10 +170,11 @@
             this.irvMins.Name = "irvMins";
             this.irvMins.Size = new System.Drawing.Size(51, 20);
             this.irvMins.TabIndex = 1;
-            this.irvMins.ValueChanged += new System.EventHandler(this.irvMins_ValueChanged);
             // 
             // irvHrs
             // 
+            this.irvHrs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.irvHrs.ForeColor = System.Drawing.Color.White;
             this.irvHrs.Location = new System.Drawing.Point(16, 36);
             this.irvHrs.Maximum = new decimal(new int[] {
             1000,
@@ -177,7 +184,6 @@
             this.irvHrs.Name = "irvHrs";
             this.irvHrs.Size = new System.Drawing.Size(51, 20);
             this.irvHrs.TabIndex = 0;
-            this.irvHrs.ValueChanged += new System.EventHandler(this.irvHrs_ValueChanged);
             // 
             // repeat
             // 
@@ -185,7 +191,7 @@
             this.repeat.Controls.Add(this.repeatTimes);
             this.repeat.Controls.Add(this.repeatForeverBtn);
             this.repeat.Controls.Add(this.repeatTimesBtn);
-            this.repeat.Location = new System.Drawing.Point(12, 193);
+            this.repeat.Location = new System.Drawing.Point(12, 235);
             this.repeat.Name = "repeat";
             this.repeat.Size = new System.Drawing.Size(224, 131);
             this.repeat.TabIndex = 1;
@@ -203,7 +209,14 @@
             // 
             // repeatTimes
             // 
+            this.repeatTimes.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.repeatTimes.ForeColor = System.Drawing.Color.White;
             this.repeatTimes.Location = new System.Drawing.Point(111, 33);
+            this.repeatTimes.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
             this.repeatTimes.Minimum = new decimal(new int[] {
             1,
             0,
@@ -217,7 +230,6 @@
             0,
             0,
             0});
-            this.repeatTimes.ValueChanged += new System.EventHandler(this.repeatTimes_ValueChanged);
             // 
             // repeatForeverBtn
             // 
@@ -229,11 +241,11 @@
             this.repeatForeverBtn.TabStop = true;
             this.repeatForeverBtn.Text = "Repat Until Stopped";
             this.repeatForeverBtn.UseVisualStyleBackColor = true;
-            this.repeatForeverBtn.CheckedChanged += new System.EventHandler(this.repeatForeverBtn_CheckedChanged);
             // 
             // repeatTimesBtn
             // 
             this.repeatTimesBtn.AutoSize = true;
+            this.repeatTimesBtn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.repeatTimesBtn.Location = new System.Drawing.Point(16, 33);
             this.repeatTimesBtn.Name = "repeatTimesBtn";
             this.repeatTimesBtn.Size = new System.Drawing.Size(54, 17);
@@ -250,7 +262,7 @@
             this.options.Controls.Add(this.msButtonBtn);
             this.options.Controls.Add(this.clicktypelbl);
             this.options.Controls.Add(this.msbtnlbl);
-            this.options.Location = new System.Drawing.Point(256, 193);
+            this.options.Location = new System.Drawing.Point(256, 235);
             this.options.Name = "options";
             this.options.Size = new System.Drawing.Size(224, 131);
             this.options.TabIndex = 1;
@@ -294,7 +306,6 @@
             this.clickTypeBtn.Name = "clickTypeBtn";
             this.clickTypeBtn.Size = new System.Drawing.Size(105, 21);
             this.clickTypeBtn.TabIndex = 11;
-            this.clickTypeBtn.SelectedIndexChanged += new System.EventHandler(this.clickTypeBtn_SelectedIndexChanged);
             // 
             // msButtonBtn
             // 
@@ -308,7 +319,6 @@
             this.msButtonBtn.Name = "msButtonBtn";
             this.msButtonBtn.Size = new System.Drawing.Size(105, 21);
             this.msButtonBtn.TabIndex = 10;
-            this.msButtonBtn.SelectedIndexChanged += new System.EventHandler(this.msButtonBtn_SelectedIndexChanged);
             // 
             // clicktypelbl
             // 
@@ -336,7 +346,7 @@
             this.position.Controls.Add(this.posX);
             this.position.Controls.Add(this.specPosBtn);
             this.position.Controls.Add(this.currentPosBtn);
-            this.position.Location = new System.Drawing.Point(12, 93);
+            this.position.Location = new System.Drawing.Point(12, 135);
             this.position.Name = "position";
             this.position.Size = new System.Drawing.Size(468, 94);
             this.position.TabIndex = 2;
@@ -363,21 +373,33 @@
             // 
             // posY
             // 
+            this.posY.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.posY.ForeColor = System.Drawing.Color.White;
             this.posY.Location = new System.Drawing.Point(369, 40);
+            this.posY.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
             this.posY.Name = "posY";
             this.posY.Size = new System.Drawing.Size(51, 20);
             this.posY.TabIndex = 9;
             this.posY.ThousandsSeparator = true;
-            this.posY.ValueChanged += new System.EventHandler(this.posY_ValueChanged);
             // 
             // posX
             // 
+            this.posX.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.posX.ForeColor = System.Drawing.Color.White;
             this.posX.Location = new System.Drawing.Point(287, 40);
+            this.posX.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
             this.posX.Name = "posX";
             this.posX.Size = new System.Drawing.Size(51, 20);
             this.posX.TabIndex = 8;
             this.posX.ThousandsSeparator = true;
-            this.posX.ValueChanged += new System.EventHandler(this.posX_ValueChanged);
             // 
             // specPosBtn
             // 
@@ -400,61 +422,92 @@
             this.currentPosBtn.TabStop = true;
             this.currentPosBtn.Text = "Current Position";
             this.currentPosBtn.UseVisualStyleBackColor = true;
-            this.currentPosBtn.CheckedChanged += new System.EventHandler(this.currentPosBtn_CheckedChanged);
             // 
             // startBtn
             // 
-            this.startBtn.Location = new System.Drawing.Point(28, 330);
+            this.startBtn.BackColor = System.Drawing.Color.DarkGreen;
+            this.startBtn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.startBtn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.startBtn.FlatAppearance.BorderSize = 2;
+            this.startBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.startBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.startBtn.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.startBtn.Location = new System.Drawing.Point(28, 372);
             this.startBtn.Name = "startBtn";
             this.startBtn.Size = new System.Drawing.Size(128, 56);
             this.startBtn.TabIndex = 3;
             this.startBtn.Text = "START ($HTK)";
-            this.startBtn.UseVisualStyleBackColor = true;
+            this.startBtn.UseVisualStyleBackColor = false;
             this.startBtn.Click += new System.EventHandler(this.startBtn_Click);
             // 
             // stopBtn
             // 
+            this.stopBtn.BackColor = System.Drawing.Color.Maroon;
+            this.stopBtn.Cursor = System.Windows.Forms.Cursors.Hand;
             this.stopBtn.Enabled = false;
-            this.stopBtn.Location = new System.Drawing.Point(180, 330);
+            this.stopBtn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.stopBtn.FlatAppearance.BorderSize = 2;
+            this.stopBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.stopBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.stopBtn.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.stopBtn.Location = new System.Drawing.Point(180, 372);
             this.stopBtn.Name = "stopBtn";
             this.stopBtn.Size = new System.Drawing.Size(128, 56);
             this.stopBtn.TabIndex = 4;
             this.stopBtn.Text = "STOP ($HTK)";
-            this.stopBtn.UseVisualStyleBackColor = true;
+            this.stopBtn.UseVisualStyleBackColor = false;
             this.stopBtn.Click += new System.EventHandler(this.stopBtn_Click);
             // 
             // setHtkBtn
             // 
-            this.setHtkBtn.Location = new System.Drawing.Point(327, 330);
+            this.setHtkBtn.BackColor = System.Drawing.SystemColors.HotTrack;
+            this.setHtkBtn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.setHtkBtn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(64)))));
+            this.setHtkBtn.FlatAppearance.BorderSize = 2;
+            this.setHtkBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.setHtkBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.setHtkBtn.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.setHtkBtn.Location = new System.Drawing.Point(327, 372);
             this.setHtkBtn.Name = "setHtkBtn";
             this.setHtkBtn.Size = new System.Drawing.Size(128, 56);
             this.setHtkBtn.TabIndex = 5;
             this.setHtkBtn.Text = "SET HOTKEY";
-            this.setHtkBtn.UseVisualStyleBackColor = true;
+            this.setHtkBtn.UseVisualStyleBackColor = false;
             this.setHtkBtn.Click += new System.EventHandler(this.setHtkBtn_Click);
             // 
-            // cancelSettingHotkey
+            // activemacrolbl
             // 
-            this.cancelSettingHotkey.AutoSize = true;
-            this.cancelSettingHotkey.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cancelSettingHotkey.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.cancelSettingHotkey.ForeColor = System.Drawing.Color.Maroon;
-            this.cancelSettingHotkey.Location = new System.Drawing.Point(124, 395);
-            this.cancelSettingHotkey.Name = "cancelSettingHotkey";
-            this.cancelSettingHotkey.Size = new System.Drawing.Size(242, 20);
-            this.cancelSettingHotkey.TabIndex = 8;
-            this.cancelSettingHotkey.Text = "Click this to cancel setting hotkey";
-            this.cancelSettingHotkey.Visible = false;
-            this.cancelSettingHotkey.Click += new System.EventHandler(this.label10_Click);
-            this.cancelSettingHotkey.MouseEnter += new System.EventHandler(this.cancelSettingHotkey_MouseEnter);
-            this.cancelSettingHotkey.MouseLeave += new System.EventHandler(this.cancelSettingHotkey_MouseLeave);
+            this.activemacrolbl.AutoSize = true;
+            this.activemacrolbl.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.activemacrolbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.activemacrolbl.Location = new System.Drawing.Point(12, 21);
+            this.activemacrolbl.Name = "activemacrolbl";
+            this.activemacrolbl.Size = new System.Drawing.Size(269, 20);
+            this.activemacrolbl.TabIndex = 9;
+            this.activemacrolbl.Text = "Active Macro: #MCR (Tap to change)";
+            this.activemacrolbl.Click += new System.EventHandler(this.activemacrolbl_Click);
+            this.activemacrolbl.MouseEnter += new System.EventHandler(this.activemacrolbl_MouseEnter);
+            this.activemacrolbl.MouseLeave += new System.EventHandler(this.activemacrolbl_MouseLeave);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft YaHei", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label1.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label1.Location = new System.Drawing.Point(385, 439);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(103, 16);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "ilpeN © 2025, v1.2";
             // 
             // MainMenu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(492, 428);
-            this.Controls.Add(this.cancelSettingHotkey);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.ClientSize = new System.Drawing.Size(492, 461);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.activemacrolbl);
             this.Controls.Add(this.setHtkBtn);
             this.Controls.Add(this.stopBtn);
             this.Controls.Add(this.startBtn);
@@ -462,6 +515,7 @@
             this.Controls.Add(this.options);
             this.Controls.Add(this.repeat);
             this.Controls.Add(this.interval);
+            this.ForeColor = System.Drawing.Color.White;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -469,7 +523,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Auto Clicker";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainMenu_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.MainMenu_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainMenu_KeyDown);
             this.interval.ResumeLayout(false);
             this.interval.PerformLayout();
@@ -522,9 +576,10 @@
         private System.Windows.Forms.Button startBtn;
         private System.Windows.Forms.Button stopBtn;
         private System.Windows.Forms.Button setHtkBtn;
-        private System.Windows.Forms.Label cancelSettingHotkey;
         private System.Windows.Forms.ComboBox langBtn;
         private System.Windows.Forms.Label langlbl;
+        private System.Windows.Forms.Label activemacrolbl;
+        private System.Windows.Forms.Label label1;
     }
 }
 

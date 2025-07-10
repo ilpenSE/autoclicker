@@ -1,17 +1,14 @@
 ﻿using AutoClicker.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -19,123 +16,188 @@ namespace AutoClicker
 {
     public partial class MainMenu : Form
     {
-        private string DEFAULT_LANGUAGE = "en";
+        private ClickerEngine _clicker;
+        private HotkeyService _hotkey;
+        private SettingsModel _settings;
+        private Dictionary<string, MacroModel> _Macros;
+        private string _activeMacroName = "DEFAULT";
+        private bool isModified = false;
+
+        private bool isClicking = false;
         private bool isWaitingForHotkey = false;
+        private System.Windows.Forms.Timer ClickTimer = new System.Windows.Forms.Timer();
+        private int repeats = 0;
 
         public MainMenu()
         {
             InitializeComponent();
-            Select();
 
-            // set language by default lang on OS in first run
-            if (Settings.Default.FirstRun)
+            _settings = SettingsManager.Load();
+
+            _Macros = MacroManager.LoadAll();
+
+            if (!_Macros.ContainsKey("DEFAULT"))
             {
-                CultureInfo ci = CultureInfo.CurrentUICulture;
-                string defLang = ci.Name.Substring(0, 2);
+                MessageBox.Show(Resources.wrn_cantfounddef, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MacroManager.AddDefaults();
+            }
 
-                string[] availableLangs = new string[] { "tr", "en", "de", "fr" };
-                ChangeLanguage(availableLangs.Contains(defLang) ? defLang : DEFAULT_LANGUAGE);
+            _activeMacroName = _settings.ActiveMacro;
+
+            // check macro is valid
+            if (!_Macros.ContainsKey(_activeMacroName))
+            {
+                // MACRO NOT FOUND, SET TO DEFAULT
+                _activeMacroName = "DEFAULT";
+                _settings.ActiveMacro = "DEFAULT";
+                SettingsManager.Save(_settings);
+            }
+
+            LoadMacroFormettings(_activeMacroName);
+            UpdateMacroLabel();
+
+
+            if (Enum.TryParse(_settings.Hotkey, out Keys parsedKey))
+            {
+                _hotkey = new HotkeyService(this.Handle, parsedKey, ToggleClicker);
+            }
+            else
+            {
+                _hotkey = new HotkeyService(this.Handle, SettingsManager.DefaultKey, ToggleClicker);
+                _settings.Hotkey = SettingsManager.DefaultKey.ToString();
+                SettingsManager.Save(_settings);
+                MessageBox.Show(Resources.wrn_invalidhtk, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            // after set the settings
+            Select();
+            if (_settings.FirstRun)
+            {
+                string defLang = CultureInfo.CurrentUICulture.Name.Substring(0, 2);
+
+                Language lang;
+                switch (defLang)
+                {
+                    case "en":
+                        lang = Language.ENGLISH;
+                        break;
+                    case "tr":
+                        lang = Language.TURKISH;
+                        break;
+                    case "de":
+                        lang = Language.GERMAN;
+                        break;
+                    case "fr":
+                        lang = Language.FRENCH;
+                        break;
+                    default:
+                        lang = SettingsManager.DefaultLanguage;
+                        break;
+                }
+
+                ChangeLanguage(lang);
             }
 
 
             ClickTimer.Tick += TimerTick;
 
-            RegisterGlobalHotkey();
+            // check the language index is valid
+            if (_settings.LanguageIndex > (langBtn.Items.Count - 1) || _settings.LanguageIndex < 0)
+            {
+                ChangeLanguage(SettingsManager.DefaultLanguage);
+                _settings.LanguageIndex = (int)SettingsManager.DefaultLanguage;
+                SettingsManager.Save(_settings);
+            }
+
             LoadLanguage();
-            Settings.Default.FirstRun = false;
+            langBtn.SelectedIndex = (int)GetLanguage();
+            _settings.FirstRun = false;
+
+            this.KeyPreview = true;
+
+            // add listeners
+            this.msButtonBtn.SelectedIndexChanged += new System.EventHandler(this.msButtonBtn_SelectedIndexChanged);
+            this.clickTypeBtn.SelectedIndexChanged += new System.EventHandler(this.clickTypeBtn_SelectedIndexChanged);
+
+            RegisterChangeListeners();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void RegisterChangeListeners()
         {
-            // Load values
-            repeatTimes.Value = Settings.Default.RepeatTimes;
-            irvHrs.Value = Settings.Default.IrvHrs;
-            irvMins.Value = Settings.Default.IrvMins;
-            irvSecs.Value = Settings.Default.IrvSecs;
-            irvMillis.Value = Settings.Default.IrvMillis;
-            langBtn.SelectedIndex = Settings.Default.LanguageIndex;
-            // lang indexes: 0 = en, 1 = tr, 2 = de, 3 = fr
-
-            posX.Maximum = decimal.MaxValue;
-            posY.Maximum = decimal.MaxValue;
-            posX.Value = Settings.Default.PosX;
-            posY.Value = Settings.Default.PosY;
-
-            bool isCurrentPos = Settings.Default.CurrentPos;
-            currentPosBtn.Checked = isCurrentPos;
-            specPosBtn.Checked = !isCurrentPos;
-
-            bool isRepeatForever = Settings.Default.RepeatForever;
-            repeatForeverBtn.Checked = isRepeatForever;
-            repeatTimesBtn.Checked = !isRepeatForever;
-
-            msButtonBtn.SelectedIndex = Settings.Default.MouseBtnIndex;
-            clickTypeBtn.SelectedIndex = Settings.Default.ClickTypeIndex;
-
-            Keys htk = (Keys)Settings.Default.StartHotkey;
-            startBtn.Text = Resources.start + " (" + htk.ToString() + ")";
-            stopBtn.Text = Resources.stop + " (" + htk.ToString() + ")";
+            this.msButtonBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.clickTypeBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.posY.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.posX.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.specPosBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.currentPosBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.irvMillis.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.irvSecs.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.irvMins.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.irvHrs.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.repeatTimes.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.repeatForeverBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.repeatTimesBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
         }
 
-        #region LANGUAGE
-
-        private void ChangeLanguage(string lang)
+        private void MarkAsUnsaved(object sender, EventArgs e)
         {
-            Settings.Default.LanguageIndex = GetLanguageIndex(lang);
-            langBtn.SelectedIndex = GetLanguageIndex(lang);
-            LoadLanguage();
-        }
-
-        private int GetLanguageIndex(string lang)
-        {
-            switch (lang)
+            if (!isModified)
             {
-                case "en":
-                    return 0;
-                case "tr":
-                    return 1;
-                case "de":
-                    return 2;
-                case "fr":
-                    return 3;
-                default:
-                    return -1;
+                activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Bold);
+                activemacrolbl.Text = Resources.activemacro_unsaved.Replace("{_activeMacroName}", _activeMacroName);
+                isModified = true;
             }
         }
 
-        private string GetLanguageByIndex(int index)
+        private void UpdateMacroLabel()
         {
-            switch (index)
-            {
-                case 0:
-                    return "en";
-                case 1:
-                    return "tr";
-                case 2:
-                    return "de";
-                case 3:
-                    return "fr";
-                default:
-                    return null;
-            }
+            activemacrolbl.Text = Resources.activemacro.Replace("{_activeMacroName}", (_activeMacroName == "DEFAULT" ? "Default" : _activeMacroName));
+            activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Regular);
         }
 
-        private string GetLanguage()
+        private void LoadMacroFormettings(string macroName)
         {
-            switch (Settings.Default.LanguageIndex)
+            try
             {
-                case 0:
-                    return "en";
-                case 1:
-                    return "tr";
-                case 2:
-                    return "de";
-                case 3:
-                    return "fr";
-                default:
-                    return null;
+                if (!_Macros.TryGetValue(macroName, out var macro)) return;
+
+                posX.Value = macro.Position.X;
+                posY.Value = macro.Position.Y;
+                currentPosBtn.Checked = macro.Position.CurrentPosition;
+                specPosBtn.Checked = !macro.Position.CurrentPosition;
+
+                try { irvMillis.Value = macro.Interval % 1000; }
+                catch (Exception ex) { MessageBox.Show("irvMillis → " + ex.Message); }
+
+                try { irvSecs.Value = (macro.Interval / 1000) % 60; }
+                catch (Exception ex) { MessageBox.Show("irvSecs → " + ex.Message); }
+
+                try { irvMins.Value = (macro.Interval / 60000) % 60; }
+                catch (Exception ex) { MessageBox.Show("irvMins → " + ex.Message); }
+
+                try { irvHrs.Value = (macro.Interval / 3600000); }
+                catch (Exception ex) { MessageBox.Show("irvHrs → " + ex.Message); }
+
+
+                repeatForeverBtn.Checked = macro.RepeatTimes.RepeatForever;
+                repeatTimesBtn.Checked = !macro.RepeatTimes.RepeatForever;
+                repeatTimes.Value = macro.RepeatTimes.Count;
+
+                msButtonBtn.SelectedIndex = (int)macro.MouseButton;
+                clickTypeBtn.SelectedIndex = (int)macro.ClickType;
+
+                _clicker = new ClickerEngine();
+                _clicker.SetInterval(macro.Interval);
+                _clicker.SetClickCount((int)macro.ClickType + 1);
+                _clicker.SetButton(macro.MouseButton);
+            } catch (NullReferenceException e)
+            {
+                Console.WriteLine(macroName);
+                throw e;
             }
+            
         }
+
 
         private IStringLocalizer<Resources> GetLocalizer()
         {
@@ -147,10 +209,129 @@ namespace AutoClicker
             var provider = services.BuildServiceProvider();
 
             // set the culture
-            CultureInfo.CurrentUICulture = new CultureInfo(GetLanguage());
+            CultureInfo.CurrentUICulture = new CultureInfo(GetLanguageCode(GetLanguage()));
 
             // return localizer
             return provider.GetRequiredService<IStringLocalizer<Resources>>();
+        }
+
+        private void setHtkBtn_Click(object sender, EventArgs e)
+        {
+            if (isClicking)
+                StopAutoClicker();
+
+            if (isModified)
+                SaveCurrentMacro();
+
+            if (isWaitingForHotkey)
+            {
+                isWaitingForHotkey = false;
+                this.KeyPreview = false;
+                setHtkBtn.Text = Resources.sethtk;
+                this.Text = Resources.title;
+            } else
+            {
+                isWaitingForHotkey = true;
+                this.KeyPreview = true;
+                setHtkBtn.Text = Resources.cancel;
+                this.Text = Resources.title_waiting;
+            }
+        }
+
+
+
+        private void startBtn_Click(object sender, EventArgs e)
+        {
+            if (!isWaitingForHotkey) { ToggleClicker(); }
+        }
+
+
+        private void stopBtn_Click(object sender, EventArgs e)
+        {
+            ToggleClicker();
+        }
+
+        private void SaveCurrentMacro()
+        {
+            if (!isModified) return;
+
+            var macro = new MacroModel
+            {
+                Name = _activeMacroName,
+                MouseButton = (MouseButton)msButtonBtn.SelectedIndex,
+                ClickType = (ClickType)clickTypeBtn.SelectedIndex,
+                Interval = GetIntervalInMillis(),
+                Position = new Position
+                {
+                    X = (int)posX.Value,
+                    Y = (int)posY.Value,
+                    CurrentPosition = currentPosBtn.Checked
+                },
+                RepeatTimes = new RepeatTimes
+                {
+                    Count = (int)repeatTimes.Value,
+                    RepeatForever = repeatForeverBtn.Checked
+                }
+            };
+
+            if (_activeMacroName == "DEFAULT")
+            {
+                string newName = Interaction.InputBox(Resources.ask_enternewmacro, Resources.ask_savemacrotitle);
+                if (string.IsNullOrWhiteSpace(newName)) return;
+
+                macro.Name = newName;
+                MacroManager.SaveMacro(newName, macro);
+                _activeMacroName = newName;
+            }
+            else
+            {
+                MacroManager.SaveMacro(_activeMacroName, macro);
+            }
+
+            _Macros[macro.Name] = macro;
+
+            // UI Güncelle
+            isModified = false;
+            activemacrolbl.Text = Resources.activemacro.Replace("{_activeMacroName}", _activeMacroName);
+            activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Regular);
+        }
+
+        private void MainMenu_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.S)
+            {
+                SaveCurrentMacro();
+                e.SuppressKeyPress = true;
+            }
+
+            if (isWaitingForHotkey)
+            {
+                uint modifiers = 0;
+                if (e.Control) modifiers |= 0x0002; // MOD_CONTROL
+                if (e.Alt) modifiers |= 0x0001;     // MOD_ALT
+                if (e.Shift) modifiers |= 0x0004;   // MOD_SHIFT
+
+                if (e.KeyCode == Keys.ControlKey || e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Menu)
+                {
+                    MessageBox.Show(Resources.err_assignmodifier_txt, Resources.err_title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                startBtn.Text = Resources.start + " (" + e.KeyCode.ToString() + ")";
+                stopBtn.Text = Resources.stop + " (" + e.KeyCode.ToString() + ")";
+
+                _settings.Hotkey = e.KeyCode.ToString();
+                SettingsManager.Save(_settings);
+
+                setHtkBtn.Text = Resources.sethtk;
+                this.Text = Resources.title;
+                _hotkey.Dispose();
+                _hotkey = new HotkeyService(this.Handle, e.KeyCode, ToggleClicker);
+
+                MessageBox.Show(Resources.done_htkset_txt.Replace("#HTK", e.KeyCode.ToString()), "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                isWaitingForHotkey = false;
+            }
         }
 
         private void LoadLanguage()
@@ -194,86 +375,17 @@ namespace AutoClicker
             msButtonBtn.Items[2] = Resources.opt_mb_mid;
 
             // buttons
-            Keys htkCode = (Keys)Settings.Default.StartHotkey;
+            Keys htkCode;
+            if (!Enum.TryParse(_settings.Hotkey, out htkCode))
+            {
+                htkCode = SettingsManager.DefaultKey;
+            }
+
             setHtkBtn.Text = Resources.sethtk;
-            cancelSettingHotkey.Text = Resources.cancel_setting_htk;
-            cancelSettingHotkey.Location = new Point((this.Size.Width - cancelSettingHotkey.Size.Width) / 2, cancelSettingHotkey.Location.Y);
             startBtn.Text = Resources.start + " (" + htkCode.ToString() + ")";
             stopBtn.Text = Resources.stop + " (" + htkCode.ToString() + ")";
             this.Text = Resources.title;
         }
-
-        #endregion
-
-        #region VALUE CHANGE LISTENERS
-
-        private void langBtn_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ChangeLanguage(GetLanguageByIndex(langBtn.SelectedIndex));
-        }
-        private void irvHrs_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.IrvHrs = (int)irvHrs.Value;
-        }
-
-        private void irvMins_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.IrvMins = (int)irvMins.Value;
-        }
-
-        private void irvSecs_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.IrvSecs = (int)irvSecs.Value;
-        }
-
-        private void irvMillis_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.IrvMillis = (int)irvMillis.Value;
-        }
-
-        private void currentPosBtn_CheckedChanged(object sender, EventArgs e)
-        {
-            Settings.Default.CurrentPos = currentPosBtn.Checked;
-        }
-
-        private void posX_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.PosX = (int)posX.Value;
-        }
-
-        private void posY_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.PosY = (int)posY.Value;
-        }
-
-        private void repeatForeverBtn_CheckedChanged(object sender, EventArgs e)
-        {
-            Settings.Default.RepeatForever = repeatForeverBtn.Checked;
-        }
-
-        private void repeatTimes_ValueChanged(object sender, EventArgs e)
-        {
-            Settings.Default.RepeatTimes = (int)repeatTimes.Value;
-        }
-
-        private void msButtonBtn_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Settings.Default.MouseBtnIndex = msButtonBtn.SelectedIndex;
-        }
-
-        private void clickTypeBtn_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Settings.Default.ClickTypeIndex = clickTypeBtn.SelectedIndex;
-        }
-        #endregion
-
-        private void startBtn_Click(object sender, EventArgs e)
-        {
-            if (!isWaitingForHotkey)
-                ToggleClicker();
-        }
-
-        private bool isClicking = false;
 
         private void ToggleClicker()
         {
@@ -281,51 +393,40 @@ namespace AutoClicker
                 StopAutoClicker();
             else
                 StartAutoClicker();
+
+            if (isModified)
+                SaveCurrentMacro();
         }
 
         private int GetIntervalInMillis()
         {
-            int interval = 0;
-
-            interval += (int)irvMillis.Value;
-            interval += ((int)irvSecs.Value) * 1000;
-            interval += ((int)irvMins.Value) * 60 * 1000;
-            interval += ((int)irvHrs.Value) * 3600 * 1000;
-
-            return interval;
+            int total = 0;
+            total += (int)irvMillis.Value;
+            total += ((int)irvSecs.Value) * 1000;
+            total += ((int)irvMins.Value) * 60 * 1000;
+            total += ((int)irvHrs.Value) * 3600 * 1000;
+            return total;
         }
-
-        private System.Windows.Forms.Timer ClickTimer = new System.Windows.Forms.Timer();
-
-        private int repeats = 0;
 
         private void StartAutoClicker()
         {
-            // checking interval
             int interval = GetIntervalInMillis();
-            if (interval <= 0)
-            {
-                interval = 1;
-            }
+            if (interval <= 0) interval = 1;
 
-            // checking position
-            Rectangle screen = Screen.FromControl(this).Bounds;
-            if (!currentPosBtn.Checked ? posX.Value > screen.Width || posY.Value > screen.Height : false)
-            {
-                MessageBox.Show(Resources.err_invalid_pos, Resources.err_title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // starting clicker
             isClicking = true;
             startBtn.Enabled = false;
             stopBtn.Enabled = true;
-            ClickTimer.Start();
+
+            _clicker.SetInterval(interval);
+            _clicker.Start();
+
             ClickTimer.Interval = interval;
+            ClickTimer.Start();
         }
 
         private void StopAutoClicker()
         {
+            _clicker.Stop();
             ClickTimer.Stop();
             isClicking = false;
             startBtn.Enabled = true;
@@ -333,155 +434,11 @@ namespace AutoClicker
             repeats = 0;
         }
 
-        private void setHtkBtn_Click(object sender, EventArgs e)
-        {
-            isWaitingForHotkey = true;
-            this.KeyPreview = true; // Form'un klavye tuşlarını almasını sağlar
-            setHtkBtn.Text = Resources.waiting;
-            cancelSettingHotkey.Visible = true;
-            this.Text = Resources.title_waiting;
-        }
-
-        private void RegisterGlobalHotkey()
-        {
-            UnregisterHotKey(this.Handle, HOTKEY_ID); // önce eskisini kaldır
-
-            var key = (Keys)Settings.Default.StartHotkey;
-            var modifiers = Settings.Default.HotkeyModifiers;
-
-            if (key != Keys.None)
-            {
-                RegisterHotKey(this.Handle, HOTKEY_ID, modifiers, key);
-            }
-        }
-
-
-        private void MainMenu_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (isWaitingForHotkey)
-            {
-                // Modifier (CTRL, SHIFT vb.) ayıkla
-                uint modifiers = 0;
-                if (e.Control) modifiers |= MOD_CONTROL;
-                if (e.Alt) modifiers |= MOD_ALT;
-                if (e.Shift) modifiers |= MOD_SHIFT;
-
-                // Eğer sadece modifier tuşlarından birine basıldıysa uyarı ver
-                if (e.KeyCode == Keys.ControlKey || e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Menu) // Menu = Alt
-                {
-                    MessageBox.Show(Resources.err_assignmodifier_txt, Resources.err_title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                Settings.Default.StartHotkey = (int)e.KeyCode;
-                Settings.Default.HotkeyModifiers = modifiers;
-                Settings.Default.Save();
-
-                startBtn.Text = Resources.start + " (" + e.KeyCode.ToString() + ")";
-                stopBtn.Text = Resources.stop + " (" + e.KeyCode.ToString() + ")";
-
-                MessageBox.Show(Resources.done_htkset_txt.Replace("#HTK", e.KeyCode.ToString()), "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                isWaitingForHotkey = false;
-                setHtkBtn.Text = Resources.sethtk;
-                cancelSettingHotkey.Visible = false;
-                this.Text = Resources.title;
-                RegisterGlobalHotkey();
-            }
-        }
-
-        protected override void WndProc(ref Message m)
-        {
-            const int WM_HOTKEY = 0x0312;
-            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID && !isWaitingForHotkey)
-            {
-                // Hotkey'e basıldı!
-                ToggleClicker();
-            }
-            base.WndProc(ref m);
-        }
-
-
-        private void label10_Click(object sender, EventArgs e)
-        {
-            cancelSettingHotkey.Visible = false;
-            isWaitingForHotkey = false;
-            setHtkBtn.Text = Resources.sethtk;
-            this.Text = Resources.title;
-        }
-
-
-        private void cancelSettingHotkey_MouseEnter(object sender, EventArgs e)
-        {
-            cancelSettingHotkey.Font = new Font("Microsoft Sans Serif", 12.0f, FontStyle.Underline, GraphicsUnit.Point, (byte)(0));
-        }
-
-        private void cancelSettingHotkey_MouseLeave(object sender, EventArgs e)
-        {
-            cancelSettingHotkey.Font = new Font("Microsoft Sans Serif", 12.0f, FontStyle.Regular, GraphicsUnit.Point, (byte)(0));
-        }
-
-        // Windows API'yi çağırmak için
-        [DllImport("user32.dll")]
-        private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, Keys vk);
-
-        [DllImport("user32.dll")]
-        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
-
-        // MOUSE EVENT
-        [DllImport("user32.dll")]
-        static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, int dwExtraInfo);
-
-        [DllImport("user32.dll")]
-        static extern bool SetCursorPos(int X, int Y);
-
-        private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
-        private const uint MOUSEEVENTF_LEFTUP = 0x0004;
-        private const uint MOUSEEVENTF_RIGHTDOWN = 0x0008;
-        private const uint MOUSEEVENTF_RIGHTUP = 0x0010;
-        private const uint MOUSEEVENTF_MIDDLEDOWN = 0x0020;
-        private const uint MOUSEEVENTF_MIDDLEUP = 0x0040;
-
-        // Modifier flags
-        private const uint MOD_NONE = 0x0000;
-        private const uint MOD_ALT = 0x0001;
-        private const uint MOD_CONTROL = 0x0002;
-        private const uint MOD_SHIFT = 0x0004;
-        private const uint MOD_WIN = 0x0008;
-
-        private const int HOTKEY_ID = 9000; // rastgele bir ID
-
         private void TimerTick(object sender, EventArgs e)
         {
-            int msbtn = msButtonBtn.SelectedIndex;
-            int clickType = (int)clickTypeBtn.SelectedIndex + 1;
-
-            uint downCode = 0;
-            uint upCode = 0;
-
-            switch (msbtn)
-            {
-                case 0:
-                    downCode = MOUSEEVENTF_LEFTDOWN;
-                    upCode = MOUSEEVENTF_LEFTUP;
-                    break;
-                case 1:
-                    downCode = MOUSEEVENTF_RIGHTDOWN;
-                    upCode = MOUSEEVENTF_RIGHTUP;
-                    break;
-                case 2:
-                    downCode = MOUSEEVENTF_MIDDLEDOWN;
-                    upCode = MOUSEEVENTF_MIDDLEUP;
-                    break;
-                default:
-                    MessageBox.Show("Invalid mouse button!");
-                    return;
-            }
-
             if (!repeatForeverBtn.Checked)
             {
                 repeats++;
-
                 if (repeats == (int)repeatTimes.Value)
                 {
                     StopAutoClicker();
@@ -490,27 +447,178 @@ namespace AutoClicker
 
             if (!currentPosBtn.Checked)
             {
-                // Belirli pozisyona git
                 SetCursorPos((int)posX.Value, (int)posY.Value);
-                Thread.Sleep(10); // Pozisyon otursun diye kısa bir bekleme
-            }
-
-            for (int i = 0; i < clickType; i++)
-            {
-                mouse_event(downCode | upCode, 0, 0, 0, 0);
-                // Thread.Sleep(10); // Çoklu tıklamalar arasında küçük gecikme
+                Thread.Sleep(10);
             }
         }
-
 
         private void MainMenu_FormClosing(object sender, FormClosingEventArgs e)
         {
-            UnregisterHotKey(this.Handle, HOTKEY_ID);
+            _clicker.Stop();
+            _hotkey.Dispose();
+            _settings.Hotkey = _hotkey.GetHotkey().ToString();
+            _settings.LanguageIndex = langBtn.SelectedIndex;
+            _settings.ActiveMacro = _activeMacroName;
+
+            SettingsManager.Save(_settings);
         }
 
-        private void stopBtn_Click(object sender, EventArgs e)
+        private void ChangeLanguage(Language lang)
         {
-            ToggleClicker();
+            langBtn.SelectedIndex = (int)lang;
+            CultureInfo.CurrentUICulture = new CultureInfo(GetLanguageCode(lang));
+        }
+
+        public static string GetLanguageCode(Language lang)
+        {
+            switch (lang)
+            {
+                case Language.ENGLISH:
+                    return "en";
+                case Language.TURKISH:
+                    return "tr";
+                case Language.GERMAN:
+                    return "de";
+                case Language.FRENCH:
+                    return "fr";
+                default:
+                    return GetLanguageCode(SettingsManager.DefaultLanguage);
+            }
+        }
+
+
+        public static Language GetLanguageByIndex(int index)
+        {
+            if (Enum.TryParse(index.ToString(), out Language res))
+            {
+                return res;
+            } else
+            {
+                return SettingsManager.DefaultLanguage;
+            }
+
+        }
+
+        private Language GetLanguage()
+        {
+            return GetLanguageByIndex(_settings.LanguageIndex);
+        }
+
+        [DllImport("user32.dll")]
+        static extern bool SetCursorPos(int X, int Y);
+
+        private void msButtonBtn_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _clicker.SetButton((MouseButton)msButtonBtn.SelectedIndex);
+        }
+
+        private void clickTypeBtn_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _clicker.SetClickCount(clickTypeBtn.SelectedIndex + 1);
+        }
+
+        private void langBtn_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _settings.LanguageIndex = langBtn.SelectedIndex;
+            LoadLanguage();
+            isModified = false;
+            UpdateMacroLabel();
+        }
+
+        private void activemacrolbl_Click(object sender, EventArgs e)
+        {
+            using(var macroForm = new MacroForm(_Macros, _activeMacroName))
+            {
+                if (macroForm.ShowDialog() == DialogResult.OK)
+                {
+                    _settings.ActiveMacro = macroForm.SelectedMacroName;
+                    _activeMacroName = macroForm.SelectedMacroName;
+
+                    _Macros = MacroManager.LoadAll();
+
+                    SettingsManager.Save(_settings);
+                    LoadMacroFormettings(_activeMacroName);
+                    UpdateMacroLabel();
+
+                    isModified = false;
+                    activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Regular);
+
+                }
+            }
+
+
+        }
+
+        private void MainMenu_Load(object sender, EventArgs e)
+        {
+            LoadMacroFormettings(_activeMacroName);
+
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+
+            foreach (GroupBox gb in new GroupBox[] {interval, position, repeat, options})
+            {
+                gb.Paint += groupBox_Paint;
+            }
+
+        }
+
+        private void groupBox_Paint(object sender, PaintEventArgs e)
+        {
+            GroupBox box = (GroupBox)sender;
+            e.Graphics.Clear(box.BackColor);
+
+            // Renk ayarları
+            Color borderColor = Color.FromArgb(220, 220, 220); // Açık gri
+            Color textColor = Color.White;
+
+            using (Pen pen = new Pen(borderColor))
+            {
+                SizeF textSize = e.Graphics.MeasureString(box.Text, box.Font);
+                int textHeight = (int)textSize.Height;
+                int textWidth = (int)textSize.Width;
+                int offset = 10; // Sol boşluk
+
+                // Dikdörtgenin kenarlarını çiz (üst hariç)
+                Rectangle rect = new Rectangle(0, textHeight / 2, box.Width - 1, box.Height - textHeight / 2 - 1);
+
+                // Sol çizgi
+                e.Graphics.DrawLine(pen, rect.Left, rect.Top, rect.Left, rect.Bottom);
+                // Alt çizgi
+                e.Graphics.DrawLine(pen, rect.Left, rect.Bottom, rect.Right, rect.Bottom);
+                // Sağ çizgi
+                e.Graphics.DrawLine(pen, rect.Right, rect.Bottom, rect.Right, rect.Top);
+                // Üst çizgi (iki parçalı, yazının etrafı boş kalacak)
+                e.Graphics.DrawLine(pen, rect.Left, rect.Top, offset - 2, rect.Top); // yazı öncesi
+                e.Graphics.DrawLine(pen, offset + textWidth + 2, rect.Top, rect.Right, rect.Top); // yazı sonrası
+
+                // Başlık yazısını çiz
+                using (Brush brush = new SolidBrush(textColor))
+                {
+                    PointF textPos = new PointF(offset, 0);
+                    e.Graphics.DrawString(box.Text, box.Font, brush, textPos);
+                }
+            }
+        }
+
+
+        public static string CapitalizeFirstLetter(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            input = input.Trim();
+            return char.ToUpper(input[0]) + input.Substring(1).ToLower();
+        }
+
+        private void activemacrolbl_MouseEnter(object sender, EventArgs e)
+        {
+            activemacrolbl.Font = new Font(activemacrolbl.Font, isModified ? FontStyle.Bold : FontStyle.Underline);
+        }
+
+        private void activemacrolbl_MouseLeave(object sender, EventArgs e)
+        {
+            activemacrolbl.Font = new Font(activemacrolbl.Font, isModified ? FontStyle.Bold : FontStyle.Regular);
         }
     }
 }
