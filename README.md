@@ -46,7 +46,7 @@ Hazırlayan: ilpeN
 - Tuş atama (Hotkey) özelliği
 - Sol, sağ veya orta fare tuşu seçimi
 - Çoklu dil arayüz desteği
-- Makro kayıt/saklama özelliği
+- Makro kayıt/saklama özelliği, makroyu Ctrl + S yaparak kaydedin
 - Del'e basarak makroyu silin
 - Enter'a basarak bir makro seçin
 - Bir makro ismine ya da açıklamasına çift tıklayarak onları düzenleyin
