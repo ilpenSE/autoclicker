@@ -1,4 +1,4 @@
-#📌 Auto Clicker
+# 📌 Auto Clicker
 Here is the version 1.2! Brand new feature, UI changes, bug fixes and more. Install and start to use!
 
 ## English
