@@ -31,7 +31,7 @@ You can safely uninstall the program from Control Panel > Uninstall a Program.
 
 ### About
 - For feedback or suggestions: lastplayer8945@gmail.com
-- [Instagram](https://www.instagram.com/ilpenwastaken)
+- [Instagram](https://www.instagram.com/ilpen.25)
 - [YouTube](https://www.youtube.com/@ilpenwastaken)
 - [X](https://www.x.com/ilpenwastaken)
 
@@ -67,7 +67,7 @@ Programı Denetim Masası > Program Kaldır bölümünden güvenle kaldırabilir
 
 ### Hakkında
 - Geri bildirim ve önerilen için: lastplayer8945@gmail.com
-- [Instagram](https://www.instagram.com/ilpenwastaken)
+- [Instagram](https://www.instagram.com/ilpen.25)
 - [YouTube](https://www.youtube.com/@ilpenwastaken)
 - [X](https://www.x.com/ilpenwastaken)
 
