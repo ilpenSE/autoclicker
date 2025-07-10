@@ -26,7 +26,7 @@ Run `Auto Clicker Setup.exe` and follow the on-screen instructions.
 You can safely uninstall the program from Control Panel > Uninstall a Program.
 
 ### About
-- For feedback or suggestions: [lastplayer8945@gmail.com]
+- For feedback or suggestions: lastplayer8945@gmail.com
 - [Instagram](https://www.instagram.com/ilpenwastaken)
 - [YouTube](https://www.youtube.com/@ilpenwastaken)
 - [X](https://www.x.com/ilpenwastaken)
@@ -58,7 +58,7 @@ Programı yüklemek için `Auto Clicker Setup.exe` dosyasını çalıştırın v
 Programı Denetim Masası > Program Kaldır bölümünden güvenle kaldırabilirsiniz.
 
 ### Hakkında
-- Geri bildirim ve önerilen için: [lastplayer8945@gmail.com]
+- Geri bildirim ve önerilen için: lastplayer8945@gmail.com
 - [Instagram](https://www.instagram.com/ilpenwastaken)
 - [YouTube](https://www.youtube.com/@ilpenwastaken)
 - [X](https://www.x.com/ilpenwastaken)
