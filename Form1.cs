@@ -258,6 +258,7 @@ namespace AutoClicker
             var macro = new MacroModel
             {
                 Name = _activeMacroName,
+                Description = MacroManager.GetMacroByName(_activeMacroName).Description,
                 MouseButton = (MouseButton)msButtonBtn.SelectedIndex,
                 ClickType = (ClickType)clickTypeBtn.SelectedIndex,
                 Interval = GetIntervalInMillis(),
@@ -280,6 +281,7 @@ namespace AutoClicker
                 if (string.IsNullOrWhiteSpace(newName)) return;
 
                 macro.Name = newName;
+                macro.Description = "Added macro";
                 MacroManager.SaveMacro(newName, macro);
                 _activeMacroName = newName;
             }
