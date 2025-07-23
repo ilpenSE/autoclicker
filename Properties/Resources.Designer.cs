@@ -124,20 +124,20 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
-        ///   Click this to cancel setting hotkey benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string cancel_setting_htk {
-            get {
-                return ResourceManager.GetString("cancel_setting_htk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   CREATE benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
         internal static string create {
             get {
                 return ResourceManager.GetString("create", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Created Macro benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string createdmacro {
+            get {
+                return ResourceManager.GetString("createdmacro", resourceCulture);
             }
         }
         
@@ -151,6 +151,15 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
+        ///   Default benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string defaultmacro {
+            get {
+                return ResourceManager.GetString("defaultmacro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   DELETE benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
         internal static string delete {
@@ -160,11 +169,11 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
-        ///   Hotkey set to #HTK successfully. benzeri yerelleştirilmiş bir dize arar.
+        ///   DISCARD benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
-        internal static string done_htkset_txt {
+        internal static string discard {
             get {
-                return ResourceManager.GetString("done_htkset_txt", resourceCulture);
+                return ResourceManager.GetString("discard", resourceCulture);
             }
         }
         
@@ -178,20 +187,29 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
-        ///   You can&apos;t assign Ctrl, Shift and Alt keys. benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string err_assignmodifier_txt {
-            get {
-                return ResourceManager.GetString("err_assignmodifier_txt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Name or Description cannot be empty. benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
         internal static string err_emptynamedesc {
             get {
                 return ResourceManager.GetString("err_emptynamedesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   A macro with this name already exists! benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string err_existmacroname {
+            get {
+                return ResourceManager.GetString("err_existmacroname", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Incompatible Version: #VER benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string err_incompatibleversion {
+            get {
+                return ResourceManager.GetString("err_incompatibleversion", resourceCulture);
             }
         }
         
@@ -232,6 +250,24 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
+        ///   Hold Duration benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string holddur_groupbox {
+            get {
+                return ResourceManager.GetString("holddur_groupbox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Hotkey benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string htk {
+            get {
+                return ResourceManager.GetString("htk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Info benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
         internal static string info {
@@ -259,11 +295,12 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
-        ///   hours benzeri yerelleştirilmiş bir dize arar.
+        ///   1 seconds = 1000 milliseconds
+        ///1 minute = 60 seconds benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
-        internal static string interval_hours {
+        internal static string interval_info {
             get {
-                return ResourceManager.GetString("interval_hours", resourceCulture);
+                return ResourceManager.GetString("interval_info", resourceCulture);
             }
         }
         
@@ -273,24 +310,6 @@ namespace AutoClicker.Properties {
         internal static string interval_millis {
             get {
                 return ResourceManager.GetString("interval_millis", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   minutes benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string interval_mins {
-            get {
-                return ResourceManager.GetString("interval_mins", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   seconds benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string interval_secs {
-            get {
-                return ResourceManager.GetString("interval_secs", resourceCulture);
             }
         }
         
@@ -345,6 +364,33 @@ namespace AutoClicker.Properties {
         internal static string opt_clicktype {
             get {
                 return ResourceManager.GetString("opt_clicktype", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Click benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string opt_cm_click {
+            get {
+                return ResourceManager.GetString("opt_cm_click", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Hold benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string opt_cm_hold {
+            get {
+                return ResourceManager.GetString("opt_cm_hold", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Click Mod benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string opt_cmod {
+            get {
+                return ResourceManager.GetString("opt_cmod", resourceCulture);
             }
         }
         
@@ -502,20 +548,20 @@ namespace AutoClicker.Properties {
         }
         
         /// <summary>
+        ///   SAVE benzeri yerelleştirilmiş bir dize arar.
+        /// </summary>
+        internal static string save {
+            get {
+                return ResourceManager.GetString("save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   SELECT benzeri yerelleştirilmiş bir dize arar.
         /// </summary>
         internal static string select {
             get {
                 return ResourceManager.GetString("select", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   SET HOTKEY benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string sethtk {
-            get {
-                return ResourceManager.GetString("sethtk", resourceCulture);
             }
         }
         
@@ -552,24 +598,6 @@ namespace AutoClicker.Properties {
         internal static string title {
             get {
                 return ResourceManager.GetString("title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Auto Clicker (WAITING FOR HOTKEY) benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string title_waiting {
-            get {
-                return ResourceManager.GetString("title_waiting", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   WAITING... benzeri yerelleştirilmiş bir dize arar.
-        /// </summary>
-        internal static string waiting {
-            get {
-                return ResourceManager.GetString("waiting", resourceCulture);
             }
         }
         

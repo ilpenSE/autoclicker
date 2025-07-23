@@ -1,7 +1,9 @@
 ﻿using AutoClicker.Properties;
+using Krypton.Toolkit;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Media;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -24,6 +26,9 @@ namespace AutoClicker
             ACTIVE_MACRO_NAME = activeMacroName;
             InitializeContextMenu();
             LoadLanguage();
+
+            blinkTimer.Interval = 300;
+            blinkTimer.Tick += BlinkTimer_Tick;
         }
 
         private void LoadLanguage()
@@ -80,11 +85,38 @@ namespace AutoClicker
             Close();
         }
 
+        Timer blinkTimer = new Timer();
+        int blinkCount = 0;
+        private void ShowErr(string msg)
+        {
+            blinkTimer.Start();
+            SystemSounds.Hand.Play();
+
+            errlbl.Visible = true;
+            errlbl.Text = msg;
+            errlbl.Location = new Point((this.Size.Width - errlbl.Size.Width) / 2, errlbl.Location.Y);
+        }
+
+        private void BlinkTimer_Tick(object sender, EventArgs e)
+        {
+
+            errlbl.Visible = !errlbl.Visible;
+            blinkCount++;
+
+            if (blinkCount >= 10)
+            {
+                blinkTimer.Stop();
+                blinkCount = 0;
+                errlbl.Visible = true;
+            }
+        }
+
+
         private void saveBtn_Click(object sender, EventArgs e)
         {
             if (list.SelectedItems.Count == 0)
             {
-                MessageBox.Show(Resources.info_selectmacro, Resources.info, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowErr(Resources.info_selectmacro);
                 return;
             }
 
@@ -104,9 +136,6 @@ namespace AutoClicker
                 item.Tag = kvp.Key;
 
                 bool isActive = kvp.Key == ACTIVE_MACRO_NAME;
-                item.BackColor = isActive ? Color.LightBlue : Color.White;
-                item.ForeColor = isActive ? Color.DarkBlue : Color.Black;
-                item.Font = new Font(list.Font, isActive ? FontStyle.Bold : FontStyle.Regular);
 
                 list.Items.Add(item);
 
@@ -126,8 +155,8 @@ namespace AutoClicker
             {
                 if (createForm.ShowDialog() == DialogResult.OK)
                 {
-                    _macros.Add(createForm.CreatedMacro.Name, createForm.CreatedMacro);
                     LoadMacroList();
+                    AdjustColumnWidths();
                 }
             }
         }
@@ -138,12 +167,16 @@ namespace AutoClicker
 
         private void deleteMacro()
         {
-            if (list.SelectedItems.Count == 0) return;
+            if (list.SelectedItems.Count == 0)
+            {
+                ShowErr(Resources.wrn_selectmacrodel);
+                return;
+            }
 
             string name = list.SelectedItems[0].Text;
             if (name == "DEFAULT")
             {
-                MessageBox.Show(Resources.wrn_cantdeldef, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ShowErr(Resources.wrn_cantdeldef);
                 return;
             }
 
@@ -155,6 +188,8 @@ namespace AutoClicker
                 MacroManager.DeleteMacro(name);
                 _macros.Remove(name);
                 LoadMacroList();
+
+                AdjustColumnWidths();
             }
         }
 
@@ -175,7 +210,7 @@ namespace AutoClicker
             // DEFAULT makrosu düzenlenemez
             if (item.Text == "DEFAULT")
             {
-                MessageBox.Show(Resources.wrn_canteditdef, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ShowErr(Resources.wrn_canteditdef);
                 return;
             }
 
@@ -221,7 +256,7 @@ namespace AutoClicker
 
             if (string.IsNullOrWhiteSpace(newText))
             {
-                MessageBox.Show(Resources.err_emptynamedesc, Resources.err_title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowErr(Resources.err_emptynamedesc);
                 return;
             }
 
@@ -269,23 +304,47 @@ namespace AutoClicker
 
         private void MacroForm_Load(object sender, EventArgs e)
         {
-            list.Columns.Add(Resources.lblname, 200);
-            list.Columns.Add(Resources.lbldesc, 282);
+            list.View = View.Details;
+            list.FullRowSelect = true;
+            list.OwnerDraw = true;
 
-            int padding = 1; // 1-2 piksel fazladan boşluk bırak, beyazlık kaybolur
-            int totalWidth = list.ClientSize.Width - padding;
+            // Önce boş ekle
+            list.Columns.Add(Resources.lblname);
+            list.Columns.Add(Resources.lbldesc);
 
-            list.Columns[0].Width = 200;
-            list.Columns[1].Width = totalWidth - 200 + 1;
+            AdjustColumnWidths();
 
             LoadMacroList();
-            list.FullRowSelect = true;
 
             list.KeyDown += list_KeyDown;
             list.MouseDoubleClick += list_MouseDoubleClick;
             list.DrawColumnHeader += list_DrawColumnHeader;
             list.DrawItem += list_DrawItem;
             list.DrawSubItem += list_DrawSubItem;
+            list.MouseMove += list_MouseMove;
+            list.MouseLeave += list_MouseLeave;
+
+            this.Font = FontLoader.GetRegular(11f);
+
+            foreach (KryptonButton btn in new KryptonButton[] {createBtn, deleteBtn, selectBtn, cancelBtn})
+            {
+                btn.StateCommon.Content.ShortText.Font = MainMenu.ButtonFont;
+            }
+        }
+
+
+        private void AdjustColumnWidths()
+        {
+            int scrollbarAllowance = SystemInformation.VerticalScrollBarWidth; // genelde 17px
+            int totalWidth = list.ClientSize.Width;
+
+            int nameColWidth = 200;
+            int descColWidth = totalWidth - nameColWidth;
+
+            descColWidth = Math.Max(50, descColWidth);
+
+            list.Columns[0].Width = nameColWidth;
+            list.Columns[1].Width = descColWidth;
         }
 
         private void list_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
@@ -299,19 +358,49 @@ namespace AutoClicker
             }
         }
 
+
         private void list_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             // SubItem'lar ayrı çizileceği için burası boş kalabilir
         }
 
+        private ListViewItem hoveredItem = null;
+        private void list_MouseMove(object sender, MouseEventArgs e)
+        {
+            var item = list.GetItemAt(e.X, e.Y);
+            if (item != hoveredItem)
+            {
+                hoveredItem = item;
+                list.Invalidate(); // yeniden çizim
+            }
+        }
+
+        private void list_MouseLeave(object sender, EventArgs e)
+        {
+            if (hoveredItem != null)
+            {
+                hoveredItem = null;
+                list.Invalidate();
+            }
+        }
+
         private void list_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            // Seçili mi kontrol et
             bool selected = e.Item.Selected;
 
-            // 🔧 Renkler
-            Color backColor = selected ? Color.FromArgb(54, 173, 169) : Color.FromArgb(20, 20, 20); // Seçili item için özel renk
-            Color textColor = selected ? Color.Black : Color.White;
+            bool hovered = (hoveredItem == e.Item);
+
+            Color backColor = selected
+                ? Color.FromArgb(134, 209, 247)
+                : hovered
+                    ? Color.FromArgb(40, 40, 40)
+                    : Color.FromArgb(20, 20, 20);
+
+            Color textColor = selected
+                ? Color.Black
+                : hovered
+                    ? Color.LightBlue
+                    : Color.White;
 
             // Arka planı çiz
             using (SolidBrush backBrush = new SolidBrush(backColor))
@@ -330,12 +419,15 @@ namespace AutoClicker
             // Sağ boşluğu doldur (son sütunsa)
             if (e.ColumnIndex == list.Columns.Count - 1)
             {
-                int fullRowWidth = list.ClientSize.Width;
+                int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
+                int fullRowWidth = list.ClientSize.Width - scrollBarWidth;
+
                 int usedWidth = 0;
                 foreach (ColumnHeader col in list.Columns)
                     usedWidth += col.Width;
 
                 int remainingWidth = fullRowWidth - usedWidth;
+
                 if (remainingWidth > 0)
                 {
                     Rectangle fillRect = new Rectangle(e.Bounds.Right, e.Bounds.Top, remainingWidth, e.Bounds.Height);
@@ -344,8 +436,6 @@ namespace AutoClicker
                 }
             }
         }
-
-
 
         private void list_MouseDoubleClick(object sender, MouseEventArgs e)
         {

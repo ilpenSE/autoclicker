@@ -1,7 +1,6 @@
 ﻿using AutoClicker.Properties;
+using Krypton.Toolkit;
 using System;
-using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace AutoClicker
@@ -24,8 +23,14 @@ namespace AutoClicker
                 Resources.opt_ct_triple,
                 Resources.opt_ct_quadruple
             };
+            cmodBtn.DataSource = new string[]
+            {
+                Resources.opt_cm_click,
+                Resources.opt_cm_hold
+            };
 
             LoadLanguageValues();
+            txtName.Select();
         }
 
         private void LoadLanguageValues()
@@ -34,11 +39,12 @@ namespace AutoClicker
             lblDesc.Text = Resources.lbldesc + ":";
             lblMouse.Text = Resources.opt_msbtn + ":";
             lblClick.Text = Resources.opt_clicktype + ":";
+            lblMod.Text = Resources.opt_cmod + ":";
             intervallbl.Text = Resources.interval_groupbox + ":";
-            hrslbl.Text = Resources.interval_hours;
-            minlbl.Text = Resources.interval_mins;
-            seclbl.Text = Resources.interval_secs;
+            holddurlbl.Text = Resources.holddur_groupbox + ":";
             millislbl.Text = Resources.interval_millis;
+            hd_millislbl.Text = Resources.interval_millis;
+            irvInfo.Text = Resources.interval_info;
             lblX.Text = Resources.pos_gb + " X:";
             lblY.Text = Resources.pos_gb + " Y:";
             chkUseCurrentPos.Text = Resources.pos_current;
@@ -50,12 +56,7 @@ namespace AutoClicker
 
         private int GetIntervalInMillis()
         {
-            int total = 0;
-            total += (int)irvMillis.Value;
-            total += ((int)irvSecs.Value) * 1000;
-            total += ((int)irvMins.Value) * 60 * 1000;
-            total += ((int)irvHrs.Value) * 3600 * 1000;
-            return total;
+            return (int)irvMillis.Value;
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -71,11 +72,17 @@ namespace AutoClicker
                     return;
                 }
 
+                if (MacroManager.Macros.ContainsKey(name))
+                {
+                    MessageBox.Show(Resources.err_macroexists, Resources.err_title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
 
                 MacroModel macro = new MacroModel
                 {
                     Name = name,
-                    Description = txtDescription.Text,
+                    Description = string.IsNullOrWhiteSpace(txtDescription.Text) ? Resources.nodesc : txtDescription.Text,
                     MouseButton = (MouseButton)cmbMouseButton.SelectedIndex,
                     ClickType = (ClickType)cmbClickType.SelectedIndex,
                     Position = new Position
@@ -89,7 +96,9 @@ namespace AutoClicker
                     {
                         RepeatForever = repeatForeverBtn.Checked,
                         Count = (int)repeatTimes.Value
-                    }
+                    },
+                    ClickMode = (ClickMod)cmodBtn.SelectedIndex,
+                    HoldDuration = (int)hdMillis.Value
                 };
                 CreatedMacro = macro;
 
@@ -102,37 +111,94 @@ namespace AutoClicker
             }
         }
 
-        private void ApplyDarkComboBoxStyle(ComboBox comboBox)
-        {
-            comboBox.DrawMode = DrawMode.OwnerDrawFixed;
-            comboBox.FlatStyle = FlatStyle.Flat;
-            comboBox.BackColor = Color.FromArgb(40, 40, 40);
-            comboBox.ForeColor = Color.White;
-            comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-
-            comboBox.DrawItem += (s, e) =>
-            {
-                if (e.Index < 0) return;
-
-                ComboBox cmb = (ComboBox)s;
-                bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-
-                Color backColor = selected ? Color.FromArgb(60, 60, 60) : Color.FromArgb(40, 40, 40);
-                Color textColor = Color.White;
-
-                using (Brush backBrush = new SolidBrush(backColor))
-                    e.Graphics.FillRectangle(backBrush, e.Bounds);
-
-                using (Brush textBrush = new SolidBrush(textColor))
-                    e.Graphics.DrawString(cmb.Items[e.Index].ToString(), e.Font, textBrush, e.Bounds);
-            };
-        }
-
         private void MacroCreateForm_Load(object sender, EventArgs e)
         {
-            foreach (ComboBox cb in this.Controls.OfType<ComboBox>())
+            this.Font = FontLoader.GetRegular(9f);
+            btnSave.StateCommon.Content.ShortText.Font = MainMenu.ButtonFont;
+
+            RegisterTextBoxFocusEvents();
+            RegisterNumericFocusEvents();
+            RegisterDropdownFocusEvents();
+        }
+        private void RegisterTextBoxFocusEvents()
+        {
+            foreach (KryptonTextBox txtbox in new KryptonTextBox[] { txtDescription, txtName })
             {
-                ApplyDarkComboBoxStyle(cb);
+                txtbox.MouseEnter += (s, ev) =>
+                {
+                    if (!txtbox.Focused)
+                        txtbox.StateCommon.Border.Color1 = MainMenu.focusBorderClr;
+                };
+
+                txtbox.MouseLeave += (s, ev) =>
+                {
+                    if (!txtbox.Focused)
+                        txtbox.StateCommon.Border.Color1 = MainMenu.normalBorderClr;
+                };
+
+                txtbox.GotFocus += (s, ev) =>
+                {
+                    txtbox.StateCommon.Border.Color1 = MainMenu.focusBorderClr;
+                };
+
+                txtbox.LostFocus += (s, ev) =>
+                {
+                    txtbox.StateCommon.Border.Color1 = MainMenu.normalBorderClr;
+                };
+            }
+        }
+
+        private void RegisterNumericFocusEvents()
+        {
+            foreach (KryptonNumericUpDown kryptonNumericUpDown in new KryptonNumericUpDown[] { irvMillis, hdMillis, repeatTimes, posX, posY })
+            {
+                kryptonNumericUpDown.MouseEnter += (s, ev) =>
+                {
+                    if (!kryptonNumericUpDown.Focused)
+                        kryptonNumericUpDown.StateCommon.Border.Color1 = MainMenu.focusBorderClr;
+                };
+
+                kryptonNumericUpDown.MouseLeave += (s, ev) =>
+                {
+                    if (!kryptonNumericUpDown.Focused)
+                        kryptonNumericUpDown.StateCommon.Border.Color1 = MainMenu.normalBorderClr;
+                };
+
+                kryptonNumericUpDown.GotFocus += (s, ev) =>
+                {
+                    kryptonNumericUpDown.StateCommon.Border.Color1 = MainMenu.focusBorderClr;
+                };
+
+                kryptonNumericUpDown.LostFocus += (s, ev) =>
+                {
+                    kryptonNumericUpDown.StateCommon.Border.Color1 = MainMenu.normalBorderClr;
+                };
+            }
+        }
+
+        private void RegisterDropdownFocusEvents()
+        {
+            foreach (KryptonComboBox box in new KryptonComboBox[] { cmodBtn, cmbClickType, cmbMouseButton })
+            {
+                box.MouseEnter += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = MainMenu.focusBorderClr;
+                };
+
+                box.MouseLeave += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = MainMenu.normalBorderClr;
+                };
+
+                box.GotFocus += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = MainMenu.focusBorderClr;
+                };
+
+                box.LostFocus += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = MainMenu.normalBorderClr;
+                };
             }
         }
     }

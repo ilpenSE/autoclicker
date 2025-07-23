@@ -26,10 +26,10 @@ namespace AutoClicker
 
                 // ✅ Dosya yoksa oluştur
                 if (!File.Exists(settingsPath))
-                    File.WriteAllText(settingsPath, "{\r\n  \"Hotkey\": \"F6\",\r\n  \"LanguageIndex\": 0,\r\n  \"FirstRun\": true,\r\n  \"ActiveMacro\": \"DEFAULT\"\r\n}"); // veya varsayılan JSON
+                    File.WriteAllText(settingsPath, "{\r\n  \"Hotkey\": \"F6\",\r\n  \"LanguageIndex\": 0,\r\n  \"FirstRun\": true,\r\n  \"ActiveMacro\": \"DEFAULT\",\r\n  \"Version\": \"v1.3\"\r\n}");
 
                 if (!File.Exists(macrosPath))
-                    File.WriteAllText(macrosPath, "{\r\n  \"DEFAULT\": {\r\n    \"Name\": \"DEFAULT\",\r\n    \"Description\": \"The defaults.\",\r\n    \"MouseButton\": 0,\r\n    \"ClickType\": 0,\r\n    \"Position\": {\r\n      \"X\": 0,\r\n      \"Y\": 0,\r\n      \"CurrentPosition\": true\r\n    },\r\n    \"Interval\": 0,\r\n    \"RepeatTimes\": {\r\n      \"Count\": 1,\r\n      \"RepeatForever\": true\r\n    }\r\n  }\r\n}"); // veya varsayılan boş macro listesi
+                    File.WriteAllText(macrosPath, "{\r\n  \"DEFAULT\": {\r\n    \"Name\": \"DEFAULT\",\r\n    \"Description\": \"The defaults.\",\r\n    \"MouseButton\": 0,\r\n    \"ClickType\": 0,\r\n    \"Position\": {\r\n      \"X\": 0,\r\n      \"Y\": 0,\r\n      \"CurrentPosition\": true\r\n    },\r\n    \"Interval\": 0,\r\n    \"RepeatTimes\": {\r\n      \"Count\": 1,\r\n      \"RepeatForever\": true\r\n    },\r\n    \"ClickMode\": 0,\r\n    \"HoldDuration\": 1\r\n  }\r\n}");
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
@@ -38,7 +38,7 @@ namespace AutoClicker
             catch (Exception ex)
             {
                 File.WriteAllText("error_log.txt", ex.ToString());
-                MessageBox.Show("An error occured! Saved to error_log.txt.", "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occured! Saved to error_log.txt.\nError Message: " + ex.Message, "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

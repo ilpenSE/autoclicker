@@ -120,17 +120,8 @@
   <data name="interval_groupbox" xml:space="preserve">
     <value>Intervalle</value>
   </data>
-  <data name="interval_hours" xml:space="preserve">
-    <value>heures</value>
-  </data>
   <data name="interval_millis" xml:space="preserve">
     <value>millisecondes</value>
-  </data>
-  <data name="interval_mins" xml:space="preserve">
-    <value>minutes</value>
-  </data>
-  <data name="interval_secs" xml:space="preserve">
-    <value>secondes</value>
   </data>
   <data name="opt_clicktype" xml:space="preserve">
     <value>Type de clic</value>
@@ -189,23 +180,8 @@
   <data name="stop" xml:space="preserve">
     <value>ARRÊT</value>
   </data>
-  <data name="sethtk" xml:space="preserve">
-    <value>DÉFINIR LE RACCOURCI</value>
-  </data>
-  <data name="waiting" xml:space="preserve">
-    <value>EN ATTENDANT...</value>
-  </data>
-  <data name="cancel_setting_htk" xml:space="preserve">
-    <value>Cliquez sur ce lien pour annuler la configuration du raccourci clavier</value>
-  </data>
-  <data name="title_waiting" xml:space="preserve">
-    <value>Auto Clicker (EN ATTENTE D'UN CLAVIER RAPIDE)</value>
-  </data>
   <data name="title" xml:space="preserve">
     <value>Auto Clicker</value>
-  </data>
-  <data name="done_htkset_txt" xml:space="preserve">
-    <value>La touche de raccourci #HTK a été définie avec succès.</value>
   </data>
   <data name="err_invalid_pos" xml:space="preserve">
     <value>Veuillez saisir une position valide.</value>
@@ -239,9 +215,6 @@
   </data>
   <data name="info_selectmacro" xml:space="preserve">
     <value>Veuillez sélectionner une macro.</value>
-  </data>
-  <data name="err_assignmodifier_txt" xml:space="preserve">
-    <value>Vous ne pouvez pas attribuer les touches Ctrl, Shift et Alt.</value>
   </data>
   <data name="wrn_cantdeldef" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer les paramètres par défaut.</value>
@@ -308,5 +281,41 @@
   </data>
   <data name="nodesc" xml:space="preserve">
     <value>Aucune description</value>
+  </data>
+  <data name="htk" xml:space="preserve">
+    <value>Le Raccourci</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>ENREGISTRER</value>
+  </data>
+  <data name="discard" xml:space="preserve">
+    <value>ANNULER</value>
+  </data>
+  <data name="createdmacro" xml:space="preserve">
+    <value>Macro créée</value>
+  </data>
+  <data name="defaultmacro" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="interval_info" xml:space="preserve">
+    <value>1 seconde = 1000 millisecondes</value>
+  </data>
+  <data name="opt_cmod" xml:space="preserve">
+    <value>Mode de clic</value>
+  </data>
+  <data name="opt_cm_click" xml:space="preserve">
+    <value>Clic</value>
+  </data>
+  <data name="opt_cm_hold" xml:space="preserve">
+    <value>Maintenir</value>
+  </data>
+  <data name="holddur_groupbox" xml:space="preserve">
+    <value>Durée de maintien</value>
+  </data>
+  <data name="err_existmacroname" xml:space="preserve">
+    <value>Une macro portant ce nom existe déjà!</value>
+  </data>
+  <data name="err_incompatibleversion" xml:space="preserve">
+    <value>Version incompatible: #VER</value>
   </data>
 </root>

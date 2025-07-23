@@ -4,8 +4,8 @@ using System.Windows.Forms;
 
 public class HotkeyService : IMessageFilter, IDisposable
 {
-    private int _hotkeyId = Guid.NewGuid().GetHashCode() & 0x7FFFFFFF; // pozitif ID
-    private readonly Keys _hotkey;
+    private int _hotkeyId = Guid.NewGuid().GetHashCode() & 0x7FFFFFFF; // a positive ID
+    private Keys _hotkey { get; set; }
     private readonly int _modifiers;
     private readonly Action _onHotkeyPressed;
     private readonly IntPtr _handle;
@@ -56,6 +56,23 @@ public class HotkeyService : IMessageFilter, IDisposable
     {
         return _hotkey;
     }
+
+    public void SetHotkey(Keys hotkey)
+    {
+        this._hotkey = hotkey;
+    }
+
+    public static int ConvertModifiersToFsModifiers(Keys modifiers)
+    {
+        int fsModifiers = 0;
+
+        if (modifiers.HasFlag(Keys.Control)) fsModifiers |= 0x0002;
+        if (modifiers.HasFlag(Keys.Shift)) fsModifiers |= 0x0004;
+        if (modifiers.HasFlag(Keys.Alt)) fsModifiers |= 0x0001;
+
+        return fsModifiers;
+    }
+
 
     public void Dispose()
     {

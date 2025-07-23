@@ -120,17 +120,8 @@
   <data name="interval_groupbox" xml:space="preserve">
     <value>Aralık</value>
   </data>
-  <data name="interval_hours" xml:space="preserve">
-    <value>saat</value>
-  </data>
   <data name="interval_millis" xml:space="preserve">
     <value>milisaniye</value>
-  </data>
-  <data name="interval_mins" xml:space="preserve">
-    <value>dakika</value>
-  </data>
-  <data name="interval_secs" xml:space="preserve">
-    <value>saniye</value>
   </data>
   <data name="opt_clicktype" xml:space="preserve">
     <value>Tıklama Tipi</value>
@@ -189,23 +180,8 @@
   <data name="stop" xml:space="preserve">
     <value>DURDUR</value>
   </data>
-  <data name="sethtk" xml:space="preserve">
-    <value>TUŞ ATA</value>
-  </data>
-  <data name="waiting" xml:space="preserve">
-    <value>BEKLİYOR...</value>
-  </data>
-  <data name="cancel_setting_htk" xml:space="preserve">
-    <value>Tuş atamasını iptal etmek için tıkla</value>
-  </data>
-  <data name="title_waiting" xml:space="preserve">
-    <value>Oto Tıklayıcı (TUŞ BEKLİYOR)</value>
-  </data>
   <data name="title" xml:space="preserve">
     <value>Oto Tıklayıcı</value>
-  </data>
-  <data name="done_htkset_txt" xml:space="preserve">
-    <value>Tuş başarıyla #HTK olarak atandı.</value>
   </data>
   <data name="err_invalid_pos" xml:space="preserve">
     <value>Lütfen geçerli bir konum yazın.</value>
@@ -239,9 +215,6 @@
   </data>
   <data name="info_selectmacro" xml:space="preserve">
     <value>Lütfen bir makro seçin.</value>
-  </data>
-  <data name="err_assignmodifier_txt" xml:space="preserve">
-    <value>Ctrl, Shift ve Alt tuşlarını atayamazsınız.</value>
   </data>
   <data name="wrn_cantdeldef" xml:space="preserve">
     <value>Varsayılan ayarları silemezsiniz.</value>
@@ -308,5 +281,41 @@
   </data>
   <data name="nodesc" xml:space="preserve">
     <value>Açıklama Yok</value>
+  </data>
+  <data name="htk" xml:space="preserve">
+    <value>Tuş</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>KAYDET</value>
+  </data>
+  <data name="discard" xml:space="preserve">
+    <value>KAYDETME</value>
+  </data>
+  <data name="createdmacro" xml:space="preserve">
+    <value>Oluşturulan Makro</value>
+  </data>
+  <data name="defaultmacro" xml:space="preserve">
+    <value>Varsayılan</value>
+  </data>
+  <data name="interval_info" xml:space="preserve">
+    <value>1 saniye = 1000 milisaniye</value>
+  </data>
+  <data name="opt_cmod" xml:space="preserve">
+    <value>Tıklama Modu</value>
+  </data>
+  <data name="opt_cm_click" xml:space="preserve">
+    <value>Tıkla</value>
+  </data>
+  <data name="opt_cm_hold" xml:space="preserve">
+    <value>Basılı Tut</value>
+  </data>
+  <data name="holddur_groupbox" xml:space="preserve">
+    <value>Basılı Tutma Süresi</value>
+  </data>
+  <data name="err_existmacroname" xml:space="preserve">
+    <value>Bu isimde bir makro zaten var!</value>
+  </data>
+  <data name="err_incompatibleversion" xml:space="preserve">
+    <value>Uyumsuz Sürüm: #VER</value>
   </data>
 </root>

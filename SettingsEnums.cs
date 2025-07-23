@@ -29,6 +29,12 @@ public enum ClickType
     QUADRUPLE = 4
 }
 
+public enum ClickMod
+{
+    CLICK = 0,
+    HOLD = 1
+}
+
 public enum Language
 {
     ENGLISH = 0,

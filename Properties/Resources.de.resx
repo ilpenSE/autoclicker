@@ -120,17 +120,8 @@
   <data name="interval_groupbox" xml:space="preserve">
     <value>Intervall</value>
   </data>
-  <data name="interval_hours" xml:space="preserve">
-    <value>stunden</value>
-  </data>
   <data name="interval_millis" xml:space="preserve">
     <value>millisekunden</value>
-  </data>
-  <data name="interval_mins" xml:space="preserve">
-    <value>minuten</value>
-  </data>
-  <data name="interval_secs" xml:space="preserve">
-    <value>sekunden</value>
   </data>
   <data name="opt_clicktype" xml:space="preserve">
     <value>Klicktyp</value>
@@ -189,23 +180,8 @@
   <data name="stop" xml:space="preserve">
     <value>STOPPEN</value>
   </data>
-  <data name="sethtk" xml:space="preserve">
-    <value>HOTKEY FESTLEGEN</value>
-  </data>
-  <data name="waiting" xml:space="preserve">
-    <value>WARTEN...</value>
-  </data>
-  <data name="cancel_setting_htk" xml:space="preserve">
-    <value>Klicken Sie hier, um das Festlegen des Hotkeys zu deaktivieren</value>
-  </data>
-  <data name="title_waiting" xml:space="preserve">
-    <value>Auto-Clicker (WARTET AUF HOTKEY)</value>
-  </data>
   <data name="title" xml:space="preserve">
     <value>Auto-Clicker</value>
-  </data>
-  <data name="done_htkset_txt" xml:space="preserve">
-    <value>Hotkey #HTK wurde erfolgreich gesetzt.</value>
   </data>
   <data name="err_invalid_pos" xml:space="preserve">
     <value>Bitte geben Sie eine gültige Position ein.</value>
@@ -239,9 +215,6 @@
   </data>
   <data name="info_selectmacro" xml:space="preserve">
     <value>Bitte wählen Sie ein Makro aus.</value>
-  </data>
-  <data name="err_assignmodifier_txt" xml:space="preserve">
-    <value>Sie können keine Ctrl-, Shift- und Alt-Tasten zuweisen.</value>
   </data>
   <data name="wrn_cantdeldef" xml:space="preserve">
     <value>Sie können die Standardeinstellungen nicht löschen.</value>
@@ -308,5 +281,41 @@
   </data>
   <data name="nodesc" xml:space="preserve">
     <value>Keine Beschreibung</value>
+  </data>
+  <data name="htk" xml:space="preserve">
+    <value>Festlegen</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>SPEICHERN</value>
+  </data>
+  <data name="discard" xml:space="preserve">
+    <value>VERWERFEN</value>
+  </data>
+  <data name="createdmacro" xml:space="preserve">
+    <value>Erstelltes Makro</value>
+  </data>
+  <data name="defaultmacro" xml:space="preserve">
+    <value>Standart</value>
+  </data>
+  <data name="interval_info" xml:space="preserve">
+    <value>1 Sekunde = 1000 Millisekunden</value>
+  </data>
+  <data name="opt_cmod" xml:space="preserve">
+    <value>Klickmodus</value>
+  </data>
+  <data name="opt_cm_click" xml:space="preserve">
+    <value>Klick</value>
+  </data>
+  <data name="opt_cm_hold" xml:space="preserve">
+    <value>Halten</value>
+  </data>
+  <data name="holddur_groupbox" xml:space="preserve">
+    <value>Haltezeit</value>
+  </data>
+  <data name="err_existmacroname" xml:space="preserve">
+    <value>Ein Makro mit diesem Namen existiert bereits!</value>
+  </data>
+  <data name="err_incompatibleversion" xml:space="preserve">
+    <value>Inkompatible Version: #VER</value>
   </data>
 </root>

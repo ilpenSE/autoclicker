@@ -24,159 +24,48 @@ namespace AutoClicker
         }
 
         #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private System.Windows.Forms.TextBox txtName;
-        private System.Windows.Forms.TextBox txtDescription;
-        private System.Windows.Forms.ComboBox cmbMouseButton;
-        private System.Windows.Forms.ComboBox cmbClickType;
-        private System.Windows.Forms.NumericUpDown posX;
-        private System.Windows.Forms.NumericUpDown posY;
-        private System.Windows.Forms.CheckBox chkUseCurrentPos;
-        private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Label lblName;
         private System.Windows.Forms.Label lblDesc;
-        private System.Windows.Forms.Label lblMouse;
-        private System.Windows.Forms.Label lblClick;
         private System.Windows.Forms.Label lblX;
         private System.Windows.Forms.Label lblY;
 
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MacroCreateForm));
-            this.txtName = new System.Windows.Forms.TextBox();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.cmbMouseButton = new System.Windows.Forms.ComboBox();
-            this.cmbClickType = new System.Windows.Forms.ComboBox();
-            this.posX = new System.Windows.Forms.NumericUpDown();
-            this.posY = new System.Windows.Forms.NumericUpDown();
-            this.chkUseCurrentPos = new System.Windows.Forms.CheckBox();
-            this.btnSave = new System.Windows.Forms.Button();
             this.lblName = new System.Windows.Forms.Label();
             this.lblDesc = new System.Windows.Forms.Label();
-            this.lblMouse = new System.Windows.Forms.Label();
-            this.lblClick = new System.Windows.Forms.Label();
             this.lblX = new System.Windows.Forms.Label();
             this.lblY = new System.Windows.Forms.Label();
-            this.repeatTimes = new System.Windows.Forms.NumericUpDown();
             this.repeattimeslbl = new System.Windows.Forms.Label();
-            this.repeatForeverBtn = new System.Windows.Forms.CheckBox();
             this.intervallbl = new System.Windows.Forms.Label();
+            this.irvInfo = new System.Windows.Forms.Label();
             this.millislbl = new System.Windows.Forms.Label();
-            this.irvMillis = new System.Windows.Forms.NumericUpDown();
-            this.seclbl = new System.Windows.Forms.Label();
-            this.irvSecs = new System.Windows.Forms.NumericUpDown();
-            this.minlbl = new System.Windows.Forms.Label();
-            this.hrslbl = new System.Windows.Forms.Label();
-            this.irvMins = new System.Windows.Forms.NumericUpDown();
-            this.irvHrs = new System.Windows.Forms.NumericUpDown();
-            ((System.ComponentModel.ISupportInitialize)(this.posX)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.posY)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.repeatTimes)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvMillis)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvSecs)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvMins)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvHrs)).BeginInit();
+            this.irvMillis = new Krypton.Toolkit.KryptonNumericUpDown();
+            this.cmodBtn = new Krypton.Toolkit.KryptonComboBox();
+            this.lblMod = new System.Windows.Forms.Label();
+            this.cmbMouseButton = new Krypton.Toolkit.KryptonComboBox();
+            this.cmbClickType = new Krypton.Toolkit.KryptonComboBox();
+            this.lblClick = new System.Windows.Forms.Label();
+            this.lblMouse = new System.Windows.Forms.Label();
+            this.repeatTimes = new Krypton.Toolkit.KryptonNumericUpDown();
+            this.posX = new Krypton.Toolkit.KryptonNumericUpDown();
+            this.posY = new Krypton.Toolkit.KryptonNumericUpDown();
+            this.repeatForeverBtn = new Krypton.Toolkit.KryptonCheckBox();
+            this.hd_millislbl = new System.Windows.Forms.Label();
+            this.hdMillis = new Krypton.Toolkit.KryptonNumericUpDown();
+            this.holddurlbl = new System.Windows.Forms.Label();
+            this.chkUseCurrentPos = new Krypton.Toolkit.KryptonCheckBox();
+            this.btnSave = new Krypton.Toolkit.KryptonButton();
+            this.txtName = new Krypton.Toolkit.KryptonTextBox();
+            this.txtDescription = new Krypton.Toolkit.KryptonTextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.cmodBtn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cmbMouseButton)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cmbClickType)).BeginInit();
             this.SuspendLayout();
-            // 
-            // txtName
-            // 
-            this.txtName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.txtName.ForeColor = System.Drawing.Color.White;
-            this.txtName.Location = new System.Drawing.Point(130, 15);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(200, 20);
-            this.txtName.TabIndex = 0;
-            // 
-            // txtDescription
-            // 
-            this.txtDescription.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.txtDescription.ForeColor = System.Drawing.Color.White;
-            this.txtDescription.Location = new System.Drawing.Point(130, 45);
-            this.txtDescription.Name = "txtDescription";
-            this.txtDescription.Size = new System.Drawing.Size(200, 20);
-            this.txtDescription.TabIndex = 2;
-            // 
-            // cmbMouseButton
-            // 
-            this.cmbMouseButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.cmbMouseButton.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.cmbMouseButton.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbMouseButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
-            this.cmbMouseButton.ForeColor = System.Drawing.Color.White;
-            this.cmbMouseButton.Location = new System.Drawing.Point(130, 75);
-            this.cmbMouseButton.Name = "cmbMouseButton";
-            this.cmbMouseButton.Size = new System.Drawing.Size(200, 22);
-            this.cmbMouseButton.TabIndex = 4;
-            // 
-            // cmbClickType
-            // 
-            this.cmbClickType.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.cmbClickType.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.cmbClickType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbClickType.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
-            this.cmbClickType.ForeColor = System.Drawing.Color.White;
-            this.cmbClickType.Location = new System.Drawing.Point(130, 105);
-            this.cmbClickType.Name = "cmbClickType";
-            this.cmbClickType.Size = new System.Drawing.Size(200, 22);
-            this.cmbClickType.TabIndex = 6;
-            // 
-            // posX
-            // 
-            this.posX.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.posX.ForeColor = System.Drawing.Color.White;
-            this.posX.Location = new System.Drawing.Point(130, 279);
-            this.posX.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.posX.Name = "posX";
-            this.posX.Size = new System.Drawing.Size(120, 20);
-            this.posX.TabIndex = 9;
-            // 
-            // posY
-            // 
-            this.posY.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.posY.ForeColor = System.Drawing.Color.White;
-            this.posY.Location = new System.Drawing.Point(130, 309);
-            this.posY.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.posY.Name = "posY";
-            this.posY.Size = new System.Drawing.Size(120, 20);
-            this.posY.TabIndex = 11;
-            // 
-            // chkUseCurrentPos
-            // 
-            this.chkUseCurrentPos.Location = new System.Drawing.Point(130, 335);
-            this.chkUseCurrentPos.Name = "chkUseCurrentPos";
-            this.chkUseCurrentPos.Size = new System.Drawing.Size(200, 24);
-            this.chkUseCurrentPos.TabIndex = 8;
-            this.chkUseCurrentPos.Text = "Use Current Cursor Position";
-            // 
-            // btnSave
-            // 
-            this.btnSave.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnSave.FlatAppearance.BorderColor = System.Drawing.Color.DimGray;
-            this.btnSave.FlatAppearance.BorderSize = 2;
-            this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.btnSave.Location = new System.Drawing.Point(259, 365);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(99, 48);
-            this.btnSave.TabIndex = 13;
-            this.btnSave.Text = "Create";
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // lblName
             // 
-            this.lblName.Location = new System.Drawing.Point(12, 18);
+            this.lblName.Location = new System.Drawing.Point(12, 16);
             this.lblName.Name = "lblName";
             this.lblName.Size = new System.Drawing.Size(100, 23);
             this.lblName.TabIndex = 1;
@@ -190,25 +79,9 @@ namespace AutoClicker
             this.lblDesc.TabIndex = 3;
             this.lblDesc.Text = "Description:";
             // 
-            // lblMouse
-            // 
-            this.lblMouse.Location = new System.Drawing.Point(12, 78);
-            this.lblMouse.Name = "lblMouse";
-            this.lblMouse.Size = new System.Drawing.Size(100, 23);
-            this.lblMouse.TabIndex = 5;
-            this.lblMouse.Text = "Mouse Button:";
-            // 
-            // lblClick
-            // 
-            this.lblClick.Location = new System.Drawing.Point(12, 108);
-            this.lblClick.Name = "lblClick";
-            this.lblClick.Size = new System.Drawing.Size(100, 23);
-            this.lblClick.TabIndex = 7;
-            this.lblClick.Text = "Click Type:";
-            // 
             // lblX
             // 
-            this.lblX.Location = new System.Drawing.Point(12, 282);
+            this.lblX.Location = new System.Drawing.Point(12, 376);
             this.lblX.Name = "lblX";
             this.lblX.Size = new System.Drawing.Size(100, 23);
             this.lblX.TabIndex = 10;
@@ -216,17 +89,296 @@ namespace AutoClicker
             // 
             // lblY
             // 
-            this.lblY.Location = new System.Drawing.Point(12, 312);
+            this.lblY.Location = new System.Drawing.Point(12, 412);
             this.lblY.Name = "lblY";
             this.lblY.Size = new System.Drawing.Size(100, 23);
             this.lblY.TabIndex = 12;
             this.lblY.Text = "Position Y:";
             // 
+            // repeattimeslbl
+            // 
+            this.repeattimeslbl.Location = new System.Drawing.Point(12, 310);
+            this.repeattimeslbl.Name = "repeattimeslbl";
+            this.repeattimeslbl.Size = new System.Drawing.Size(100, 23);
+            this.repeattimeslbl.TabIndex = 15;
+            this.repeattimeslbl.Text = "Repeat:";
+            // 
+            // intervallbl
+            // 
+            this.intervallbl.Location = new System.Drawing.Point(12, 195);
+            this.intervallbl.Name = "intervallbl";
+            this.intervallbl.Size = new System.Drawing.Size(100, 23);
+            this.intervallbl.TabIndex = 17;
+            this.intervallbl.Text = "Interval:";
+            // 
+            // irvInfo
+            // 
+            this.irvInfo.AutoSize = true;
+            this.irvInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.irvInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(140)))), ((int)(((byte)(140)))), ((int)(((byte)(140)))));
+            this.irvInfo.Location = new System.Drawing.Point(151, 276);
+            this.irvInfo.Name = "irvInfo";
+            this.irvInfo.Size = new System.Drawing.Size(176, 15);
+            this.irvInfo.TabIndex = 22;
+            this.irvInfo.Text = "1 seconds = 1000 milliseconds";
+            // 
+            // millislbl
+            // 
+            this.millislbl.AutoSize = true;
+            this.millislbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.millislbl.Location = new System.Drawing.Point(275, 199);
+            this.millislbl.Name = "millislbl";
+            this.millislbl.Size = new System.Drawing.Size(76, 15);
+            this.millislbl.TabIndex = 21;
+            this.millislbl.Text = "milliseconds";
+            // 
+            // irvMillis
+            // 
+            this.irvMillis.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.irvMillis.Location = new System.Drawing.Point(151, 191);
+            this.irvMillis.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.irvMillis.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.irvMillis.Name = "irvMillis";
+            this.irvMillis.Size = new System.Drawing.Size(120, 28);
+            this.irvMillis.StateActive.Border.Width = 2;
+            this.irvMillis.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.irvMillis.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.irvMillis.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.irvMillis.StateCommon.Border.Rounding = 5F;
+            this.irvMillis.StateCommon.Border.Width = 1;
+            this.irvMillis.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.irvMillis.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.irvMillis.StateNormal.Content.Color1 = System.Drawing.Color.White;
+            this.irvMillis.TabIndex = 20;
+            this.irvMillis.ThousandsSeparator = true;
+            this.irvMillis.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            // 
+            // cmodBtn
+            // 
+            this.cmodBtn.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmodBtn.DropDownWidth = 140;
+            this.cmodBtn.Items.AddRange(new object[] {
+            "Press",
+            "Hold"});
+            this.cmodBtn.Location = new System.Drawing.Point(149, 152);
+            this.cmodBtn.Name = "cmodBtn";
+            this.cmodBtn.Size = new System.Drawing.Size(202, 28);
+            this.cmodBtn.StateActive.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(65)))));
+            this.cmodBtn.StateActive.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(115)))));
+            this.cmodBtn.StateActive.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(115)))));
+            this.cmodBtn.StateActive.ComboBox.Border.Rounding = 5F;
+            this.cmodBtn.StateActive.ComboBox.Border.Width = 2;
+            this.cmodBtn.StateCommon.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.cmodBtn.StateCommon.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(70)))), ((int)(((byte)(70)))));
+            this.cmodBtn.StateCommon.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(70)))), ((int)(((byte)(70)))));
+            this.cmodBtn.StateCommon.ComboBox.Border.Rounding = 5F;
+            this.cmodBtn.StateCommon.ComboBox.Border.Width = 2;
+            this.cmodBtn.StateCommon.ComboBox.Content.Color1 = System.Drawing.Color.White;
+            this.cmodBtn.StateCommon.DropBack.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.cmodBtn.StateCommon.DropBack.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.cmodBtn.StateDisabled.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmodBtn.StateDisabled.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmodBtn.StateDisabled.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmodBtn.StateDisabled.ComboBox.Border.Rounding = 5F;
+            this.cmodBtn.StateDisabled.ComboBox.Border.Width = 2;
+            this.cmodBtn.StateDisabled.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmodBtn.StateDisabled.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmodBtn.StateDisabled.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmodBtn.StateDisabled.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmodBtn.StateDisabled.Item.Border.Rounding = 5F;
+            this.cmodBtn.StateDisabled.Item.Border.Width = 2;
+            this.cmodBtn.StateNormal.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmodBtn.StateNormal.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmodBtn.StateNormal.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmodBtn.StateNormal.ComboBox.Border.Rounding = 5F;
+            this.cmodBtn.StateNormal.ComboBox.Border.Width = 2;
+            this.cmodBtn.StateNormal.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmodBtn.StateNormal.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmodBtn.StateNormal.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmodBtn.StateNormal.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmodBtn.StateNormal.Item.Border.Rounding = 5F;
+            this.cmodBtn.StateNormal.Item.Border.Width = 2;
+            this.cmodBtn.StateTracking.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(60)))));
+            this.cmodBtn.StateTracking.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(60)))));
+            this.cmodBtn.StateTracking.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(105)))));
+            this.cmodBtn.StateTracking.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(105)))));
+            this.cmodBtn.StateTracking.Item.Border.Rounding = 5F;
+            this.cmodBtn.StateTracking.Item.Border.Width = 2;
+            this.cmodBtn.StateTracking.Item.Content.LongText.Color1 = System.Drawing.Color.White;
+            this.cmodBtn.StateTracking.Item.Content.LongText.Color2 = System.Drawing.Color.White;
+            this.cmodBtn.StateTracking.Item.Content.ShortText.Color1 = System.Drawing.Color.White;
+            this.cmodBtn.StateTracking.Item.Content.ShortText.Color2 = System.Drawing.Color.White;
+            this.cmodBtn.TabIndex = 28;
+            // 
+            // lblMod
+            // 
+            this.lblMod.AutoSize = true;
+            this.lblMod.Location = new System.Drawing.Point(13, 156);
+            this.lblMod.Name = "lblMod";
+            this.lblMod.Size = new System.Drawing.Size(54, 13);
+            this.lblMod.TabIndex = 27;
+            this.lblMod.Text = "Click Mod";
+            // 
+            // cmbMouseButton
+            // 
+            this.cmbMouseButton.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbMouseButton.DropDownWidth = 140;
+            this.cmbMouseButton.Items.AddRange(new object[] {
+            "Left",
+            "Right",
+            "Mid"});
+            this.cmbMouseButton.Location = new System.Drawing.Point(148, 78);
+            this.cmbMouseButton.Name = "cmbMouseButton";
+            this.cmbMouseButton.Size = new System.Drawing.Size(203, 28);
+            this.cmbMouseButton.StateActive.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(65)))));
+            this.cmbMouseButton.StateActive.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(115)))));
+            this.cmbMouseButton.StateActive.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(115)))));
+            this.cmbMouseButton.StateActive.ComboBox.Border.Rounding = 5F;
+            this.cmbMouseButton.StateActive.ComboBox.Border.Width = 2;
+            this.cmbMouseButton.StateCommon.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.cmbMouseButton.StateCommon.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(70)))), ((int)(((byte)(70)))));
+            this.cmbMouseButton.StateCommon.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(70)))), ((int)(((byte)(70)))));
+            this.cmbMouseButton.StateCommon.ComboBox.Border.Rounding = 5F;
+            this.cmbMouseButton.StateCommon.ComboBox.Border.Width = 2;
+            this.cmbMouseButton.StateCommon.ComboBox.Content.Color1 = System.Drawing.Color.White;
+            this.cmbMouseButton.StateCommon.DropBack.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.cmbMouseButton.StateCommon.DropBack.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.cmbMouseButton.StateDisabled.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmbMouseButton.StateDisabled.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbMouseButton.StateDisabled.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbMouseButton.StateDisabled.ComboBox.Border.Rounding = 5F;
+            this.cmbMouseButton.StateDisabled.ComboBox.Border.Width = 2;
+            this.cmbMouseButton.StateDisabled.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmbMouseButton.StateDisabled.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmbMouseButton.StateDisabled.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbMouseButton.StateDisabled.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbMouseButton.StateDisabled.Item.Border.Rounding = 5F;
+            this.cmbMouseButton.StateDisabled.Item.Border.Width = 2;
+            this.cmbMouseButton.StateNormal.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmbMouseButton.StateNormal.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbMouseButton.StateNormal.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbMouseButton.StateNormal.ComboBox.Border.Rounding = 5F;
+            this.cmbMouseButton.StateNormal.ComboBox.Border.Width = 2;
+            this.cmbMouseButton.StateNormal.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmbMouseButton.StateNormal.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmbMouseButton.StateNormal.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbMouseButton.StateNormal.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbMouseButton.StateNormal.Item.Border.Rounding = 5F;
+            this.cmbMouseButton.StateNormal.Item.Border.Width = 2;
+            this.cmbMouseButton.StateTracking.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(60)))));
+            this.cmbMouseButton.StateTracking.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(60)))));
+            this.cmbMouseButton.StateTracking.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(105)))));
+            this.cmbMouseButton.StateTracking.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(105)))));
+            this.cmbMouseButton.StateTracking.Item.Border.Rounding = 5F;
+            this.cmbMouseButton.StateTracking.Item.Border.Width = 2;
+            this.cmbMouseButton.StateTracking.Item.Content.LongText.Color1 = System.Drawing.Color.White;
+            this.cmbMouseButton.StateTracking.Item.Content.LongText.Color2 = System.Drawing.Color.White;
+            this.cmbMouseButton.StateTracking.Item.Content.ShortText.Color1 = System.Drawing.Color.White;
+            this.cmbMouseButton.StateTracking.Item.Content.ShortText.Color2 = System.Drawing.Color.White;
+            this.cmbMouseButton.TabIndex = 26;
+            // 
+            // cmbClickType
+            // 
+            this.cmbClickType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbClickType.DropDownWidth = 140;
+            this.cmbClickType.Items.AddRange(new object[] {
+            "Single",
+            "Double",
+            "Triple",
+            "Quadruple",
+            "Hold"});
+            this.cmbClickType.Location = new System.Drawing.Point(148, 115);
+            this.cmbClickType.Name = "cmbClickType";
+            this.cmbClickType.Size = new System.Drawing.Size(203, 28);
+            this.cmbClickType.StateActive.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(65)))));
+            this.cmbClickType.StateActive.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(115)))));
+            this.cmbClickType.StateActive.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(115)))));
+            this.cmbClickType.StateActive.ComboBox.Border.Rounding = 5F;
+            this.cmbClickType.StateActive.ComboBox.Border.Width = 2;
+            this.cmbClickType.StateCommon.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.cmbClickType.StateCommon.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(70)))), ((int)(((byte)(70)))));
+            this.cmbClickType.StateCommon.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(70)))), ((int)(((byte)(70)))));
+            this.cmbClickType.StateCommon.ComboBox.Border.Rounding = 5F;
+            this.cmbClickType.StateCommon.ComboBox.Border.Width = 2;
+            this.cmbClickType.StateCommon.ComboBox.Content.Color1 = System.Drawing.Color.White;
+            this.cmbClickType.StateCommon.DropBack.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.cmbClickType.StateCommon.DropBack.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.cmbClickType.StateDisabled.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmbClickType.StateDisabled.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbClickType.StateDisabled.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbClickType.StateDisabled.ComboBox.Border.Rounding = 5F;
+            this.cmbClickType.StateDisabled.ComboBox.Border.Width = 2;
+            this.cmbClickType.StateDisabled.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmbClickType.StateDisabled.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
+            this.cmbClickType.StateDisabled.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbClickType.StateDisabled.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.cmbClickType.StateDisabled.Item.Border.Rounding = 5F;
+            this.cmbClickType.StateDisabled.Item.Border.Width = 2;
+            this.cmbClickType.StateNormal.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmbClickType.StateNormal.ComboBox.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbClickType.StateNormal.ComboBox.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbClickType.StateNormal.ComboBox.Border.Rounding = 5F;
+            this.cmbClickType.StateNormal.ComboBox.Border.Width = 2;
+            this.cmbClickType.StateNormal.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmbClickType.StateNormal.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            this.cmbClickType.StateNormal.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbClickType.StateNormal.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            this.cmbClickType.StateNormal.Item.Border.Rounding = 5F;
+            this.cmbClickType.StateNormal.Item.Border.Width = 2;
+            this.cmbClickType.StateTracking.Item.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(60)))));
+            this.cmbClickType.StateTracking.Item.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(60)))));
+            this.cmbClickType.StateTracking.Item.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(105)))));
+            this.cmbClickType.StateTracking.Item.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(105)))));
+            this.cmbClickType.StateTracking.Item.Border.Rounding = 5F;
+            this.cmbClickType.StateTracking.Item.Border.Width = 2;
+            this.cmbClickType.StateTracking.Item.Content.LongText.Color1 = System.Drawing.Color.White;
+            this.cmbClickType.StateTracking.Item.Content.LongText.Color2 = System.Drawing.Color.White;
+            this.cmbClickType.StateTracking.Item.Content.ShortText.Color1 = System.Drawing.Color.White;
+            this.cmbClickType.StateTracking.Item.Content.ShortText.Color2 = System.Drawing.Color.White;
+            this.cmbClickType.TabIndex = 25;
+            // 
+            // lblClick
+            // 
+            this.lblClick.AutoSize = true;
+            this.lblClick.Location = new System.Drawing.Point(12, 119);
+            this.lblClick.Name = "lblClick";
+            this.lblClick.Size = new System.Drawing.Size(57, 13);
+            this.lblClick.TabIndex = 24;
+            this.lblClick.Text = "Click Type";
+            // 
+            // lblMouse
+            // 
+            this.lblMouse.AutoSize = true;
+            this.lblMouse.Location = new System.Drawing.Point(12, 83);
+            this.lblMouse.Name = "lblMouse";
+            this.lblMouse.Size = new System.Drawing.Size(73, 13);
+            this.lblMouse.TabIndex = 23;
+            this.lblMouse.Text = "Mouse Button";
+            // 
             // repeatTimes
             // 
-            this.repeatTimes.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.repeatTimes.ForeColor = System.Drawing.Color.White;
-            this.repeatTimes.Location = new System.Drawing.Point(130, 217);
+            this.repeatTimes.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.repeatTimes.Location = new System.Drawing.Point(151, 305);
             this.repeatTimes.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -238,160 +390,259 @@ namespace AutoClicker
             0,
             0});
             this.repeatTimes.Name = "repeatTimes";
-            this.repeatTimes.Size = new System.Drawing.Size(120, 20);
-            this.repeatTimes.TabIndex = 14;
+            this.repeatTimes.Size = new System.Drawing.Size(120, 28);
+            this.repeatTimes.StateActive.Border.Width = 2;
+            this.repeatTimes.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.repeatTimes.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.repeatTimes.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.repeatTimes.StateCommon.Border.Rounding = 5F;
+            this.repeatTimes.StateCommon.Border.Width = 1;
+            this.repeatTimes.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.repeatTimes.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.repeatTimes.StateNormal.Content.Color1 = System.Drawing.Color.White;
+            this.repeatTimes.TabIndex = 29;
+            this.repeatTimes.ThousandsSeparator = true;
             this.repeatTimes.Value = new decimal(new int[] {
             1,
             0,
             0,
             0});
             // 
-            // repeattimeslbl
+            // posX
             // 
-            this.repeattimeslbl.Location = new System.Drawing.Point(12, 220);
-            this.repeattimeslbl.Name = "repeattimeslbl";
-            this.repeattimeslbl.Size = new System.Drawing.Size(100, 23);
-            this.repeattimeslbl.TabIndex = 15;
-            this.repeattimeslbl.Text = "Repeat:";
+            this.posX.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.posX.Location = new System.Drawing.Point(151, 371);
+            this.posX.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.posX.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.posX.Name = "posX";
+            this.posX.Size = new System.Drawing.Size(120, 28);
+            this.posX.StateActive.Border.Width = 2;
+            this.posX.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.posX.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.posX.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.posX.StateCommon.Border.Rounding = 5F;
+            this.posX.StateCommon.Border.Width = 1;
+            this.posX.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.posX.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.posX.StateNormal.Content.Color1 = System.Drawing.Color.White;
+            this.posX.TabIndex = 30;
+            this.posX.ThousandsSeparator = true;
+            this.posX.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            // 
+            // posY
+            // 
+            this.posY.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.posY.Location = new System.Drawing.Point(151, 408);
+            this.posY.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.posY.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.posY.Name = "posY";
+            this.posY.Size = new System.Drawing.Size(120, 28);
+            this.posY.StateActive.Border.Width = 2;
+            this.posY.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.posY.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.posY.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.posY.StateCommon.Border.Rounding = 5F;
+            this.posY.StateCommon.Border.Width = 1;
+            this.posY.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.posY.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.posY.StateNormal.Content.Color1 = System.Drawing.Color.White;
+            this.posY.TabIndex = 31;
+            this.posY.ThousandsSeparator = true;
+            this.posY.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
             // 
             // repeatForeverBtn
             // 
-            this.repeatForeverBtn.Location = new System.Drawing.Point(130, 243);
+            this.repeatForeverBtn.Checked = true;
+            this.repeatForeverBtn.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.repeatForeverBtn.Location = new System.Drawing.Point(151, 341);
             this.repeatForeverBtn.Name = "repeatForeverBtn";
-            this.repeatForeverBtn.Size = new System.Drawing.Size(200, 24);
-            this.repeatForeverBtn.TabIndex = 16;
-            this.repeatForeverBtn.Text = "Repeat Until Stopped";
+            this.repeatForeverBtn.Size = new System.Drawing.Size(140, 20);
+            this.repeatForeverBtn.StateNormal.ShortText.Color1 = System.Drawing.Color.White;
+            this.repeatForeverBtn.TabIndex = 32;
+            this.repeatForeverBtn.Values.Text = "Repeat Until Stopped";
             // 
-            // intervallbl
+            // hd_millislbl
             // 
-            this.intervallbl.Location = new System.Drawing.Point(12, 146);
-            this.intervallbl.Name = "intervallbl";
-            this.intervallbl.Size = new System.Drawing.Size(100, 23);
-            this.intervallbl.TabIndex = 17;
-            this.intervallbl.Text = "Interval:";
+            this.hd_millislbl.AutoSize = true;
+            this.hd_millislbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.hd_millislbl.Location = new System.Drawing.Point(277, 245);
+            this.hd_millislbl.Name = "hd_millislbl";
+            this.hd_millislbl.Size = new System.Drawing.Size(24, 15);
+            this.hd_millislbl.TabIndex = 34;
+            this.hd_millislbl.Text = "ms";
             // 
-            // millislbl
+            // hdMillis
             // 
-            this.millislbl.AutoSize = true;
-            this.millislbl.Location = new System.Drawing.Point(287, 183);
-            this.millislbl.Name = "millislbl";
-            this.millislbl.Size = new System.Drawing.Size(63, 13);
-            this.millislbl.TabIndex = 26;
-            this.millislbl.Text = "milliseconds";
-            // 
-            // irvMillis
-            // 
-            this.irvMillis.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.irvMillis.ForeColor = System.Drawing.Color.White;
-            this.irvMillis.Location = new System.Drawing.Point(233, 180);
-            this.irvMillis.Maximum = new decimal(new int[] {
-            1000,
+            this.hdMillis.Increment = new decimal(new int[] {
+            1,
             0,
             0,
             0});
-            this.irvMillis.Name = "irvMillis";
-            this.irvMillis.Size = new System.Drawing.Size(51, 20);
-            this.irvMillis.TabIndex = 25;
-            // 
-            // seclbl
-            // 
-            this.seclbl.AutoSize = true;
-            this.seclbl.Location = new System.Drawing.Point(174, 183);
-            this.seclbl.Name = "seclbl";
-            this.seclbl.Size = new System.Drawing.Size(47, 13);
-            this.seclbl.TabIndex = 24;
-            this.seclbl.Text = "seconds";
-            // 
-            // irvSecs
-            // 
-            this.irvSecs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.irvSecs.ForeColor = System.Drawing.Color.White;
-            this.irvSecs.Location = new System.Drawing.Point(120, 180);
-            this.irvSecs.Maximum = new decimal(new int[] {
-            1000,
+            this.hdMillis.Location = new System.Drawing.Point(151, 238);
+            this.hdMillis.Maximum = new decimal(new int[] {
+            100000,
             0,
             0,
             0});
-            this.irvSecs.Name = "irvSecs";
-            this.irvSecs.Size = new System.Drawing.Size(51, 20);
-            this.irvSecs.TabIndex = 23;
-            // 
-            // minlbl
-            // 
-            this.minlbl.AutoSize = true;
-            this.minlbl.Location = new System.Drawing.Point(287, 146);
-            this.minlbl.Name = "minlbl";
-            this.minlbl.Size = new System.Drawing.Size(43, 13);
-            this.minlbl.TabIndex = 22;
-            this.minlbl.Text = "minutes";
-            // 
-            // hrslbl
-            // 
-            this.hrslbl.AutoSize = true;
-            this.hrslbl.Location = new System.Drawing.Point(174, 146);
-            this.hrslbl.Name = "hrslbl";
-            this.hrslbl.Size = new System.Drawing.Size(33, 13);
-            this.hrslbl.TabIndex = 21;
-            this.hrslbl.Text = "hours";
-            // 
-            // irvMins
-            // 
-            this.irvMins.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.irvMins.ForeColor = System.Drawing.Color.White;
-            this.irvMins.Location = new System.Drawing.Point(231, 143);
-            this.irvMins.Maximum = new decimal(new int[] {
-            1000,
+            this.hdMillis.Minimum = new decimal(new int[] {
+            0,
             0,
             0,
             0});
-            this.irvMins.Name = "irvMins";
-            this.irvMins.Size = new System.Drawing.Size(51, 20);
-            this.irvMins.TabIndex = 20;
-            // 
-            // irvHrs
-            // 
-            this.irvHrs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-            this.irvHrs.ForeColor = System.Drawing.Color.White;
-            this.irvHrs.Location = new System.Drawing.Point(120, 143);
-            this.irvHrs.Maximum = new decimal(new int[] {
-            1000,
+            this.hdMillis.Name = "hdMillis";
+            this.hdMillis.Size = new System.Drawing.Size(120, 28);
+            this.hdMillis.StateActive.Border.Width = 2;
+            this.hdMillis.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.hdMillis.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.hdMillis.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
+            this.hdMillis.StateCommon.Border.Rounding = 5F;
+            this.hdMillis.StateCommon.Border.Width = 1;
+            this.hdMillis.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.hdMillis.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.hdMillis.StateNormal.Content.Color1 = System.Drawing.Color.White;
+            this.hdMillis.TabIndex = 33;
+            this.hdMillis.ThousandsSeparator = true;
+            this.hdMillis.Value = new decimal(new int[] {
+            0,
             0,
             0,
             0});
-            this.irvHrs.Name = "irvHrs";
-            this.irvHrs.Size = new System.Drawing.Size(51, 20);
-            this.irvHrs.TabIndex = 19;
+            // 
+            // holddurlbl
+            // 
+            this.holddurlbl.Location = new System.Drawing.Point(13, 241);
+            this.holddurlbl.Name = "holddurlbl";
+            this.holddurlbl.Size = new System.Drawing.Size(100, 23);
+            this.holddurlbl.TabIndex = 35;
+            this.holddurlbl.Text = "Hold Duration:";
+            // 
+            // chkUseCurrentPos
+            // 
+            this.chkUseCurrentPos.Checked = true;
+            this.chkUseCurrentPos.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkUseCurrentPos.Location = new System.Drawing.Point(151, 446);
+            this.chkUseCurrentPos.Name = "chkUseCurrentPos";
+            this.chkUseCurrentPos.Size = new System.Drawing.Size(135, 20);
+            this.chkUseCurrentPos.StateNormal.ShortText.Color1 = System.Drawing.Color.White;
+            this.chkUseCurrentPos.TabIndex = 36;
+            this.chkUseCurrentPos.Values.Text = "Use Current Position";
+            // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(239, 480);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(123, 46);
+            this.btnSave.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(230)))), ((int)(((byte)(150)))));
+            this.btnSave.StateNormal.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(200)))), ((int)(((byte)(90)))));
+            this.btnSave.StateNormal.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(170)))), ((int)(((byte)(80)))));
+            this.btnSave.StateNormal.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(170)))), ((int)(((byte)(80)))));
+            this.btnSave.StateNormal.Border.Rounding = 5F;
+            this.btnSave.StateNormal.Border.Width = 2;
+            this.btnSave.StatePressed.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(190)))), ((int)(((byte)(110)))));
+            this.btnSave.StatePressed.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(160)))), ((int)(((byte)(70)))));
+            this.btnSave.StatePressed.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(140)))), ((int)(((byte)(60)))));
+            this.btnSave.StatePressed.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(140)))), ((int)(((byte)(60)))));
+            this.btnSave.StatePressed.Border.Rounding = 5F;
+            this.btnSave.StatePressed.Border.Width = 2;
+            this.btnSave.StateTracking.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(250)))), ((int)(((byte)(180)))));
+            this.btnSave.StateTracking.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(120)))), ((int)(((byte)(220)))), ((int)(((byte)(120)))));
+            this.btnSave.StateTracking.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(200)))), ((int)(((byte)(100)))));
+            this.btnSave.StateTracking.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(200)))), ((int)(((byte)(100)))));
+            this.btnSave.StateTracking.Border.Rounding = 5F;
+            this.btnSave.StateTracking.Border.Width = 2;
+            this.btnSave.TabIndex = 37;
+            this.btnSave.Values.DropDownArrowColor = System.Drawing.Color.Empty;
+            this.btnSave.Values.Text = "Create";
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
+            // txtName
+            // 
+            this.txtName.Location = new System.Drawing.Point(148, 12);
+            this.txtName.Name = "txtName";
+            this.txtName.Size = new System.Drawing.Size(203, 27);
+            this.txtName.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.txtName.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
+            this.txtName.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
+            this.txtName.StateCommon.Border.Rounding = 3F;
+            this.txtName.StateCommon.Border.Width = 2;
+            this.txtName.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.txtName.TabIndex = 38;
+            // 
+            // txtDescription
+            // 
+            this.txtDescription.Location = new System.Drawing.Point(148, 45);
+            this.txtDescription.Name = "txtDescription";
+            this.txtDescription.Size = new System.Drawing.Size(203, 27);
+            this.txtDescription.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.txtDescription.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
+            this.txtDescription.StateCommon.Border.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
+            this.txtDescription.StateCommon.Border.Rounding = 3F;
+            this.txtDescription.StateCommon.Border.Width = 2;
+            this.txtDescription.StateCommon.Content.Color1 = System.Drawing.Color.White;
+            this.txtDescription.TabIndex = 39;
             // 
             // MacroCreateForm
             // 
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
-            this.ClientSize = new System.Drawing.Size(370, 425);
-            this.Controls.Add(this.millislbl);
-            this.Controls.Add(this.irvMillis);
-            this.Controls.Add(this.seclbl);
-            this.Controls.Add(this.irvSecs);
-            this.Controls.Add(this.minlbl);
-            this.Controls.Add(this.hrslbl);
-            this.Controls.Add(this.irvMins);
-            this.Controls.Add(this.irvHrs);
-            this.Controls.Add(this.intervallbl);
-            this.Controls.Add(this.repeatForeverBtn);
-            this.Controls.Add(this.repeatTimes);
-            this.Controls.Add(this.repeattimeslbl);
-            this.Controls.Add(this.txtName);
-            this.Controls.Add(this.lblName);
+            this.ClientSize = new System.Drawing.Size(370, 535);
             this.Controls.Add(this.txtDescription);
-            this.Controls.Add(this.lblDesc);
+            this.Controls.Add(this.txtName);
+            this.Controls.Add(this.btnSave);
+            this.Controls.Add(this.chkUseCurrentPos);
+            this.Controls.Add(this.holddurlbl);
+            this.Controls.Add(this.hd_millislbl);
+            this.Controls.Add(this.hdMillis);
+            this.Controls.Add(this.repeatForeverBtn);
+            this.Controls.Add(this.posY);
+            this.Controls.Add(this.posX);
+            this.Controls.Add(this.repeatTimes);
+            this.Controls.Add(this.cmodBtn);
+            this.Controls.Add(this.lblMod);
             this.Controls.Add(this.cmbMouseButton);
-            this.Controls.Add(this.lblMouse);
             this.Controls.Add(this.cmbClickType);
             this.Controls.Add(this.lblClick);
-            this.Controls.Add(this.chkUseCurrentPos);
-            this.Controls.Add(this.posX);
+            this.Controls.Add(this.lblMouse);
+            this.Controls.Add(this.irvInfo);
+            this.Controls.Add(this.millislbl);
+            this.Controls.Add(this.irvMillis);
+            this.Controls.Add(this.intervallbl);
+            this.Controls.Add(this.repeattimeslbl);
+            this.Controls.Add(this.lblName);
+            this.Controls.Add(this.lblDesc);
             this.Controls.Add(this.lblX);
-            this.Controls.Add(this.posY);
             this.Controls.Add(this.lblY);
-            this.Controls.Add(this.btnSave);
             this.ForeColor = System.Drawing.Color.White;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -401,13 +652,9 @@ namespace AutoClicker
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Create New Macro";
             this.Load += new System.EventHandler(this.MacroCreateForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.posX)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.posY)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.repeatTimes)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvMillis)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvSecs)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvMins)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.irvHrs)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cmodBtn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cmbMouseButton)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.cmbClickType)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -415,18 +662,27 @@ namespace AutoClicker
 
 
         #endregion
-
-        private NumericUpDown repeatTimes;
         private Label repeattimeslbl;
-        private CheckBox repeatForeverBtn;
         private Label intervallbl;
+        private Label irvInfo;
         private Label millislbl;
-        private NumericUpDown irvMillis;
-        private Label seclbl;
-        private NumericUpDown irvSecs;
-        private Label minlbl;
-        private Label hrslbl;
-        private NumericUpDown irvMins;
-        private NumericUpDown irvHrs;
+        private Krypton.Toolkit.KryptonNumericUpDown irvMillis;
+        private Krypton.Toolkit.KryptonComboBox cmodBtn;
+        private Label lblMod;
+        private Krypton.Toolkit.KryptonComboBox cmbMouseButton;
+        private Krypton.Toolkit.KryptonComboBox cmbClickType;
+        private Label lblClick;
+        private Label lblMouse;
+        private Krypton.Toolkit.KryptonNumericUpDown repeatTimes;
+        private Krypton.Toolkit.KryptonNumericUpDown posX;
+        private Krypton.Toolkit.KryptonNumericUpDown posY;
+        private Krypton.Toolkit.KryptonCheckBox repeatForeverBtn;
+        private Label hd_millislbl;
+        private Krypton.Toolkit.KryptonNumericUpDown hdMillis;
+        private Label holddurlbl;
+        private Krypton.Toolkit.KryptonCheckBox chkUseCurrentPos;
+        private Krypton.Toolkit.KryptonButton btnSave;
+        private Krypton.Toolkit.KryptonTextBox txtName;
+        private Krypton.Toolkit.KryptonTextBox txtDescription;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoClicker;
+using AutoClicker.Properties;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -10,6 +11,7 @@ public class SettingsModel
     public int LanguageIndex { get; set; } = (int)SettingsManager.DefaultLanguage;
     public bool FirstRun { get; set; } = true;
     public string ActiveMacro { get; set; } = SettingsManager.DefaultMacroName;
+    public string Version { get; set; } = "v1.3";
 }
 
 public static class SettingsManager
@@ -26,7 +28,12 @@ public static class SettingsManager
         string json = File.ReadAllText(Program.settingsPath);
         try
         {
-            return JsonSerializer.Deserialize<SettingsModel>(json) ?? new SettingsModel();
+            SettingsModel model = JsonSerializer.Deserialize<SettingsModel>(json) ?? new SettingsModel();
+            if (model.Version != AutoClicker.MainMenu.VERSION)
+            {
+                throw new Exception(Resources.err_incompatibleversion.Replace("#VER", model.Version));
+            }
+            return model;
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
 ﻿using AutoClicker.Properties;
+using Krypton.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.VisualBasic;
@@ -6,10 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Controls;
 using System.Windows.Forms;
 
 namespace AutoClicker
@@ -22,19 +27,22 @@ namespace AutoClicker
         private Dictionary<string, MacroModel> _Macros;
         private string _activeMacroName = "DEFAULT";
         private bool isModified = false;
+        private int supportedLanguageCount = 4;
 
         private bool isClicking = false;
         private bool isWaitingForHotkey = false;
         private System.Windows.Forms.Timer ClickTimer = new System.Windows.Forms.Timer();
         private int repeats = 0;
 
+        public static string VERSION = "v1.3";
+
         public MainMenu()
         {
             InitializeComponent();
 
+            // load settings and macros
             _settings = SettingsManager.Load();
-
-            _Macros = MacroManager.LoadAll();
+            _Macros = MacroManager.Macros;
 
             if (!_Macros.ContainsKey("DEFAULT"))
             {
@@ -53,21 +61,27 @@ namespace AutoClicker
                 SettingsManager.Save(_settings);
             }
 
+            // load macro
             LoadMacroFormettings(_activeMacroName);
             UpdateMacroLabel();
 
-
-            if (Enum.TryParse(_settings.Hotkey, out Keys parsedKey))
+            // load hotkey
+            try
             {
-                _hotkey = new HotkeyService(this.Handle, parsedKey, ToggleClicker);
-            }
-            else
+                var (key, modifiers) = ConvertToKeySafe(_settings.Hotkey);
+                int fsModifiers = HotkeyService.ConvertModifiersToFsModifiers(modifiers);
+
+                _hotkey = new HotkeyService(this.Handle, key, ToggleClicker, fsModifiers);
+
+                Console.WriteLine("Hotkey: " + ConvertToKeySafe(_settings.Hotkey));
+            } catch (ArgumentException)
             {
                 _hotkey = new HotkeyService(this.Handle, SettingsManager.DefaultKey, ToggleClicker);
                 _settings.Hotkey = SettingsManager.DefaultKey.ToString();
                 SettingsManager.Save(_settings);
                 MessageBox.Show(Resources.wrn_invalidhtk, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+
 
             // after set the settings
             Select();
@@ -102,7 +116,7 @@ namespace AutoClicker
             ClickTimer.Tick += TimerTick;
 
             // check the language index is valid
-            if (_settings.LanguageIndex > (langBtn.Items.Count - 1) || _settings.LanguageIndex < 0)
+            if (_settings.LanguageIndex > (supportedLanguageCount - 1) || _settings.LanguageIndex < 0)
             {
                 ChangeLanguage(SettingsManager.DefaultLanguage);
                 _settings.LanguageIndex = (int)SettingsManager.DefaultLanguage;
@@ -110,30 +124,26 @@ namespace AutoClicker
             }
 
             LoadLanguage();
-            langBtn.SelectedIndex = (int)GetLanguage();
             _settings.FirstRun = false;
 
             this.KeyPreview = true;
 
-            // add listeners
-            this.msButtonBtn.SelectedIndexChanged += new System.EventHandler(this.msButtonBtn_SelectedIndexChanged);
-            this.clickTypeBtn.SelectedIndexChanged += new System.EventHandler(this.clickTypeBtn_SelectedIndexChanged);
-
             RegisterChangeListeners();
+
+            SettingsManager.Save(_settings);
         }
 
         private void RegisterChangeListeners()
         {
             this.msButtonBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.clickTypeBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.cmodBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.posY.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.posX.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.hdMillis.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.specPosBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.currentPosBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.irvMillis.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.irvSecs.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.irvMins.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.irvHrs.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.repeatTimes.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.repeatForeverBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
             this.repeatTimesBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
@@ -143,7 +153,7 @@ namespace AutoClicker
         {
             if (!isModified)
             {
-                activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Bold);
+                activemacrolbl.Font = FontLoader.GetBold(12f);
                 activemacrolbl.Text = Resources.activemacro_unsaved.Replace("{_activeMacroName}", _activeMacroName);
                 isModified = true;
             }
@@ -151,8 +161,8 @@ namespace AutoClicker
 
         private void UpdateMacroLabel()
         {
-            activemacrolbl.Text = Resources.activemacro.Replace("{_activeMacroName}", (_activeMacroName == "DEFAULT" ? "Default" : _activeMacroName));
-            activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Regular);
+            activemacrolbl.Text = Resources.activemacro.Replace("{_activeMacroName}", (_activeMacroName == "DEFAULT" ? Resources.defaultmacro : _activeMacroName));
+            activemacrolbl.Font = FontLoader.GetRegular(12f);
         }
 
         private void LoadMacroFormettings(string macroName)
@@ -166,18 +176,12 @@ namespace AutoClicker
                 currentPosBtn.Checked = macro.Position.CurrentPosition;
                 specPosBtn.Checked = !macro.Position.CurrentPosition;
 
-                try { irvMillis.Value = macro.Interval % 1000; }
-                catch (Exception ex) { MessageBox.Show("irvMillis → " + ex.Message); }
+                Console.WriteLine(macro.HoldDuration);
+                try { hdMillis.Value = macro.HoldDuration; }
+                catch (Exception ex) { Console.WriteLine("hdMillis → " + ex.Message); }
 
-                try { irvSecs.Value = (macro.Interval / 1000) % 60; }
-                catch (Exception ex) { MessageBox.Show("irvSecs → " + ex.Message); }
-
-                try { irvMins.Value = (macro.Interval / 60000) % 60; }
-                catch (Exception ex) { MessageBox.Show("irvMins → " + ex.Message); }
-
-                try { irvHrs.Value = (macro.Interval / 3600000); }
-                catch (Exception ex) { MessageBox.Show("irvHrs → " + ex.Message); }
-
+                try { irvMillis.Value = macro.Interval; }
+                catch (Exception ex) { Console.WriteLine("irvMillis → " + ex.Message); }
 
                 repeatForeverBtn.Checked = macro.RepeatTimes.RepeatForever;
                 repeatTimesBtn.Checked = !macro.RepeatTimes.RepeatForever;
@@ -185,11 +189,10 @@ namespace AutoClicker
 
                 msButtonBtn.SelectedIndex = (int)macro.MouseButton;
                 clickTypeBtn.SelectedIndex = (int)macro.ClickType;
+                cmodBtn.SelectedIndex = (int)macro.ClickMode;
 
                 _clicker = new ClickerEngine();
-                _clicker.SetInterval(macro.Interval);
-                _clicker.SetClickCount((int)macro.ClickType + 1);
-                _clicker.SetButton(macro.MouseButton);
+                _clicker.SetMacro(macro);
             } catch (NullReferenceException e)
             {
                 Console.WriteLine(macroName);
@@ -214,31 +217,6 @@ namespace AutoClicker
             // return localizer
             return provider.GetRequiredService<IStringLocalizer<Resources>>();
         }
-
-        private void setHtkBtn_Click(object sender, EventArgs e)
-        {
-            if (isClicking)
-                StopAutoClicker();
-
-            if (isModified)
-                SaveCurrentMacro();
-
-            if (isWaitingForHotkey)
-            {
-                isWaitingForHotkey = false;
-                this.KeyPreview = false;
-                setHtkBtn.Text = Resources.sethtk;
-                this.Text = Resources.title;
-            } else
-            {
-                isWaitingForHotkey = true;
-                this.KeyPreview = true;
-                setHtkBtn.Text = Resources.cancel;
-                this.Text = Resources.title_waiting;
-            }
-        }
-
-
 
         private void startBtn_Click(object sender, EventArgs e)
         {
@@ -272,7 +250,9 @@ namespace AutoClicker
                 {
                     Count = (int)repeatTimes.Value,
                     RepeatForever = repeatForeverBtn.Checked
-                }
+                },
+                ClickMode = (ClickMod)cmodBtn.SelectedIndex,
+                HoldDuration = (int)hdMillis.Value
             };
 
             if (_activeMacroName == "DEFAULT")
@@ -281,7 +261,7 @@ namespace AutoClicker
                 if (string.IsNullOrWhiteSpace(newName)) return;
 
                 macro.Name = newName;
-                macro.Description = "Added macro";
+                macro.Description = Resources.createdmacro;
                 MacroManager.SaveMacro(newName, macro);
                 _activeMacroName = newName;
             }
@@ -291,6 +271,7 @@ namespace AutoClicker
             }
 
             _Macros[macro.Name] = macro;
+            _clicker.SetMacro(macro);
 
             // UI Güncelle
             isModified = false;
@@ -305,35 +286,6 @@ namespace AutoClicker
                 SaveCurrentMacro();
                 e.SuppressKeyPress = true;
             }
-
-            if (isWaitingForHotkey)
-            {
-                uint modifiers = 0;
-                if (e.Control) modifiers |= 0x0002; // MOD_CONTROL
-                if (e.Alt) modifiers |= 0x0001;     // MOD_ALT
-                if (e.Shift) modifiers |= 0x0004;   // MOD_SHIFT
-
-                if (e.KeyCode == Keys.ControlKey || e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Menu)
-                {
-                    MessageBox.Show(Resources.err_assignmodifier_txt, Resources.err_title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                startBtn.Text = Resources.start + " (" + e.KeyCode.ToString() + ")";
-                stopBtn.Text = Resources.stop + " (" + e.KeyCode.ToString() + ")";
-
-                _settings.Hotkey = e.KeyCode.ToString();
-                SettingsManager.Save(_settings);
-
-                setHtkBtn.Text = Resources.sethtk;
-                this.Text = Resources.title;
-                _hotkey.Dispose();
-                _hotkey = new HotkeyService(this.Handle, e.KeyCode, ToggleClicker);
-
-                MessageBox.Show(Resources.done_htkset_txt.Replace("#HTK", e.KeyCode.ToString()), "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                isWaitingForHotkey = false;
-            }
         }
 
         private void LoadLanguage()
@@ -343,10 +295,11 @@ namespace AutoClicker
 
             // interval
             interval.Text = Resources.interval_groupbox;
-            hrslbl.Text = Resources.interval_hours;
-            minlbl.Text = Resources.interval_mins;
-            seclbl.Text = Resources.interval_secs;
-            millislbl.Text = Resources.interval_millis;
+            irv_millislbl.Text = Resources.interval_millis;
+
+            // hold duration
+            holddur.Text = Resources.holddur_groupbox;
+            hd_millislbl.Text = Resources.interval_millis;
 
             // position
             position.Text = Resources.pos_gb;
@@ -363,7 +316,7 @@ namespace AutoClicker
             options.Text = Resources.opt_gb;
             clicktypelbl.Text = Resources.opt_clicktype;
             msbtnlbl.Text = Resources.opt_msbtn;
-            langlbl.Text = Resources.opt_lang;
+            cmodelbl.Text = Resources.opt_cmod;
 
             // click type
             clickTypeBtn.Items[0] = Resources.opt_ct_single;
@@ -376,17 +329,17 @@ namespace AutoClicker
             msButtonBtn.Items[1] = Resources.opt_mb_right;
             msButtonBtn.Items[2] = Resources.opt_mb_mid;
 
-            // buttons
-            Keys htkCode;
-            if (!Enum.TryParse(_settings.Hotkey, out htkCode))
-            {
-                htkCode = SettingsManager.DefaultKey;
-            }
+            // click mod
+            cmodBtn.Items[0] = Resources.opt_cm_click;
+            cmodBtn.Items[1] = Resources.opt_cm_hold;
 
-            setHtkBtn.Text = Resources.sethtk;
-            startBtn.Text = Resources.start + " (" + htkCode.ToString() + ")";
-            stopBtn.Text = Resources.stop + " (" + htkCode.ToString() + ")";
+            // buttons
+            settingsBtn.Text = Resources.settings_title.ToUpper(CultureInfo.GetCultureInfo("en-US"));
+            startBtn.Text = Resources.start + " (" + _settings.Hotkey + ")";
+            stopBtn.Text = Resources.stop + " (" + _settings.Hotkey + ")";
             this.Text = Resources.title;
+            irvInfo.Text = Resources.interval_info;
+            UpdateMacroLabel();
         }
 
         private void ToggleClicker()
@@ -402,12 +355,12 @@ namespace AutoClicker
 
         private int GetIntervalInMillis()
         {
-            int total = 0;
-            total += (int)irvMillis.Value;
-            total += ((int)irvSecs.Value) * 1000;
-            total += ((int)irvMins.Value) * 60 * 1000;
-            total += ((int)irvHrs.Value) * 3600 * 1000;
-            return total;
+            return (int)irvMillis.Value;
+        }
+
+        private int GetHoldDurationInMillis()
+        {
+            return (int)hdMillis.Value;
         }
 
         private void StartAutoClicker()
@@ -415,14 +368,23 @@ namespace AutoClicker
             int interval = GetIntervalInMillis();
             if (interval <= 0) interval = 1;
 
+            int holdDuration = GetHoldDurationInMillis();
+            if (holdDuration <= 0) holdDuration = 1;
+
+            bool isHoldMode = cmodBtn.SelectedIndex == 1;
+
             isClicking = true;
             startBtn.Enabled = false;
             stopBtn.Enabled = true;
 
-            _clicker.SetInterval(interval);
             _clicker.Start();
 
-            ClickTimer.Interval = interval;
+            if (!currentPosBtn.Checked)
+            {
+                SetCursorPos((int)posX.Value, (int)posY.Value);
+            }
+
+            ClickTimer.Interval = isHoldMode ? (interval + holdDuration) : interval;
             ClickTimer.Start();
         }
 
@@ -435,6 +397,7 @@ namespace AutoClicker
             stopBtn.Enabled = false;
             repeats = 0;
         }
+
 
         private void TimerTick(object sender, EventArgs e)
         {
@@ -450,7 +413,6 @@ namespace AutoClicker
             if (!currentPosBtn.Checked)
             {
                 SetCursorPos((int)posX.Value, (int)posY.Value);
-                Thread.Sleep(10);
             }
         }
 
@@ -458,8 +420,6 @@ namespace AutoClicker
         {
             _clicker.Stop();
             _hotkey.Dispose();
-            _settings.Hotkey = _hotkey.GetHotkey().ToString();
-            _settings.LanguageIndex = langBtn.SelectedIndex;
             _settings.ActiveMacro = _activeMacroName;
 
             SettingsManager.Save(_settings);
@@ -467,8 +427,7 @@ namespace AutoClicker
 
         private void ChangeLanguage(Language lang)
         {
-            langBtn.SelectedIndex = (int)lang;
-            CultureInfo.CurrentUICulture = new CultureInfo(GetLanguageCode(lang));
+            _settings.LanguageIndex = (int)lang;
         }
 
         public static string GetLanguageCode(Language lang)
@@ -509,24 +468,6 @@ namespace AutoClicker
         [DllImport("user32.dll")]
         static extern bool SetCursorPos(int X, int Y);
 
-        private void msButtonBtn_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _clicker.SetButton((MouseButton)msButtonBtn.SelectedIndex);
-        }
-
-        private void clickTypeBtn_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _clicker.SetClickCount(clickTypeBtn.SelectedIndex + 1);
-        }
-
-        private void langBtn_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _settings.LanguageIndex = langBtn.SelectedIndex;
-            LoadLanguage();
-            isModified = false;
-            UpdateMacroLabel();
-        }
-
         private void activemacrolbl_Click(object sender, EventArgs e)
         {
             using(var macroForm = new MacroForm(_Macros, _activeMacroName))
@@ -536,7 +477,7 @@ namespace AutoClicker
                     _settings.ActiveMacro = macroForm.SelectedMacroName;
                     _activeMacroName = macroForm.SelectedMacroName;
 
-                    _Macros = MacroManager.LoadAll();
+                    _Macros = MacroManager.Macros;
 
                     SettingsManager.Save(_settings);
                     LoadMacroFormettings(_activeMacroName);
@@ -547,62 +488,155 @@ namespace AutoClicker
 
                 }
             }
-
-
         }
+
+        public static readonly Font ButtonFont = FontLoader.GetBold(10.5f);
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
             LoadMacroFormettings(_activeMacroName);
 
+            // some painting shit
             this.DoubleBuffered = true;
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
 
-            foreach (GroupBox gb in new GroupBox[] {interval, position, repeat, options})
+            // paint group boxes
+            foreach (System.Windows.Forms.GroupBox gb in new System.Windows.Forms.GroupBox[] {interval, position, repeat, options, holddur})
             {
                 gb.Paint += groupBox_Paint;
+                gb.FlatStyle = FlatStyle.Standard;
+                gb.ForeColor = Color.Transparent;
             }
 
+            this.Font = FontLoader.GetRegular(9f);
+
+            startBtn.StateCommon.Content.ShortText.Font = ButtonFont;
+            startBtn.Click += new System.EventHandler(this.startBtn_Click);
+
+            stopBtn.StateCommon.Content.ShortText.Font = ButtonFont;
+            stopBtn.Click += new System.EventHandler(this.stopBtn_Click);
+
+            settingsBtn.StateCommon.Content.ShortText.Font = ButtonFont;
+            settingsBtn.Click += new System.EventHandler(this.settingsBtn_Click);
+
+            SetDisabledStatesOfButtons();
+            RegisterNumericFocusEvents();
+            RegisterDropdownFocusEvents();
+        }
+
+        public static Color focusBorderClr = Color.FromArgb(70, 120, 200);
+        public static Color normalBorderClr = Color.FromArgb(100, 100, 100);
+
+        private void RegisterDropdownFocusEvents()
+        {
+            foreach (KryptonComboBox box in new KryptonComboBox[] {cmodBtn, msButtonBtn, clickTypeBtn})
+            {
+                box.MouseEnter += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = focusBorderClr;
+                };
+
+                box.MouseLeave += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = normalBorderClr;
+                };
+
+                box.GotFocus += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = focusBorderClr;
+                };
+
+                box.LostFocus += (s, ev) =>
+                {
+                    box.StateActive.ComboBox.Border.Color1 = normalBorderClr;
+                };
+            }
+        }
+
+        private void RegisterNumericFocusEvents()
+        {
+            foreach (KryptonNumericUpDown kryptonNumericUpDown in new KryptonNumericUpDown[] { irvMillis, hdMillis, repeatTimes, posX, posY })
+            {
+                kryptonNumericUpDown.MouseEnter += (s, ev) =>
+                {
+                    if (!kryptonNumericUpDown.Focused)
+                        kryptonNumericUpDown.StateCommon.Border.Color1 = focusBorderClr;
+                };
+
+                kryptonNumericUpDown.MouseLeave += (s, ev) =>
+                {
+                    if (!kryptonNumericUpDown.Focused)
+                        kryptonNumericUpDown.StateCommon.Border.Color1 = normalBorderClr;
+                };
+
+                kryptonNumericUpDown.GotFocus += (s, ev) =>
+                {
+                    kryptonNumericUpDown.StateCommon.Border.Color1 = focusBorderClr;
+                };
+
+                kryptonNumericUpDown.LostFocus += (s, ev) =>
+                {
+                    kryptonNumericUpDown.StateCommon.Border.Color1 = normalBorderClr;
+                };
+            }
+        }
+
+        private void SetDisabledStatesOfButtons()
+        {
+            stopBtn.StateDisabled.Back.Color1 = Color.FromArgb(240, 200, 200);
+            stopBtn.StateDisabled.Back.Color2 = Color.FromArgb(220, 180, 180);
+            stopBtn.StateDisabled.Border.Color1 = Color.FromArgb(200, 160, 160);
+            stopBtn.StateDisabled.Border.Color2 = Color.FromArgb(200, 160, 160);
+
+            startBtn.StateDisabled.Back.Color1 = Color.FromArgb(200, 240, 200);
+            startBtn.StateDisabled.Back.Color2 = Color.FromArgb(180, 220, 180);
+            startBtn.StateDisabled.Border.Color1 = Color.FromArgb(150, 190, 150);
+            startBtn.StateDisabled.Border.Color2 = Color.FromArgb(150, 190, 150);
+
+            stopBtn.StateDisabled.Border.Rounding = 5;
+            stopBtn.StateDisabled.Border.Width = 2;
+
+            startBtn.StateDisabled.Border.Rounding = 5;
+            startBtn.StateDisabled.Border.Width = 2;
         }
 
         private void groupBox_Paint(object sender, PaintEventArgs e)
         {
-            GroupBox box = (GroupBox)sender;
+            System.Windows.Forms.GroupBox box = (System.Windows.Forms.GroupBox)sender;
             e.Graphics.Clear(box.BackColor);
 
-            // Renk ayarları
+            // Yumuşatma ayarları
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+            // Font ve renkler
+            Font labelFont = FontLoader.GetBold(10f); // kendi font loader fonksiyonun
             Color borderColor = Color.FromArgb(220, 220, 220); // Açık gri
             Color textColor = Color.White;
 
-            using (Pen pen = new Pen(borderColor))
+            string text = box.Text;
+            int offset = 10;
+
+            // Metin ölçümü
+            Size textSize = TextRenderer.MeasureText(text, labelFont);
+            int textHeight = textSize.Height;
+            int textWidth = textSize.Width;
+
+            Rectangle rect = new Rectangle(0, textHeight / 2, box.Width - 1, box.Height - textHeight / 2 - 1);
+
+            using (Pen pen = new Pen(borderColor, 1))
             {
-                SizeF textSize = e.Graphics.MeasureString(box.Text, box.Font);
-                int textHeight = (int)textSize.Height;
-                int textWidth = (int)textSize.Width;
-                int offset = 10; // Sol boşluk
-
-                // Dikdörtgenin kenarlarını çiz (üst hariç)
-                Rectangle rect = new Rectangle(0, textHeight / 2, box.Width - 1, box.Height - textHeight / 2 - 1);
-
-                // Sol çizgi
-                e.Graphics.DrawLine(pen, rect.Left, rect.Top, rect.Left, rect.Bottom);
-                // Alt çizgi
-                e.Graphics.DrawLine(pen, rect.Left, rect.Bottom, rect.Right, rect.Bottom);
-                // Sağ çizgi
-                e.Graphics.DrawLine(pen, rect.Right, rect.Bottom, rect.Right, rect.Top);
-                // Üst çizgi (iki parçalı, yazının etrafı boş kalacak)
-                e.Graphics.DrawLine(pen, rect.Left, rect.Top, offset - 2, rect.Top); // yazı öncesi
-                e.Graphics.DrawLine(pen, offset + textWidth + 2, rect.Top, rect.Right, rect.Top); // yazı sonrası
-
-                // Başlık yazısını çiz
-                using (Brush brush = new SolidBrush(textColor))
-                {
-                    PointF textPos = new PointF(offset, 0);
-                    e.Graphics.DrawString(box.Text, box.Font, brush, textPos);
-                }
+                // Border çizgileri
+                e.Graphics.DrawLine(pen, rect.Left, rect.Top, offset - 2, rect.Top); // sol taraf
+                e.Graphics.DrawLine(pen, offset + textWidth + 2, rect.Top, rect.Right, rect.Top); // sağ taraf
+                e.Graphics.DrawLine(pen, rect.Left, rect.Top, rect.Left, rect.Bottom); // sol dik
+                e.Graphics.DrawLine(pen, rect.Right, rect.Top, rect.Right, rect.Bottom); // sağ dik
+                e.Graphics.DrawLine(pen, rect.Left, rect.Bottom, rect.Right, rect.Bottom); // alt
             }
-        }
 
+            // Yazı çizimi (TextRenderer ile)
+            TextRenderer.DrawText(e.Graphics, text, labelFont, new Point(offset, 0), textColor);
+        }
 
         public static string CapitalizeFirstLetter(string input)
         {
@@ -616,11 +650,104 @@ namespace AutoClicker
         private void activemacrolbl_MouseEnter(object sender, EventArgs e)
         {
             activemacrolbl.Font = new Font(activemacrolbl.Font, isModified ? FontStyle.Bold : FontStyle.Underline);
+            activemacrolbl.ForeColor = Color.FromArgb(188, 217, 232);
         }
 
         private void activemacrolbl_MouseLeave(object sender, EventArgs e)
         {
+            activemacrolbl.ForeColor = Color.White;
             activemacrolbl.Font = new Font(activemacrolbl.Font, isModified ? FontStyle.Bold : FontStyle.Regular);
         }
+
+        private void settingsBtn_Click(object sender, EventArgs e)
+        {
+            // open settings
+            using (var settingsForm = new SettingsMenu(_hotkey, _settings, ToggleClicker))
+            {
+                if (settingsForm.ShowDialog() == DialogResult.OK)
+                {
+
+                    var (key, modifiers) = ConvertToKeySafe(_settings.Hotkey);
+                    int fsModifiers = HotkeyService.ConvertModifiersToFsModifiers(modifiers);
+
+                    _hotkey = new HotkeyService(this.Handle, key, ToggleClicker, fsModifiers);
+
+                    ChangeLanguage((Language)_settings.LanguageIndex);
+                    LoadLanguage();
+
+                    startBtn.Text = Resources.start + " (" + _settings.Hotkey.ToString() + ")";
+                    stopBtn.Text = Resources.stop + " (" + _settings.Hotkey.ToString() + ")";
+
+                    isModified = false;
+                    UpdateMacroLabel();
+                    activemacrolbl.Font = new Font(activemacrolbl.Font, FontStyle.Regular);
+
+                }
+            }
+        }
+
+        public static (Keys key, Keys modifiers) ConvertToKeySafe(string hotkeyString)
+        {
+            try
+            {
+                string[] parts = hotkeyString.Split(new[] { " + " }, StringSplitOptions.RemoveEmptyEntries);
+                Keys modifiers = Keys.None;
+                Keys mainKey = Keys.None;
+
+                foreach (string part in parts)
+                {
+                    string trimmed = part.Trim().ToLower();
+
+                    switch (trimmed)
+                    {
+                        case "ctrl":
+                        case "control":
+                            modifiers |= Keys.Control;
+                            break;
+                        case "shift":
+                            modifiers |= Keys.Shift;
+                            break;
+                        case "alt":
+                            modifiers |= Keys.Alt;
+                            break;
+                        default:
+                            if (Enum.TryParse(part, true, out Keys parsedKey))
+                            {
+                                mainKey = parsedKey;
+                            }
+                            else
+                            {
+                                throw new Exception($"Invalid Hotkey: {part}");
+                            }
+                            break;
+                    }
+                }
+
+                return (mainKey, modifiers);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Hotkey parse error: " + ex.Message);
+                throw ex;
+            }
+        }
+
+        private void infolbl_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/ilpenSE/autoclicker");
+        }
+
+        private void infolbl_MouseHover(object sender, EventArgs e)
+        {
+            infolbl.Font = new Font(infolbl.Font, FontStyle.Underline);
+            infolbl.ForeColor = Color.FromArgb(170, 170, 170);
+        }
+
+        private void infolbl_MouseLeave(object sender, EventArgs e)
+        {
+            infolbl.Font = new Font(infolbl.Font, FontStyle.Regular);
+            infolbl.ForeColor = Color.FromArgb(110, 110, 110);
+        }
+
     }
 }

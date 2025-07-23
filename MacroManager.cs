@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 
 public class MacroModel
@@ -14,6 +15,8 @@ public class MacroModel
     public Position Position { get; set; } = new Position();
     public int Interval { get; set; } = 0;
     public RepeatTimes RepeatTimes { get; set; } = new RepeatTimes();
+    public ClickMod ClickMode { get; set; } = ClickMod.CLICK;
+    public int HoldDuration { get; set; } = 1;
 }
 
 public class DefaultMacro
@@ -31,12 +34,21 @@ public class DefaultMacro
         Count = 1,
         RepeatForever = true
     };
+    public ClickMod DefaultClickMod { get; private set; } = ClickMod.CLICK;
     public int DefaultInterval { get; private set; } = 0;
+    public int DefaultHoldDuration { get; private set; } = 1;
 }
 
 public static class MacroManager
 {
-    public static Dictionary<string, MacroModel> LoadAll()
+    public static Dictionary<string, MacroModel> Macros { get; private set; }
+
+    static MacroManager()
+    {
+        Macros = LoadAll();
+    }
+
+    private static Dictionary<string, MacroModel> LoadAll()
     {
         if (!File.Exists(Program.macrosPath))
             return new Dictionary<string, MacroModel>();
@@ -45,12 +57,12 @@ public static class MacroManager
         return JsonSerializer.Deserialize<Dictionary<string, MacroModel>>(json)
                ?? new Dictionary<string, MacroModel>();
     }
+
     public static void DeleteMacro(string name)
     {
-        var all = LoadAll();
-        if (all.Remove(name))
+        if (Macros.Remove(name))
         {
-            SaveAll(all);
+            SaveAll(Macros);
         }
     }
 
@@ -65,10 +77,16 @@ public static class MacroManager
             ClickType = defmacro.DefaultClickType,
             Position = defmacro.DefaultPosition,
             Interval = defmacro.DefaultInterval,
-            RepeatTimes = defmacro.DefaultRepeatTimes
+            RepeatTimes = defmacro.DefaultRepeatTimes,
+            ClickMode = defmacro.DefaultClickMod,
+            HoldDuration = defmacro.DefaultHoldDuration
         };
 
         SaveMacro("DEFAULT", macroDefault);
+    }
+
+    public static void CheckDefaults()
+    {
     }
 
     public static void SaveAll(Dictionary<string, MacroModel> macros)
@@ -79,25 +97,18 @@ public static class MacroManager
 
     public static void SaveMacro(string name, MacroModel macro)
     {
-        var all = LoadAll();
-        all[name] = macro;
-        SaveAll(all);
+        Macros[name] = macro;
+        SaveAll(Macros);
     }
 
     public static List<string> GetAllMacroNames()
     {
-        if (!File.Exists(Program.macrosPath))
-            return new List<string>();
-
-        string json = File.ReadAllText(Program.macrosPath);
-        var dict = JsonSerializer.Deserialize<Dictionary<string, MacroModel>>(json);
-        return dict?.Keys.ToList() ?? new List<string>();
+        return Macros.Keys.ToList();
     }
 
 
     public static MacroModel GetMacroByName(string name)
     {
-        var all = LoadAll();
-        return all.TryGetValue(name, out var macro) ? macro : null;
+        return Macros.TryGetValue(name, out var macro) ? macro : null;
     }
 }
