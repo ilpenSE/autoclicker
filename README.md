@@ -35,16 +35,28 @@
 ---
 
 ## Screenshots / Ekran Görüntüleri
+
 ### English UI
+
 <img width="577" height="562" alt="en1" src="https://github.com/user-attachments/assets/7b0327f2-d0be-4cff-ac5c-39157e27e5ed" />
+
 <img width="576" height="564" alt="en2" src="https://github.com/user-attachments/assets/64f3bf9f-cc72-42eb-97c0-51accda60fa6" />
+
 <img width="577" height="576" alt="en3" src="https://github.com/user-attachments/assets/3dfd5edf-85fc-4fab-a6a2-262f34813638" />
+
 <img width="574" height="563" alt="en4" src="https://github.com/user-attachments/assets/51d42502-e023-4af3-bb2b-0a27c55ff1ea" />
+
 ### Türkçe Arayüz
+
 <img width="575" height="562" alt="tr1" src="https://github.com/user-attachments/assets/69f64035-5f1e-4606-8857-e5909f7c7475" />
+
 <img width="576" height="561" alt="tr2" src="https://github.com/user-attachments/assets/737b2f9b-b349-4950-a814-22e45a86797b" />
+
 <img width="574" height="578" alt="tr3" src="https://github.com/user-attachments/assets/3cf63bda-f0a8-4869-af7f-f78255f2d985" />
+
 <img width="574" height="565" alt="tr4" src="https://github.com/user-attachments/assets/132f2520-211c-41fd-a1dc-a3d52e5e9b25" />
+
+---
 
 ## 📦 Installation / Kurulum
 
