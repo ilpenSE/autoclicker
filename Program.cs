@@ -62,7 +62,7 @@ namespace AutoClicker
                 File.WriteAllText(settingsPath, "");
 
             if (!File.Exists(macrosPath))
-                File.WriteAllText(macrosPath, "");
+                File.WriteAllText(macrosPath, "{}");
         }
         static async System.Threading.Tasks.Task<bool> CheckUpdate()
         {

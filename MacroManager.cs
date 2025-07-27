@@ -53,56 +53,81 @@ public static class MacroManager
 
     private static Dictionary<string, MacroModel> LoadAll()
     {
-        if (!File.Exists(Program.macrosPath))
-            return new Dictionary<string, MacroModel>();
-
-        string json = File.ReadAllText(Program.macrosPath);
-        var rawMacros = JsonSerializer.Deserialize<Dictionary<string, MacroModel>>(json)
-                     ?? new Dictionary<string, MacroModel>();
-
-        var macros = new Dictionary<string, MacroModel>();
-        int unnamedCounter = 1;
-
-        foreach (var kvp in rawMacros)
+        try
         {
-            var key = kvp.Key?.Trim() ?? "";
-            var macro = kvp.Value;
-
-            
-            if (string.IsNullOrEmpty(key))
+            // Dosya yoksa oluştur
+            if (!File.Exists(Program.macrosPath))
             {
-                // Key boşsa otomatik isim ver
-                key = $"{Resources.unnamed_macro} {unnamedCounter++}";
+                File.WriteAllText(Program.macrosPath, "{}");
+                return new Dictionary<string, MacroModel>();
+            }
+
+            // İçerik boşsa düzelt
+            string rawText = File.ReadAllText(Program.macrosPath);
+            if (string.IsNullOrWhiteSpace(rawText))
+            {
+                File.WriteAllText(Program.macrosPath, "{}");
+                return new Dictionary<string, MacroModel>();
+            }
+
+            // JSON deserialize etmeyi dene
+            var rawMacros = JsonSerializer.Deserialize<Dictionary<string, MacroModel>>(rawText)
+                         ?? new Dictionary<string, MacroModel>();
+
+            var macros = new Dictionary<string, MacroModel>();
+            int unnamedCounter = 1;
+
+            foreach (var kvp in rawMacros)
+            {
+                var key = kvp.Key?.Trim() ?? "";
+                var macro = kvp.Value;
+
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    // Key boşsa otomatik isim ver
+                    key = $"{Resources.unnamed_macro} {unnamedCounter++}";
+                    if (macro == null) macro = new MacroModel();
+                    macro.Name = key;
+                    macros[key] = macro;
+                    continue;
+                }
+
+                // name yoksa oluştur
+                if (string.IsNullOrWhiteSpace(kvp.Value.Name))
+                {
+                    // Name yoksa ata
+                    kvp.Value.Name = kvp.Key;
+                }
+
+                // description yoksa ata
+                if (string.IsNullOrWhiteSpace(macro.Description))
+                {
+                    macro.Description = Resources.nodesc;
+                }
+
+                // Key ile Name uyuşmuyorsa Name'i güncelle
                 if (macro == null) macro = new MacroModel();
-                macro.Name = key;
+                if (string.IsNullOrWhiteSpace(macro.Name) || macro.Name != key)
+                    macro.Name = key;
+
                 macros[key] = macro;
-                continue;
             }
 
-            // name yoksa oluştur
-            if (string.IsNullOrWhiteSpace(kvp.Value.Name))
-            {
-                // Name yoksa ata
-                kvp.Value.Name = kvp.Key;
-            }
-
-            // description yoksa ata
-            if (string.IsNullOrWhiteSpace(macro.Description))
-            {
-                macro.Description = Resources.nodesc;
-            }
-
-            // Key ile Name uyuşmuyorsa Name'i güncelle
-            if (macro == null) macro = new MacroModel();
-            if (string.IsNullOrWhiteSpace(macro.Name) || macro.Name != key)
-                macro.Name = key;
-
-            macros[key] = macro;
+            return macros;
         }
-
-        return macros;
+        catch (JsonException)
+        {
+            // JSON bozuksa dosyayı sıfırla
+            File.WriteAllText(Program.macrosPath, "{}");
+            return new Dictionary<string, MacroModel>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("MacroManager Load Error: " + ex.Message);
+            return new Dictionary<string, MacroModel>();
+        }
     }
-
 
 
     private static Dictionary<string, MacroModel> FixMacros(Dictionary<string, MacroModel> macros)
