@@ -2,8 +2,6 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Drawing; // bunu da ekle
 
 public class ClickerEngine
 {
@@ -52,13 +50,31 @@ public class ClickerEngine
             while (!token.IsCancellationRequested)
             {
                 MouseDown();
-                await Task.Delay(_macro.HoldDuration, token);
+                try
+                {
+                    await Task.Delay(_macro.HoldDuration, token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // even if task cancelled, mouse up have to be called
+                }
+                finally
+                {
+                    MouseUp();
+                }
 
-                MouseUp();
-
-                await Task.Delay(_macro.Interval, token);
+                try
+                {
+                    await Task.Delay(_macro.Interval, token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // loop ends here
+                    break;
+                }
             }
         }
+
     }
     private void Click()
     {

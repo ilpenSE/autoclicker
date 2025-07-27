@@ -77,7 +77,8 @@
             "English",
             "Türkçe",
             "Deutsch",
-            "Français"});
+            "Français",
+            "Italiano"});
             this.langBtn.Location = new System.Drawing.Point(148, 62);
             this.langBtn.Name = "langBtn";
             this.langBtn.Size = new System.Drawing.Size(132, 28);

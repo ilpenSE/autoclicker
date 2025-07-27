@@ -23,10 +23,10 @@ public enum MouseButton
 
 public enum ClickType
 {
-    SINGLE = 1,
-    DOUBLE = 2,
-    TRIPLE = 3,
-    QUADRUPLE = 4
+    SINGLE = 0,
+    DOUBLE = 1,
+    TRIPLE = 2,
+    QUADRUPLE = 3
 }
 
 public enum ClickMod
@@ -40,5 +40,6 @@ public enum Language
     ENGLISH = 0,
     TURKISH = 1,
     GERMAN = 2,
-    FRENCH = 3
+    FRENCH = 3,
+    ITALIAN = 4
 }

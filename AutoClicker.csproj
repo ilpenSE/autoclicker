@@ -168,11 +168,11 @@
   <ItemGroup>
     <Compile Include="ClickerEngine.cs" />
     <Compile Include="FontLoader.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="MainMenu.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="MainMenu.Designer.cs">
+      <DependentUpon>MainMenu.cs</DependentUpon>
     </Compile>
     <Compile Include="HotkeyService.cs" />
     <Compile Include="MacroCreateForm.cs">
@@ -188,6 +188,11 @@
       <DependentUpon>MacroForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MacroManager.cs" />
+    <Compile Include="Properties\Resources.it.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.it.resx</DependentUpon>
+    </Compile>
     <Compile Include="SettingsEnums.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -198,8 +203,16 @@
     <Compile Include="SettingsMenu.Designer.cs">
       <DependentUpon>SettingsMenu.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="UpdateChecker.cs" />
+    <Compile Include="UpdateDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UpdateDialog.Designer.cs">
+      <DependentUpon>UpdateDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="VersionInfo.cs" />
+    <EmbeddedResource Include="MainMenu.resx">
+      <DependentUpon>MainMenu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MacroCreateForm.resx">
       <DependentUpon>MacroCreateForm.cs</DependentUpon>
@@ -218,6 +231,10 @@
     <EmbeddedResource Include="Properties\Resources.fr.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.fr.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.it.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.it.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -245,6 +262,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsMenu.resx">
       <DependentUpon>SettingsMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateDialog.resx">
+      <DependentUpon>UpdateDialog.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="AutoClicker_TemporaryKey.pfx" />
     <EmbeddedResource Include="Gilroy-Black.otf" />

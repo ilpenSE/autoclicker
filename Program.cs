@@ -1,5 +1,14 @@
-﻿using System;
+﻿using AutoClicker.Properties;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Net.Http;
+using System.Runtime;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AutoClicker
@@ -9,7 +18,8 @@ namespace AutoClicker
         public static readonly string appDataDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "AutoClicker"
-            ); public static string settingsPath = Path.Combine(appDataDir, "settings.json");
+            );
+        public static string settingsPath = Path.Combine(appDataDir, "settings.json");
         public static string macrosPath = Path.Combine(appDataDir, "macros.json");
 
         [STAThread]
@@ -17,29 +27,47 @@ namespace AutoClicker
         {
             try
             {
-                // 📁 Dizin yoksa oluştur
-                if (!Directory.Exists(appDataDir))
-                    Directory.CreateDirectory(appDataDir);
-
-                Console.WriteLine(settingsPath);
-                Console.WriteLine(macrosPath);
-
-                // ✅ Dosya yoksa oluştur
-                if (!File.Exists(settingsPath))
-                    File.WriteAllText(settingsPath, "{\r\n  \"Hotkey\": \"F6\",\r\n  \"LanguageIndex\": 0,\r\n  \"FirstRun\": true,\r\n  \"ActiveMacro\": \"DEFAULT\",\r\n  \"Version\": \"v1.3\"\r\n}");
-
-                if (!File.Exists(macrosPath))
-                    File.WriteAllText(macrosPath, "{\r\n  \"DEFAULT\": {\r\n    \"Name\": \"DEFAULT\",\r\n    \"Description\": \"The defaults.\",\r\n    \"MouseButton\": 0,\r\n    \"ClickType\": 0,\r\n    \"Position\": {\r\n      \"X\": 0,\r\n      \"Y\": 0,\r\n      \"CurrentPosition\": true\r\n    },\r\n    \"Interval\": 0,\r\n    \"RepeatTimes\": {\r\n      \"Count\": 1,\r\n      \"RepeatForever\": true\r\n    },\r\n    \"ClickMode\": 0,\r\n    \"HoldDuration\": 1\r\n  }\r\n}");
-
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+
+                CheckAndCreateFilesAndDirs();
+                var updateAvailable = CheckUpdate().GetAwaiter().GetResult();
+
+                if (updateAvailable)
+                {
+                    var dlg = new UpdateDialog();
+                    dlg.ShowDialog();
+                }
+
                 Application.Run(new MainMenu());
+
             }
             catch (Exception ex)
             {
                 File.WriteAllText("error_log.txt", ex.ToString());
-                MessageBox.Show("An error occured! Saved to error_log.txt.\nError Message: " + ex.Message, "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Resources.err_occured + ex.Message, "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        static void CheckAndCreateFilesAndDirs()
+        {
+            // 📁 Dizin yoksa oluştur
+            if (!Directory.Exists(appDataDir))
+                Directory.CreateDirectory(appDataDir);
+
+            Console.WriteLine($"Settings.json path: {settingsPath}");
+            Console.WriteLine($"Macros.json path: {macrosPath}");
+
+            // ✅ Dosya yoksa oluştur
+            if (!File.Exists(settingsPath))
+                File.WriteAllText(settingsPath, "");
+
+            if (!File.Exists(macrosPath))
+                File.WriteAllText(macrosPath, "");
+        }
+        static async System.Threading.Tasks.Task<bool> CheckUpdate()
+        {
+            return await UpdateChecker.CheckUpdateAvailable();
+        }
+
     }
 }

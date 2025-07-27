@@ -1,6 +1,7 @@
 ﻿using AutoClicker.Properties;
 using Krypton.Toolkit;
 using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace AutoClicker
@@ -66,7 +67,8 @@ namespace AutoClicker
                 string name = txtName.Text;
 
                 // ADD EXCEPTION
-                if (name == "DEFAULT")
+                string[] forbiddenNames = new string[] { "DEFAULT", "Varsayılan", "Par défaut", "Standart", "Predefinito" };
+                if (forbiddenNames.Contains(name))
                 {
                     MessageBox.Show(Resources.wrn_cantcreatedef, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;

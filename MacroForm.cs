@@ -120,7 +120,7 @@ namespace AutoClicker
                 return;
             }
 
-            SelectedMacroName = list.SelectedItems[0].Text;
+            SelectedMacroName = list.SelectedItems[0].Tag.ToString();
             DialogResult = DialogResult.OK;
         }
 
@@ -131,11 +131,13 @@ namespace AutoClicker
 
             foreach (var kvp in _macros)
             {
-                var item = new ListViewItem(kvp.Key);
-                item.SubItems.Add(kvp.Value.Description ?? "");
+                bool isDefault = kvp.Key == "DEFAULT";
+                var item = new ListViewItem(kvp.Key.ToString() == "DEFAULT" ? Resources.defaultmacro : kvp.Key.ToString());
+                item.SubItems.Add(isDefault ? Resources.defaultmacrodesc : (kvp.Value.Description ?? ""));
+
                 item.Tag = kvp.Key;
 
-                bool isActive = kvp.Key == ACTIVE_MACRO_NAME;
+                bool isActive = item.Tag.ToString() == ACTIVE_MACRO_NAME;
 
                 list.Items.Add(item);
 
@@ -173,7 +175,7 @@ namespace AutoClicker
                 return;
             }
 
-            string name = list.SelectedItems[0].Text;
+            string name = list.SelectedItems[0].Tag.ToString();
             if (name == "DEFAULT")
             {
                 ShowErr(Resources.wrn_cantdeldef);
@@ -208,7 +210,7 @@ namespace AutoClicker
         private void BeginEdit(ListViewItem item, int subItemIndex)
         {
             // DEFAULT makrosu düzenlenemez
-            if (item.Text == "DEFAULT")
+            if (item.Tag.ToString() == "DEFAULT")
             {
                 ShowErr(Resources.wrn_canteditdef);
                 return;
