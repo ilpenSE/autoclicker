@@ -14,29 +14,29 @@
 
 ## 🔧 Features / Özellikler
 
-- **EN:** Supports multiple click modes (e.g., single, hold).  
+- **EN:** Supports multiple click modes (e.g., single, hold).<br/>
   **TR:** Birden fazla tıklama modunu destekler (tek tıklama, basılı tutma vb.).
 
-- **EN:** User-defined hotkeys with modifier keys.  
+- **EN:** User-defined hotkeys with modifier keys.<br/>
   **TR:** Kullanıcı tarafından tanımlanabilen kısayol tuşları ve modifiye tuş desteği.
 
-- **EN:** Self-repairing `settings.json` and `macros.json` files.  
+- **EN:** Self-repairing `settings.json` and `macros.json` files.<br/>
   **TR:** `settings.json` ve `macros.json` dosyaları kendini otomatik olarak onarır.
 
-- **EN:** Multi-language UI (English, Turkish, Italian, and more).  
+- **EN:** Multi-language UI (English, Turkish, Italian, and more).<br/>
   **TR:** Çok dilli arayüz (İngilizce, Türkçe, İtalyanca ve daha fazlası).
 
-- **EN:** GitHub-based version checking for updates.  
+- **EN:** GitHub-based version checking for updates.<br/>
   **TR:** GitHub üzerinden sürüm güncelleme kontrolü.
 
-- **EN:** Lightweight and fast — designed for minimal resource usage.  
+- **EN:** Lightweight and fast — designed for minimal resource usage.<br/>
   **TR:** Hafif ve hızlı – minimum sistem kaynağı kullanımı için tasarlanmıştır.
 
 ---
 
 ## 📦 Installation / Kurulum
 
-1. Download the latest release from the [Releases](https://github.com/ilpenSE/autoclicker/releases) page. / [Releases](https://github.com/ilpenSE/autoclicker/releases) sayfasından en son sürümü indir
+1. Download the latest release from the [Releases](https://github.com/ilpenSE/autoclicker/releases) page. / [Releases](https://github.com/ilpenSE/autoclicker/releases) sayfasından en son sürümü indir.
 2. Run `Auto.Clicker.Setup.1.3.1.exe`. / `Auto.Clicker.Setup.1.3.1.exe`yi çalıştırın.
 3. Follow the instructions given to you. / Size verilen kurulum talimatlarını takip edin.
 4. Run the program on your desktop. / Masaüstünüzden programı çalıştırın.
