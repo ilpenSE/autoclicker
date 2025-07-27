@@ -66,7 +66,7 @@
 ## 📦 Installation / Kurulum
 
 1. Download the latest release from the [Releases](https://github.com/ilpenSE/autoclicker/releases) page. / [Releases](https://github.com/ilpenSE/autoclicker/releases) sayfasından en son sürümü indir.
-2. Run `Auto.Clicker.Setup.1.3.1.exe`. / `Auto.Clicker.Setup.1.3.1.exe`yi çalıştırın.
+2. Run `Auto.Clicker.Setup.1.3.2.exe`. / `Auto.Clicker.Setup.1.3.2.exe`yi çalıştırın.
 3. Follow the instructions given to you. / Size verilen kurulum talimatlarını takip edin.
 4. Run the program on your desktop. / Masaüstünüzden programı çalıştırın.
 
