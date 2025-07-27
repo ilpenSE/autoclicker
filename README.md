@@ -1,5 +1,5 @@
 
-# 🖱️ AutoClicker – Advanced and Self-Healing Macro Clicker
+# 🖱️ AutoClicker – Advanced and Lightweight Macro Clicker
 
 **ENGLISH | TÜRKÇE**
 
