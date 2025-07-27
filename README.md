@@ -1,82 +1,71 @@
-# 📌 Auto Clicker
-Here is version 1.3! Brand new features, UI changes, bug fixes, and more. Install and start using it now!
-- [English](#English)
-- [Türkçe](#Türkçe)
 
-## English
-### 🔧 Features:
-- Customizable auto-click interval and repetition
-- Two click modes: Click and Hold (holding duration configurable)
-- Position options: current mouse location or fixed XY
-- Hotkey support for quick start/stop
-- Mouse button selection (left, right, middle)
-- Multi-language interface support
-- Save and manage macros easily by pressing Ctrl + S
-- Delete a macro by pressing Del
-- Select a macro by pressing Enter
-- Double click on a macro name or description to edit them
-- Right-click on the macro list for context menu operations
-- Interval and hold duration are set only in milliseconds
-- Improved UI with new Krypton framework, updated buttons, text boxes, dropdowns, etc.
-- Added mouse hover and leave effects on labels and other controls
+# 🖱️ AutoClicker – Advanced and Self-Healing Macro Clicker
 
-#### 🗃 Settings Location:
-Settings and macros are stored in:
-`C:\Users\YourUsername\AppData\Roaming\AutoClicker`
+**ENGLISH | TÜRKÇE**
 
-### 🔒 Warning:
-When uninstalling, if you choose "Yes" to delete settings, all macros and saved data will be permanently removed.
+---
 
-### 📥 Installation:
-Run `Auto Clicker Setup.exe` and follow the on-screen instructions.
+## 🌍 About / Hakkında
 
-### 📤 Uninstall:
-You can safely uninstall the program from Control Panel > Uninstall a Program.
+**EN:** A lightweight and user-friendly Auto Clicker built with C# (.NET Framework 4.8, WinForms), designed to automate mouse clicks and keyboard macros.  
+**TR:** C# (.NET Framework 4.8, WinForms) ile geliştirilmiş, fare tıklamaları ve klavye makrolarını otomatikleştirmek için tasarlanmış hafif ve kullanıcı dostu bir Otomatik Tıklayıcıdır.
 
-### About
-- For feedback or suggestions: lastplayer8945@gmail.com
-- [Instagram](https://www.instagram.com/ilpen.25)
-- [YouTube](https://www.youtube.com/@ilpenwastaken)
-- [X](https://www.x.com/ilpenwastaken)
+---
 
-Thank you!
+## 🔧 Features / Özellikler
 
-## Türkçe
-Hazırlayan: ilpeN
+- **EN:** Supports multiple click modes (e.g., single, hold).  
+  **TR:** Birden fazla tıklama modunu destekler (tek tıklama, basılı tutma vb.).
 
-### 🔧 Özellikler:
-- Otomatik tıklama için zamanlama ve tekrar ayarları
-- İki tıklama modu: Tıklama ve Basılı Tutma (basılı tutma süresi ayarlanabilir)
-- Konum seçimi: Geçerli fare konumu veya sabit XY koordinatı
-- Tuş atama (Hotkey) desteğiyle hızlı başlat/durdur
-- Sol, sağ veya orta fare tuşu seçimi
-- Çoklu dil arayüz desteği
-- Makroları Ctrl + S ile kolayca kaydedip yönetme
-- Del tuşuna basarak makro silme
-- Enter tuşuna basarak makro seçme
-- Makro adı veya açıklamasına çift tıklayarak düzenleme yapma
-- Makro listesine sağ tıklayarak işlemleri yapabilme
-- Interval ve basılı tutma süresi sadece milisaniye cinsinden ayarlanabilir
-- Yeni Krypton framework ile geliştirilmiş arayüz; güncellenmiş butonlar, metin kutuları, açılır menüler vb.
-- Etiketler ve diğer bileşenlerde fare ile üzerine gelme (hover) ve ayrılma (leave) efektleri eklendi
+- **EN:** User-defined hotkeys with modifier keys.  
+  **TR:** Kullanıcı tarafından tanımlanabilen kısayol tuşları ve modifiye tuş desteği.
 
-#### 🗃 Ayar Dosyaları:
-Ayarlar ve makrolar şu dizinde saklanır:
-`C:\Kullanıcılar\KullanıcıAdı\AppData\Roaming\AutoClicker`
+- **EN:** Self-repairing `settings.json` and `macros.json` files.  
+  **TR:** `settings.json` ve `macros.json` dosyaları kendini otomatik olarak onarır.
 
-### 🔒 Uyarı:
-Program kaldırılırken "Ayarları da silmek istiyor musunuz?" sorusuna "Evet" derseniz, tüm makrolar ve ayarlar kalıcı olarak silinir.
+- **EN:** Multi-language UI (English, Turkish, Italian, and more).  
+  **TR:** Çok dilli arayüz (İngilizce, Türkçe, İtalyanca ve daha fazlası).
 
-### 📥 Kurulum:
-`Auto Clicker Setup.exe` dosyasını çalıştırın ve ekrandaki talimatları takip edin.
+- **EN:** GitHub-based version checking for updates.  
+  **TR:** GitHub üzerinden sürüm güncelleme kontrolü.
 
-### 📤 Kaldırma:
-Programı Denetim Masası > Program Kaldır bölümünden güvenle kaldırabilirsiniz.
+- **EN:** Lightweight and fast — designed for minimal resource usage.  
+  **TR:** Hafif ve hızlı – minimum sistem kaynağı kullanımı için tasarlanmıştır.
 
-### Hakkında
-- Geri bildirim ve öneriler için: lastplayer8945@gmail.com
-- [Instagram](https://www.instagram.com/ilpen.25)
-- [YouTube](https://www.youtube.com/@ilpenwastaken)
-- [X](https://www.x.com/ilpenwastaken)
+---
 
-Teşekkürler!
+## 📦 Installation / Kurulum
+
+1. Download the latest release from the [Releases](https://github.com/ilpenSE/autoclicker/releases) page. / [Releases](https://github.com/ilpenSE/autoclicker/releases) sayfasından en son sürümü indir
+2. Run `Auto.Clicker.Setup.1.3.1.exe`. / `Auto.Clicker.Setup.1.3.1.exe`yi çalıştırın.
+3. Follow the instructions given to you. / Size verilen kurulum talimatlarını takip edin.
+4. Run the program on your desktop. / Masaüstünüzden programı çalıştırın.
+
+---
+
+## 📁 File Structure / Dosya Yapısı
+
+- `settings.json` → Configuration and version code. / Konfigürasyon ve sürüm kodlarının olduğu dosya
+- `macros.json` → Saved macro profiles. / Makro profillerinin olduğu dosya
+- Auto repairs if corrupted or missing. / Eğer bozulmuş ya da yoklarsa kendilerini onarabilir veya oluşturabilirler.
+
+---
+
+## 🗒️ License / Lisans
+
+MIT License.
+
+---
+
+## 🙋 Contributions / Katkılar
+
+Pull requests are welcome! / Katkılar memnuniyetle karşılanır!
+
+---
+
+## 🔗 Links / Linkler
+- Feedbacks and suggestions / Geri bildirim ve öneriler için: lastplayer8945@gmail.com
+- [Follow me on Instagram](https://www.instagram.com/ilpen.25)
+- [Subscribe me on YouTube](https://www.youtube.com/@ilpenwastaken)
+- [Follow me on X](https://www.x.com/ilpenwastaken)
+- [Star this GitHub repository](https://github.com/ilpenSE/autoclicker)
