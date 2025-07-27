@@ -7,8 +7,8 @@
 
 ## 🌍 About / Hakkında
 
-**EN:** A lightweight and user-friendly Auto Clicker built with C# (.NET Framework 4.8, WinForms), designed to automate mouse clicks and keyboard macros.  
-**TR:** C# (.NET Framework 4.8, WinForms) ile geliştirilmiş, fare tıklamaları ve klavye makrolarını otomatikleştirmek için tasarlanmış hafif ve kullanıcı dostu bir Otomatik Tıklayıcıdır.
+**EN:** A lightweight and user-friendly Auto Clicker built with C# (.NET Framework 4.8, WinForms), designed to automate mouse clicks.
+**TR:** C# (.NET Framework 4.8, WinForms) ile geliştirilmiş, fare tıklamalarını otomatikleştirmek için tasarlanmış hafif ve kullanıcı dostu bir Otomatik Tıklayıcıdır.
 
 ---
 
