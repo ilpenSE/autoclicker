@@ -59,7 +59,7 @@ MIT License.
 
 ## 🙋 Contributions / Katkılar
 
-[To contribute / Katkıda bulunmak için](./CONTRIBUTING.md)
+[To contribute / Katkıda bulunmak için](./CONTRIBUTING.md)<br/>
 Pull requests are welcome! / Katkılar memnuniyetle karşılanır!
 
 ---
