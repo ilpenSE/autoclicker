@@ -17,11 +17,11 @@
 - **EN:** Supports multiple click modes (e.g., single, hold).<br/>
   **TR:** Birden fazla tıklama modunu destekler (tek tıklama, basılı tutma vb.).
 
-- **EN:** User-defined hotkeys with modifier keys.<br/>
-  **TR:** Kullanıcı tarafından tanımlanabilen kısayol tuşları ve modifiye tuş desteği.
+- **EN:** User-defined hotkeys with modifier keys (like Ctrl, Shift).<br/>
+  **TR:** Kullanıcı tarafından tanımlanabilen kısayol tuşları ve modifiye tuş desteği (Ctrl, Shift gibi).
 
 - **EN:** Self-repairing `settings.json` and `macros.json` files.<br/>
-  **TR:** `settings.json` ve `macros.json` dosyaları kendini otomatik olarak onarır.
+  **TR:** Kendini onarabilen `settings.json` ve `macros.json` dosyalar.
 
 - **EN:** Multi-language UI (English, Turkish, Italian, and more).<br/>
   **TR:** Çok dilli arayüz (İngilizce, Türkçe, İtalyanca ve daha fazlası).
@@ -45,8 +45,8 @@
 
 ## 📁 File Structure / Dosya Yapısı
 
-- `settings.json` → Configuration and version code. / Konfigürasyon ve sürüm kodlarının olduğu dosya
-- `macros.json` → Saved macro profiles. / Makro profillerinin olduğu dosya
+- `%appdata%/AutoClicker/settings.json` → Configuration and version code. / Konfigürasyon ve sürüm kodlarının olduğu dosya
+- `%appdata%/AutoClicker/macros.json` → Saved macro profiles. / Makro profillerinin olduğu dosya
 - Auto repairs if corrupted or missing. / Eğer bozulmuş ya da yoklarsa kendilerini onarabilir veya oluşturabilirler.
 
 ---
