@@ -6,11 +6,10 @@ using System.Drawing;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace AutoClicker
 {
-    public partial class MacroForm : Form
+    public partial class MacroForm : BaseForm
     {
         public string SelectedMacroName { get; private set; }
 
@@ -29,6 +28,11 @@ namespace AutoClicker
 
             blinkTimer.Interval = 300;
             blinkTimer.Tick += BlinkTimer_Tick;
+        }
+
+        public override void ReloadLanguage()
+        {
+            LoadLanguage();
         }
 
         private void LoadLanguage()

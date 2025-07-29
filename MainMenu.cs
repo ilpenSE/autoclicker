@@ -5,171 +5,203 @@ using Microsoft.Extensions.Localization;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Forms;
 
 namespace AutoClicker
 {
-    public partial class MainMenu : Form
+    public partial class MainMenu : BaseForm
     {
         private ClickerEngine _clicker;
         private HotkeyService _hotkey;
         private SettingsModel _settings;
-        private Dictionary<string, MacroModel> _Macros;
+        private Dictionary<string, MacroModel> _Macros = new Dictionary<string, MacroModel>();
+
         private string _activeMacroName = "DEFAULT";
         private bool isModified = false;
-        private int supportedLanguageCount = 5;
+        public static readonly Dictionary<string, Language> LanguageMap = new Dictionary<string, Language>
+        {
+            { "en", Language.ENGLISH },
+            { "tr", Language.TURKISH },
+            { "de", Language.GERMAN },
+            { "fr", Language.FRENCH },
+            { "it", Language.ITALIAN }
+        };
+
+        public static readonly Dictionary<Language, string> LanguageReverseMap =
+    LanguageMap.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
 
         private bool isClicking = false;
         private bool isWaitingForHotkey = false;
         private System.Windows.Forms.Timer ClickTimer = new System.Windows.Forms.Timer();
         private int repeats = 0;
 
+
         // UPDATE THIS WHEN YOU UPDATE THE PROGRAM
-        public static readonly string VERSION_STRING = "1.3.1";
+        public static readonly string VERSION_STRING = "1.3.3";
 
         public MainMenu()
         {
             InitializeComponent();
+            
+            this.KeyPreview = true;
+            this.Load += MainMenu_Load_Heavy;
+            this.Shown += MainMenu_Shown;
+        }
 
-            // load settings and macros
-            _settings = SettingsManager.Load();
-            _Macros = MacroManager.Macros;
+        public override void ReloadLanguage()
+        {
+            LoadLanguage();
+        }
 
-            _activeMacroName = _settings.ActiveMacro;
+        private async void MainMenu_Load_Heavy(object sender, EventArgs e)
+        {
+            // Run heavy IO works parallel
+            _settings = await Task.Run(() => SettingsManager.Load()) ?? new SettingsModel();
 
-            // check macro is valid
-            if (!_Macros.ContainsKey(_activeMacroName))
+            _Macros = await Task.Run(() => MacroManager.Macros) ?? new Dictionary<string, MacroModel>();
+
+            // Makro control and default fallback
+            if (!_Macros.ContainsKey(_settings.ActiveMacro))
             {
-                // MACRO NOT FOUND, SET TO DEFAULT
                 _activeMacroName = "DEFAULT";
                 _settings.ActiveMacro = "DEFAULT";
                 SettingsManager.Save(_settings);
             }
+            else
+            {
+                _activeMacroName = _settings.ActiveMacro;
+            }
 
-            // load macro
+            // load Macro UI (in UI thread)
+            await Task.Delay(100); // a small wait
             LoadMacroFormettings(_activeMacroName);
             UpdateMacroLabel();
 
-            // load hotkey
+            // Hotkey setup (needs UI handle)
+            TryRegisterHotkey();
+
+            // set the language if it's first run
+            if (_settings.FirstRun)
+            {
+                ApplyDefaultLanguageBySystem();
+                _settings.FirstRun = false;
+            }
+
+            // timer tick event
+            ClickTimer.Tick += TimerTick;
+
+            ValidateLanguageIndex();
+            ChangeLanguage(_settings.LanguageIndex);
+            LoadLanguage();
+            RegisterChangeListeners();
+
+            // save the settings
+            await Task.Run(() => SettingsManager.Save(_settings));
+
+        }
+
+        // Hotkey registering
+        private void TryRegisterHotkey()
+        {
             try
             {
                 var (key, modifiers) = ConvertToKeySafe(_settings.Hotkey);
                 int fsModifiers = HotkeyService.ConvertModifiersToFsModifiers(modifiers);
-
                 _hotkey = new HotkeyService(this.Handle, key, ToggleClicker, fsModifiers);
-
-                Console.WriteLine("Hotkey: " + ConvertToKeySafe(_settings.Hotkey));
-            } catch (Exception)
+            }
+            catch
             {
+                // fallback hotkey
                 _hotkey = new HotkeyService(this.Handle, SettingsManager.DefaultKey, ToggleClicker);
                 _settings.Hotkey = SettingsManager.DefaultKey.ToString();
                 SettingsManager.Save(_settings);
-                MessageBox.Show(Resources.wrn_invalidhtk, Resources.wrn_title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                MessageBox.Show(
+                    Resources.wrn_invalidhtk,
+                    Resources.wrn_title,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
             }
+        }
 
+        // Sistem diline göre ilk açılışta dil seçimi
+        private void ApplyDefaultLanguageBySystem()
+        {
+            string defLang = CultureInfo.CurrentUICulture.Name.Substring(0, 2);
+            Language lang = LanguageMap.ContainsKey(defLang)
+                ? LanguageMap[defLang]
+                : SettingsManager.DefaultLanguage;
 
-            // after set the settings
-            Select();
-            if (_settings.FirstRun)
+            ChangeLanguage(lang);
+        }
+
+        private void MainMenu_Shown(object sender, EventArgs e)
+        {
+            RegisterNumericFocusEvents();
+            RegisterDropdownFocusEvents();
+            SetDisabledStatesOfButtons();
+
+            Console.WriteLine($"[{DateTime.Now.ToString("HH:mm:ss:fff-dd/MM/yyyy")}] [LOAD] Loaded.");
+        }
+
+        // Dil indexi bozuksa düzelt
+        private void ValidateLanguageIndex()
+        {
+            if (_settings.LanguageIndex > (LanguageMap.Count - 1) || _settings.LanguageIndex < 0)
             {
-                string defLang = CultureInfo.CurrentUICulture.Name.Substring(0, 2);
-
-                Language lang;
-                switch (defLang)
-                {
-                    case "en":
-                        lang = Language.ENGLISH;
-                        break;
-                    case "tr":
-                        lang = Language.TURKISH;
-                        break;
-                    case "de":
-                        lang = Language.GERMAN;
-                        break;
-                    case "fr":
-                        lang = Language.FRENCH;
-                        break;
-                    case "it":
-                        lang = Language.ITALIAN;
-                        break;
-                    default:
-                        lang = SettingsManager.DefaultLanguage;
-                        break;
-                }
-
-                ChangeLanguage(lang);
-            }
-
-
-            ClickTimer.Tick += TimerTick;
-
-            // check the language index is valid
-            if (_settings.LanguageIndex > (supportedLanguageCount - 1) || _settings.LanguageIndex < 0)
-            {
-                ChangeLanguage(SettingsManager.DefaultLanguage);
                 _settings.LanguageIndex = (int)SettingsManager.DefaultLanguage;
                 SettingsManager.Save(_settings);
             }
-
-            LoadLanguage();
-            _settings.FirstRun = false;
-
-            this.KeyPreview = true;
-
-            RegisterChangeListeners();
-
-            SettingsManager.Save(_settings);
         }
 
         private void RegisterChangeListeners()
         {
-            this.msButtonBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.clickTypeBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.cmodBtn.SelectedIndexChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.posY.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.posX.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.hdMillis.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.specPosBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.currentPosBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.irvMillis.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.repeatTimes.ValueChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.repeatForeverBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
-            this.repeatTimesBtn.CheckedChanged += new System.EventHandler(this.MarkAsUnsaved);
+            this.msButtonBtn.SelectedIndexChanged += MarkAsUnsaved;
+            this.clickTypeBtn.SelectedIndexChanged += MarkAsUnsaved;
+            this.cmodBtn.SelectedIndexChanged += MarkAsUnsaved;
+            this.posY.ValueChanged += MarkAsUnsaved;
+            this.posX.ValueChanged += MarkAsUnsaved;
+            this.hdMillis.ValueChanged += MarkAsUnsaved;
+            this.specPosBtn.CheckedChanged += MarkAsUnsaved;
+            this.currentPosBtn.CheckedChanged += MarkAsUnsaved;
+            this.irvMillis.ValueChanged += MarkAsUnsaved;
+            this.repeatTimes.ValueChanged += MarkAsUnsaved;
+            this.repeatForeverBtn.CheckedChanged += MarkAsUnsaved;
+            this.repeatTimesBtn.CheckedChanged += MarkAsUnsaved;
         }
 
         private void MarkAsUnsaved(object sender, EventArgs e)
         {
             if (!isModified)
             {
-                activemacrolbl.Font = FontLoader.GetBold(12f);
+                activemacrolbl.Font = ActiveMacroLabelFontBold;
                 activemacrolbl.Text = Resources.activemacro_unsaved.Replace("{_activeMacroName}", _activeMacroName);
                 isModified = true;
             }
         }
 
+        public static readonly Font ActiveMacroLabelFontBold = FontLoader.GetBold(12f);
+        public static readonly Font ActiveMacroLabelFont = FontLoader.GetRegular(12f);
+
         private void UpdateMacroLabel()
         {
             activemacrolbl.Text = Resources.activemacro.Replace("{_activeMacroName}", (_activeMacroName == "DEFAULT" ? Resources.defaultmacro : _activeMacroName));
-            activemacrolbl.Font = FontLoader.GetRegular(12f);
+            activemacrolbl.Font = ActiveMacroLabelFont;
         }
 
         private void LoadMacroFormettings(string macroName)
         {
             try
             {
-                if (!_Macros.TryGetValue(macroName, out var macro)) return;
+                if (_Macros == null || !_Macros.TryGetValue(macroName, out var macro)) return;
 
                 posX.Value = macro.Position.X;
                 posY.Value = macro.Position.Y;
@@ -199,23 +231,6 @@ namespace AutoClicker
                 throw e;
             }
             
-        }
-
-
-        private IStringLocalizer<Resources> GetLocalizer()
-        {
-            // this returns localizer which has localized texts
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddLocalization(options => options.ResourcesPath = "Properties");
-
-            var provider = services.BuildServiceProvider();
-
-            // set the culture
-            CultureInfo.CurrentUICulture = new CultureInfo(GetLanguageCode(GetLanguage()));
-
-            // return localizer
-            return provider.GetRequiredService<IStringLocalizer<Resources>>();
         }
 
         private void startBtn_Click(object sender, EventArgs e)
@@ -290,9 +305,6 @@ namespace AutoClicker
 
         private void LoadLanguage()
         {
-            // change the texts
-            var localizer = GetLocalizer();
-
             // interval
             interval.Text = Resources.interval_groupbox;
             irv_millislbl.Text = Resources.interval_millis;
@@ -425,27 +437,44 @@ namespace AutoClicker
             SettingsManager.Save(_settings);
         }
 
-        private void ChangeLanguage(Language lang)
-        {
-            _settings.LanguageIndex = (int)lang;
-        }
-
         public static string GetLanguageCode(Language lang)
         {
-            switch (lang)
+            if (LanguageReverseMap.TryGetValue(lang, out var code))
+                return code;
+
+            return LanguageReverseMap[SettingsManager.DefaultLanguage];
+        }
+        public static string GetLanguageCode(int langIndex)
+        {
+            if (LanguageReverseMap.TryGetValue(GetLanguageByIndex(langIndex), out var code))
+                return code;
+
+            return LanguageReverseMap[SettingsManager.DefaultLanguage];
+        }
+        private void ChangeLanguage(int langIndex)
+        {
+            // index → Language enum
+            Language lang = (Language)langIndex;
+            ChangeLanguage(lang);
+        }
+
+        private void ChangeLanguage(Language lang)
+        {
+            string cultureCode = GetLanguageCode(lang);
+            var newCulture = new CultureInfo(cultureCode);
+
+            // Global kültürü değiştir
+            CultureInfo.CurrentUICulture = newCulture;
+            CultureInfo.CurrentCulture = newCulture;
+
+            // Resources'un kültürünü zorla
+            Resources.Culture = newCulture;
+
+            // Tüm açık formları yenile
+            foreach (Form openForm in Application.OpenForms)
             {
-                case Language.ENGLISH:
-                    return "en";
-                case Language.TURKISH:
-                    return "tr";
-                case Language.GERMAN:
-                    return "de";
-                case Language.FRENCH:
-                    return "fr";
-                case Language.ITALIAN:
-                    return "it";
-                default:
-                    return GetLanguageCode(SettingsManager.DefaultLanguage);
+                if (openForm is BaseForm baseForm)
+                    baseForm.ReloadLanguage();
             }
         }
 
@@ -460,11 +489,6 @@ namespace AutoClicker
                 return SettingsManager.DefaultLanguage;
             }
 
-        }
-
-        private Language GetLanguage()
-        {
-            return GetLanguageByIndex(_settings.LanguageIndex);
         }
 
         [DllImport("user32.dll")]
@@ -493,6 +517,7 @@ namespace AutoClicker
         }
 
         public static readonly Font ButtonFont = FontLoader.GetBold(10.5f);
+        public static readonly Font GroupBoxFont = FontLoader.GetBold(10f);
 
         private void MainMenu_Load(object sender, EventArgs e)
         {
@@ -513,17 +538,13 @@ namespace AutoClicker
             this.Font = FontLoader.GetRegular(9f);
 
             startBtn.StateCommon.Content.ShortText.Font = ButtonFont;
-            startBtn.Click += new System.EventHandler(this.startBtn_Click);
+            startBtn.Click += startBtn_Click;
 
             stopBtn.StateCommon.Content.ShortText.Font = ButtonFont;
-            stopBtn.Click += new System.EventHandler(this.stopBtn_Click);
+            stopBtn.Click += stopBtn_Click;
 
             settingsBtn.StateCommon.Content.ShortText.Font = ButtonFont;
-            settingsBtn.Click += new System.EventHandler(this.settingsBtn_Click);
-
-            SetDisabledStatesOfButtons();
-            RegisterNumericFocusEvents();
-            RegisterDropdownFocusEvents();
+            settingsBtn.Click += settingsBtn_Click;
         }
 
         public static Color focusBorderClr = Color.FromArgb(70, 120, 200);
@@ -612,7 +633,7 @@ namespace AutoClicker
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             // Font ve renkler
-            Font labelFont = FontLoader.GetBold(10f); // kendi font loader fonksiyonun
+            Font labelFont = GroupBoxFont;
             Color borderColor = Color.FromArgb(220, 220, 220); // Açık gri
             Color textColor = Color.White;
 
@@ -664,7 +685,7 @@ namespace AutoClicker
         private void settingsBtn_Click(object sender, EventArgs e)
         {
             // open settings
-            using (var settingsForm = new SettingsMenu(_hotkey, _settings, ToggleClicker))
+            using (var settingsForm = new SettingsMenu(_hotkey, _settings))
             {
                 if (settingsForm.ShowDialog() == DialogResult.OK)
                 {
@@ -674,7 +695,7 @@ namespace AutoClicker
 
                     _hotkey = new HotkeyService(this.Handle, key, ToggleClicker, fsModifiers);
 
-                    ChangeLanguage((Language)_settings.LanguageIndex);
+                    ChangeLanguage(_settings.LanguageIndex);
                     LoadLanguage();
 
                     startBtn.Text = Resources.start + " (" + _settings.Hotkey.ToString() + ")";
@@ -750,6 +771,7 @@ namespace AutoClicker
             infolbl.Font = new Font(infolbl.Font, FontStyle.Regular);
             infolbl.ForeColor = Color.FromArgb(110, 110, 110);
         }
+
 
     }
 }

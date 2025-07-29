@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace AutoClicker
 {
-    public partial class MacroCreateForm : Form
+    public partial class MacroCreateForm : BaseForm
     {
         public MacroModel CreatedMacro { get; private set; }
 
@@ -34,6 +34,27 @@ namespace AutoClicker
             txtName.Select();
         }
 
+        public override void ReloadLanguage()
+        {
+            cmbMouseButton.DataSource = new string[] {
+                Resources.opt_mb_left,
+                Resources.opt_mb_right,
+                Resources.opt_mb_mid
+            };
+            cmbClickType.DataSource = new string[] {
+                Resources.opt_ct_single,
+                Resources.opt_ct_double,
+                Resources.opt_ct_triple,
+                Resources.opt_ct_quadruple
+            };
+            cmodBtn.DataSource = new string[]
+            {
+                Resources.opt_cm_click,
+                Resources.opt_cm_hold
+            };
+            LoadLanguageValues();
+        }
+
         private void LoadLanguageValues()
         {
             lblName.Text = Resources.lblname + ":";
@@ -43,14 +64,21 @@ namespace AutoClicker
             lblMod.Text = Resources.opt_cmod + ":";
             intervallbl.Text = Resources.interval_groupbox + ":";
             holddurlbl.Text = Resources.holddur_groupbox + ":";
+
             millislbl.Text = Resources.interval_millis;
             hd_millislbl.Text = Resources.interval_millis;
             irvInfo.Text = Resources.interval_info;
+
             lblX.Text = Resources.pos_gb + " X:";
             lblY.Text = Resources.pos_gb + " Y:";
+
             chkUseCurrentPos.Text = Resources.pos_current;
             repeatForeverBtn.Text = Resources.rep_forever;
             repeattimeslbl.Text = Resources.rep_gb + ":";
+
+            txtName.Tag = Resources.ph_name;
+            txtDescription.Tag = Resources.ph_desc;
+
             this.Text = Resources.createmacro_title;
             btnSave.Text = MainMenu.CapitalizeFirstLetter(Resources.create);
         }

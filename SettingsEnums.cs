@@ -1,18 +1,61 @@
-﻿using System.Drawing;
-using System.Text.Json.Serialization;
-
-public class Position
+﻿public class Position
 {
     public int X { get; set; } = 0;
     public int Y { get; set; } = 0;
     public bool CurrentPosition { get; set; } = true;
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as Position;
+        if (other == null)
+            return false;
+
+        return X == other.X &&
+               Y == other.Y &&
+               CurrentPosition == other.CurrentPosition;
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 23 + X.GetHashCode();
+            hash = hash * 23 + Y.GetHashCode();
+            hash = hash * 23 + CurrentPosition.GetHashCode();
+            return hash;
+        }
+    }
 }
+
 
 public class RepeatTimes
 {
     public int Count { get; set; } = 1;
     public bool RepeatForever { get; set; } = true;
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as RepeatTimes;
+        if (other == null)
+            return false;
+
+        return Count == other.Count &&
+               RepeatForever == other.RepeatForever;
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 23 + Count.GetHashCode();
+            hash = hash * 23 + RepeatForever.GetHashCode();
+            return hash;
+        }
+    }
 }
+
 
 public enum MouseButton
 {

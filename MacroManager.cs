@@ -14,10 +14,48 @@ public class MacroModel
     public MouseButton MouseButton { get; set; } = MouseButton.LEFT;
     public ClickType ClickType { get; set; } = ClickType.SINGLE;
     public Position Position { get; set; } = new Position();
-    public int Interval { get; set; } = 0;
+    public int Interval { get; set; } = 100;
     public RepeatTimes RepeatTimes { get; set; } = new RepeatTimes();
     public ClickMod ClickMode { get; set; } = ClickMod.CLICK;
-    public int HoldDuration { get; set; } = 1;
+    public int HoldDuration { get; set; } = 1000;
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as MacroModel;
+        if (other == null)
+            return false;
+
+        return Name == other.Name &&
+               Description == other.Description &&
+               MouseButton == other.MouseButton &&
+               ClickType == other.ClickType &&
+               Interval == other.Interval &&
+               HoldDuration == other.HoldDuration &&
+               ClickMode == other.ClickMode &&
+               Position.Equals(other.Position) &&
+               RepeatTimes.Equals(other.RepeatTimes);
+    }
+
+
+    public override int GetHashCode()
+    {
+        unchecked // taşma olursa hata verme
+        {
+            int hash = 17;
+            hash = hash * 23 + (Name?.GetHashCode() ?? 0);
+            hash = hash * 23 + (Description?.GetHashCode() ?? 0);
+            hash = hash * 23 + MouseButton.GetHashCode();
+            hash = hash * 23 + ClickType.GetHashCode();
+            hash = hash * 23 + Interval.GetHashCode();
+            hash = hash * 23 + HoldDuration.GetHashCode();
+            hash = hash * 23 + ClickMode.GetHashCode();
+            hash = hash * 23 + (Position?.GetHashCode() ?? 0);
+            hash = hash * 23 + (RepeatTimes?.GetHashCode() ?? 0);
+            return hash;
+        }
+    }
+
+
 }
 
 public class DefaultMacro
@@ -36,8 +74,8 @@ public class DefaultMacro
         RepeatForever = true
     };
     public ClickMod DefaultClickMod { get; private set; } = ClickMod.CLICK;
-    public int DefaultInterval { get; private set; } = 0;
-    public int DefaultHoldDuration { get; private set; } = 1;
+    public int DefaultInterval { get; private set; } = 100;
+    public int DefaultHoldDuration { get; private set; } = 1000;
 }
 
 public static class MacroManager
@@ -48,6 +86,14 @@ public static class MacroManager
     {
         Macros = LoadAll();
         Macros = FixMacros(Macros);
+
+        MacroModel defaultsInJSON = Macros["DEFAULT"];
+        MacroModel macroDefault = GetDefaultMacro();
+        if (!defaultsInJSON.Equals(macroDefault))
+        {
+            Macros["DEFAULT"] = macroDefault;
+        }
+
         SaveAll(Macros);
     }
 
@@ -76,7 +122,6 @@ public static class MacroManager
 
             var macros = new Dictionary<string, MacroModel>();
             int unnamedCounter = 1;
-
             foreach (var kvp in rawMacros)
             {
                 var key = kvp.Key?.Trim() ?? "";
@@ -185,8 +230,16 @@ public static class MacroManager
 
     public static void AddDefaults(Dictionary<string, MacroModel> macros)
     {
+        MacroModel macroDefault = GetDefaultMacro();
+
+        macros["DEFAULT"] = macroDefault;
+        SaveAll(macros);
+    }
+
+    public static MacroModel GetDefaultMacro()
+    {
         DefaultMacro def = new DefaultMacro();
-        MacroModel macroDefault = new MacroModel
+        return new MacroModel
         {
             Name = "DEFAULT",
             Description = "The defaults.",
@@ -198,17 +251,6 @@ public static class MacroManager
             ClickMode = def.DefaultClickMod,
             HoldDuration = def.DefaultHoldDuration
         };
-
-        macros["DEFAULT"] = macroDefault;
-        SaveAll(macros);
-    }
-
-    public static void CheckDefaults()
-    {
-        if (!Macros.ContainsKey("DEFAULT"))
-        {
-            AddDefaults(Macros);
-        }
     }
 
     public static void DeleteMacro(string name)

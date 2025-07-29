@@ -15,19 +15,30 @@ using System.Windows.Forms;
 
 namespace AutoClicker
 {
-    public partial class UpdateDialog : Form
+    public partial class UpdateDialog : BaseForm
     {
-        public UpdateDialog()
+        bool IsTherePreReleaseUpdate = false;
+        string PreReleaseURL = "";
+
+        public UpdateDialog(string preReleaseURL)
         {
+            IsTherePreReleaseUpdate = !string.IsNullOrWhiteSpace(preReleaseURL);
+            PreReleaseURL = preReleaseURL;
+
             InitializeComponent();
             buttonYes.Click += ButtonYes_Click;
             buttonNo.Click += ButtonNo_Click;
             LoadLanguage();
         }
 
+        public override void ReloadLanguage()
+        {
+            LoadLanguage();
+        }
+
         public void LoadLanguage()
         {
-            labelMessage.Text = Resources.update_available_txt;
+            labelMessage.Text = IsTherePreReleaseUpdate ? Resources.preupdate_available_txt : Resources.update_available_txt;
             this.Text = Resources.update_available_title;
             buttonYes.Text = Resources.download;
             buttonNo.Text = MainMenu.CapitalizeFirstLetter(Resources.cancel);
@@ -38,7 +49,7 @@ namespace AutoClicker
             // İndir butonuna basıldığında varsayılan tarayıcıda GitHub release sayfasını aç
             Process.Start(new ProcessStartInfo
             {
-                FileName = "https://github.com/ilpenSE/autoclicker/releases/latest",
+                FileName = IsTherePreReleaseUpdate ? PreReleaseURL : "https://github.com/ilpenSE/autoclicker/releases/latest",
                 UseShellExecute = true
             });
 

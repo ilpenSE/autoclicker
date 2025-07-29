@@ -8,21 +8,18 @@ using System.Windows.Forms;
 
 namespace AutoClicker
 {
-    public partial class SettingsMenu : Form
+    public partial class SettingsMenu : BaseForm
     {
         private SettingsModel _settings;
         private HotkeyService _hotkey;
-        private Action toggleClicker;
 
-        public SettingsMenu(HotkeyService hotkey, SettingsModel settings, Action onKeyPressed)
+        public SettingsMenu(HotkeyService hotkey, SettingsModel settings)
         {
             InitializeComponent();
             this._settings = settings;
             this._hotkey = hotkey;
-            this.toggleClicker = onKeyPressed;
             Select();
             Focus();
-            Text = Resources.settings_title;
         }
 
         private void SettingsMenu_Load(object sender, EventArgs e)
@@ -63,36 +60,19 @@ namespace AutoClicker
 
         bool isWaitingForHotkey = false;
 
+        public override void ReloadLanguage()
+        {
+            LoadLanguage();
+        }
+
         private void LoadLanguage()
         {
-            var localizer = GetLocalizer();
-
+            this.Text = Resources.settings_title;
             langlbl.Text = Resources.opt_lang;
             htklbl.Text = Resources.htk;
             titlelbl.Text = Resources.settings_title;
             saveBtn.Text = Resources.save;
             discardBtn.Text = Resources.discard;
-        }
-
-        private IStringLocalizer<Resources> GetLocalizer()
-        {
-            // this returns localizer which has localized texts
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddLocalization(options => options.ResourcesPath = "Properties");
-
-            var provider = services.BuildServiceProvider();
-
-            // set the culture
-            CultureInfo.CurrentUICulture = new CultureInfo(MainMenu.GetLanguageCode(GetLanguage()));
-
-            // return localizer
-            return provider.GetRequiredService<IStringLocalizer<Resources>>();
-        }
-
-        private Language GetLanguage()
-        {
-            return MainMenu.GetLanguageByIndex(_settings.LanguageIndex);
         }
 
         private void saveBtn_Click(object sender, EventArgs e)

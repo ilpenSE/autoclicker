@@ -25,18 +25,39 @@ namespace AutoClicker
         [STAThread]
         static void Main()
         {
+            Console.WriteLine($"[{DateTime.Now.ToString("HH:mm:ss:fff-dd/MM/yyyy")}] [LOAD] Loading...");
             try
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
+                // Ayarları oku (örneğin settings.json’dan)
+                var langIndex = LoadLanguageIndexFromSettings();
+
+                // Culture ayarla
+                var cultureCode = MainMenu.GetLanguageCode((Language)langIndex);
+                var culture = new CultureInfo(cultureCode);
+
+                CultureInfo.CurrentUICulture = culture;
+                CultureInfo.CurrentCulture = culture;
+                Resources.Culture = culture;
+
                 CheckAndCreateFilesAndDirs();
                 var updateAvailable = CheckUpdate().GetAwaiter().GetResult();
+                var preReleaseUpdateURL = CheckPreReleaseUpdate().GetAwaiter().GetResult();
 
-                if (updateAvailable)
+                Console.WriteLine(preReleaseUpdateURL);
+
+                if (updateAvailable || preReleaseUpdateURL != "")
                 {
-                    var dlg = new UpdateDialog();
+                    var dlg = new UpdateDialog(preReleaseUpdateURL);
                     dlg.ShowDialog();
+
+                    if (dlg.DialogResult == DialogResult.No)
+                    {
+                        Application.Run(new MainMenu());
+                    }
+                    return;
                 }
 
                 Application.Run(new MainMenu());
@@ -48,6 +69,23 @@ namespace AutoClicker
                 MessageBox.Show(Resources.err_occured + ex.Message, "Auto Clicker", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private static int LoadLanguageIndexFromSettings()
+        {
+            if (!File.Exists(settingsPath))
+                return (int)SettingsManager.DefaultLanguage;
+
+            try
+            {
+                var json = File.ReadAllText(settingsPath);
+                var settings = JsonSerializer.Deserialize<SettingsModel>(json);
+                return settings?.LanguageIndex ?? (int)SettingsManager.DefaultLanguage;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         static void CheckAndCreateFilesAndDirs()
         {
             // 📁 Dizin yoksa oluştur
@@ -67,6 +105,10 @@ namespace AutoClicker
         static async System.Threading.Tasks.Task<bool> CheckUpdate()
         {
             return await UpdateChecker.CheckUpdateAvailable();
+        }
+        static async System.Threading.Tasks.Task<string> CheckPreReleaseUpdate()
+        {
+            return await UpdateChecker.CheckPreReleaseAvailable();
         }
 
     }
