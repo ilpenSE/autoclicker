@@ -43,30 +43,26 @@
 
 ### English UI
 
-<img width="577" height="562" alt="en1" src="https://github.com/user-attachments/assets/7b0327f2-d0be-4cff-ac5c-39157e27e5ed" />
+<img width="576" height="565" alt="ss1_en" src="https://github.com/user-attachments/assets/87755f1f-94d3-491f-a21e-4c1d13768511" />
 
-<img width="576" height="564" alt="en2" src="https://github.com/user-attachments/assets/64f3bf9f-cc72-42eb-97c0-51accda60fa6" />
+<img width="577" height="562" alt="ss2_en" src="https://github.com/user-attachments/assets/579e3763-9988-4d7f-8b8f-09780d9bbca2" />
 
-<img width="577" height="576" alt="en3" src="https://github.com/user-attachments/assets/3dfd5edf-85fc-4fab-a6a2-262f34813638" />
-
-<img width="574" height="563" alt="en4" src="https://github.com/user-attachments/assets/51d42502-e023-4af3-bb2b-0a27c55ff1ea" />
+<img width="576" height="563" alt="ss3_en" src="https://github.com/user-attachments/assets/b33f192c-dc2f-4b16-8c15-4653b4adf219" />
 
 ### Türkçe Arayüz
 
-<img width="575" height="562" alt="tr1" src="https://github.com/user-attachments/assets/69f64035-5f1e-4606-8857-e5909f7c7475" />
+<img width="576" height="564" alt="ss1_tr" src="https://github.com/user-attachments/assets/bad023f9-595f-487b-9a79-6933d516ecda" />
 
-<img width="576" height="561" alt="tr2" src="https://github.com/user-attachments/assets/737b2f9b-b349-4950-a814-22e45a86797b" />
+<img width="511" height="436" alt="ss2_tr" src="https://github.com/user-attachments/assets/5b42d8e9-2ece-4f96-8a8e-4935cf452b3c" />
 
-<img width="574" height="578" alt="tr3" src="https://github.com/user-attachments/assets/3cf63bda-f0a8-4869-af7f-f78255f2d985" />
-
-<img width="574" height="565" alt="tr4" src="https://github.com/user-attachments/assets/132f2520-211c-41fd-a1dc-a3d52e5e9b25" />
+<img width="573" height="563" alt="ss3_tr" src="https://github.com/user-attachments/assets/cf0a7d46-5418-4d2f-85e9-e904035b7d78" />
 
 ---
 
 ## 📦 Installation / Kurulum
 
 1. Download the latest release from the [Releases](https://github.com/ilpenSE/autoclicker/releases) page. / [Releases](https://github.com/ilpenSE/autoclicker/releases) sayfasından en son sürümü indir.
-2. Run `Auto.Clicker.Setup.1.3.2.exe`. / `Auto.Clicker.Setup.1.3.2.exe`yi çalıştırın.
+2. Run `Auto.Clicker.Setup.1.3.4.exe`. / `Auto.Clicker.Setup.1.3.4.exe`yi çalıştırın.
 3. Follow the instructions given to you. / Size verilen kurulum talimatlarını takip edin.
 4. Run the program on your desktop. / Masaüstünüzden programı çalıştırın.
 
