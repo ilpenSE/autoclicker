@@ -51,6 +51,7 @@
             // 
             this.list.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
             this.list.ForeColor = System.Drawing.Color.White;
+            this.list.FullRowSelect = true;
             this.list.HideSelection = false;
             this.list.Location = new System.Drawing.Point(9, 46);
             this.list.MultiSelect = false;
@@ -189,7 +190,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
-            this.ClientSize = new System.Drawing.Size(509, 381);
+            this.ClientSize = new System.Drawing.Size(511, 381);
             this.Controls.Add(this.selectBtn);
             this.Controls.Add(this.cancelBtn);
             this.Controls.Add(this.createBtn);
@@ -208,6 +209,13 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Macro Selection";
             this.Load += new System.EventHandler(this.MacroForm_Load);
+            this.Controls.SetChildIndex(this.label1, 0);
+            this.Controls.SetChildIndex(this.list, 0);
+            this.Controls.SetChildIndex(this.errlbl, 0);
+            this.Controls.SetChildIndex(this.deleteBtn, 0);
+            this.Controls.SetChildIndex(this.createBtn, 0);
+            this.Controls.SetChildIndex(this.cancelBtn, 0);
+            this.Controls.SetChildIndex(this.selectBtn, 0);
             this.ResumeLayout(false);
             this.PerformLayout();
 

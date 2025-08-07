@@ -3,7 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
+using System.Windows.Documents;
 using System.Windows.Forms;
 
 namespace AutoClicker
@@ -26,7 +28,9 @@ namespace AutoClicker
         {
             LoadLanguage();
             LoadValues();
-            this.Font = FontLoader.GetRegular(9f);
+            this.Font = RegularFont;
+            titlelbl.Font = FontLoader.GetBold(18f);
+            UpdateInfoLabel();
 
             saveBtn.StateCommon.Content.ShortText.Font = MainMenu.ButtonFont;
             discardBtn.StateCommon.Content.ShortText.Font = MainMenu.ButtonFont;
@@ -52,6 +56,28 @@ namespace AutoClicker
             };
         }
 
+
+        private void UpdateInfoLabel()
+        {
+            infolbl.Text = $"ilpeN © 2025, v{MainMenu.VERSION_STRING}";
+        }
+        private void infolbl_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/ilpenSE/autoclicker");
+        }
+
+        private void infolbl_MouseHover(object sender, EventArgs e)
+        {
+            infolbl.Font = new Font(infolbl.Font, FontStyle.Underline);
+            infolbl.ForeColor = Color.FromArgb(170, 170, 170);
+        }
+
+        private void infolbl_MouseLeave(object sender, EventArgs e)
+        {
+            infolbl.Font = new Font(infolbl.Font, FontStyle.Regular);
+            infolbl.ForeColor = Color.FromArgb(110, 110, 110);
+        }
+
         private void LoadValues()
         {
             langBtn.SelectedIndex = _settings.LanguageIndex;
@@ -72,7 +98,7 @@ namespace AutoClicker
             htklbl.Text = Resources.htk;
             titlelbl.Text = Resources.settings_title;
             saveBtn.Text = Resources.save;
-            discardBtn.Text = Resources.discard;
+            discardBtn.Text = Resources.cancel;
         }
 
         private void saveBtn_Click(object sender, EventArgs e)
@@ -100,6 +126,7 @@ namespace AutoClicker
             this.Close();
         }
 
+        Font RegularFont = FontLoader.GetRegular(9f);
 
         private void discardBtn_Click(object sender, EventArgs e)
         {

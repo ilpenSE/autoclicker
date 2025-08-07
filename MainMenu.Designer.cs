@@ -53,11 +53,12 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.activemacrolbl = new System.Windows.Forms.Label();
-            this.infolbl = new System.Windows.Forms.Label();
             this.settingsBtn = new Krypton.Toolkit.KryptonButton();
             this.stopBtn = new Krypton.Toolkit.KryptonButton();
             this.startBtn = new Krypton.Toolkit.KryptonButton();
             this.holddur = new System.Windows.Forms.GroupBox();
+            this.holdForeverBtn = new Krypton.Toolkit.KryptonRadioButton();
+            this.holdTimeBtn = new Krypton.Toolkit.KryptonRadioButton();
             this.hd_millislbl = new System.Windows.Forms.Label();
             this.hdMillis = new Krypton.Toolkit.KryptonNumericUpDown();
             this.interval.SuspendLayout();
@@ -75,9 +76,9 @@
             this.interval.Controls.Add(this.irv_millislbl);
             this.interval.Controls.Add(this.irvMillis);
             this.interval.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
-            this.interval.Location = new System.Drawing.Point(12, 72);
+            this.interval.Location = new System.Drawing.Point(12, 64);
             this.interval.Name = "interval";
-            this.interval.Size = new System.Drawing.Size(224, 75);
+            this.interval.Size = new System.Drawing.Size(193, 85);
             this.interval.TabIndex = 0;
             this.interval.TabStop = false;
             this.interval.Text = "Interval";
@@ -86,7 +87,7 @@
             // 
             this.irv_millislbl.AutoSize = true;
             this.irv_millislbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
-            this.irv_millislbl.Location = new System.Drawing.Point(149, 35);
+            this.irv_millislbl.Location = new System.Drawing.Point(143, 35);
             this.irv_millislbl.Name = "irv_millislbl";
             this.irv_millislbl.Size = new System.Drawing.Size(24, 15);
             this.irv_millislbl.TabIndex = 18;
@@ -99,7 +100,7 @@
             0,
             0,
             0});
-            this.irvMillis.Location = new System.Drawing.Point(26, 29);
+            this.irvMillis.Location = new System.Drawing.Point(20, 29);
             this.irvMillis.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -131,7 +132,7 @@
             this.irvInfo.AutoSize = true;
             this.irvInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.irvInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(120)))), ((int)(((byte)(120)))), ((int)(((byte)(120)))));
-            this.irvInfo.Location = new System.Drawing.Point(12, 52);
+            this.irvInfo.Location = new System.Drawing.Point(12, 43);
             this.irvInfo.Name = "irvInfo";
             this.irvInfo.Size = new System.Drawing.Size(176, 15);
             this.irvInfo.TabIndex = 19;
@@ -260,7 +261,7 @@
             // cmodelbl
             // 
             this.cmodelbl.AutoSize = true;
-            this.cmodelbl.Location = new System.Drawing.Point(9, 102);
+            this.cmodelbl.Location = new System.Drawing.Point(9, 105);
             this.cmodelbl.Name = "cmodelbl";
             this.cmodelbl.Size = new System.Drawing.Size(54, 13);
             this.cmodelbl.TabIndex = 14;
@@ -332,7 +333,7 @@
             // clicktypelbl
             // 
             this.clicktypelbl.AutoSize = true;
-            this.clicktypelbl.Location = new System.Drawing.Point(8, 65);
+            this.clicktypelbl.Location = new System.Drawing.Point(8, 68);
             this.clicktypelbl.Name = "clicktypelbl";
             this.clicktypelbl.Size = new System.Drawing.Size(57, 13);
             this.clicktypelbl.TabIndex = 9;
@@ -341,7 +342,7 @@
             // msbtnlbl
             // 
             this.msbtnlbl.AutoSize = true;
-            this.msbtnlbl.Location = new System.Drawing.Point(8, 29);
+            this.msbtnlbl.Location = new System.Drawing.Point(8, 31);
             this.msbtnlbl.Name = "msbtnlbl";
             this.msbtnlbl.Size = new System.Drawing.Size(73, 13);
             this.msbtnlbl.TabIndex = 8;
@@ -471,7 +472,7 @@
             this.activemacrolbl.AutoSize = true;
             this.activemacrolbl.Cursor = System.Windows.Forms.Cursors.Hand;
             this.activemacrolbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.activemacrolbl.Location = new System.Drawing.Point(12, 21);
+            this.activemacrolbl.Location = new System.Drawing.Point(12, 16);
             this.activemacrolbl.Name = "activemacrolbl";
             this.activemacrolbl.Size = new System.Drawing.Size(269, 20);
             this.activemacrolbl.TabIndex = 9;
@@ -479,21 +480,6 @@
             this.activemacrolbl.Click += new System.EventHandler(this.activemacrolbl_Click);
             this.activemacrolbl.MouseEnter += new System.EventHandler(this.activemacrolbl_MouseEnter);
             this.activemacrolbl.MouseLeave += new System.EventHandler(this.activemacrolbl_MouseLeave);
-            // 
-            // infolbl
-            // 
-            this.infolbl.AutoSize = true;
-            this.infolbl.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.infolbl.Font = new System.Drawing.Font("Microsoft YaHei", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.infolbl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
-            this.infolbl.Location = new System.Drawing.Point(391, 442);
-            this.infolbl.Name = "infolbl";
-            this.infolbl.Size = new System.Drawing.Size(104, 16);
-            this.infolbl.TabIndex = 10;
-            this.infolbl.Text = "ilpeN © 2025, v1.3";
-            this.infolbl.Click += new System.EventHandler(this.infolbl_Click);
-            this.infolbl.MouseEnter += new System.EventHandler(this.infolbl_MouseHover);
-            this.infolbl.MouseLeave += new System.EventHandler(this.infolbl_MouseLeave);
             // 
             // settingsBtn
             // 
@@ -579,21 +565,43 @@
             // 
             // holddur
             // 
+            this.holddur.Controls.Add(this.holdForeverBtn);
+            this.holddur.Controls.Add(this.holdTimeBtn);
             this.holddur.Controls.Add(this.hd_millislbl);
             this.holddur.Controls.Add(this.hdMillis);
             this.holddur.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
-            this.holddur.Location = new System.Drawing.Point(242, 71);
+            this.holddur.Location = new System.Drawing.Point(211, 64);
             this.holddur.Name = "holddur";
-            this.holddur.Size = new System.Drawing.Size(238, 75);
+            this.holddur.Size = new System.Drawing.Size(269, 85);
             this.holddur.TabIndex = 20;
             this.holddur.TabStop = false;
             this.holddur.Text = "Hold Duration";
+            // 
+            // holdForeverBtn
+            // 
+            this.holdForeverBtn.Location = new System.Drawing.Point(11, 55);
+            this.holdForeverBtn.Name = "holdForeverBtn";
+            this.holdForeverBtn.Size = new System.Drawing.Size(127, 20);
+            this.holdForeverBtn.StateCommon.ShortText.Color1 = System.Drawing.Color.White;
+            this.holdForeverBtn.StateNormal.ShortText.Color1 = System.Drawing.Color.White;
+            this.holdForeverBtn.TabIndex = 20;
+            this.holdForeverBtn.Values.Text = "Hold Until Stopped";
+            // 
+            // holdTimeBtn
+            // 
+            this.holdTimeBtn.Location = new System.Drawing.Point(12, 23);
+            this.holdTimeBtn.Name = "holdTimeBtn";
+            this.holdTimeBtn.Size = new System.Drawing.Size(68, 20);
+            this.holdTimeBtn.StateCommon.ShortText.Color1 = System.Drawing.Color.White;
+            this.holdTimeBtn.StateNormal.ShortText.Color1 = System.Drawing.Color.White;
+            this.holdTimeBtn.TabIndex = 19;
+            this.holdTimeBtn.Values.Text = "Hold for";
             // 
             // hd_millislbl
             // 
             this.hd_millislbl.AutoSize = true;
             this.hd_millislbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
-            this.hd_millislbl.Location = new System.Drawing.Point(154, 35);
+            this.hd_millislbl.Location = new System.Drawing.Point(233, 25);
             this.hd_millislbl.Name = "hd_millislbl";
             this.hd_millislbl.Size = new System.Drawing.Size(24, 15);
             this.hd_millislbl.TabIndex = 18;
@@ -606,7 +614,7 @@
             0,
             0,
             0});
-            this.hdMillis.Location = new System.Drawing.Point(29, 29);
+            this.hdMillis.Location = new System.Drawing.Point(143, 19);
             this.hdMillis.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -618,7 +626,7 @@
             0,
             0});
             this.hdMillis.Name = "hdMillis";
-            this.hdMillis.Size = new System.Drawing.Size(120, 28);
+            this.hdMillis.Size = new System.Drawing.Size(84, 28);
             this.hdMillis.StateActive.Border.Width = 2;
             this.hdMillis.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
             this.hdMillis.StateCommon.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -645,7 +653,6 @@
             this.Controls.Add(this.startBtn);
             this.Controls.Add(this.stopBtn);
             this.Controls.Add(this.settingsBtn);
-            this.Controls.Add(this.infolbl);
             this.Controls.Add(this.activemacrolbl);
             this.Controls.Add(this.position);
             this.Controls.Add(this.options);
@@ -661,6 +668,16 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainMenu_FormClosing);
             this.Load += new System.EventHandler(this.MainMenu_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainMenu_KeyDown);
+            this.Controls.SetChildIndex(this.interval, 0);
+            this.Controls.SetChildIndex(this.repeat, 0);
+            this.Controls.SetChildIndex(this.options, 0);
+            this.Controls.SetChildIndex(this.position, 0);
+            this.Controls.SetChildIndex(this.activemacrolbl, 0);
+            this.Controls.SetChildIndex(this.settingsBtn, 0);
+            this.Controls.SetChildIndex(this.stopBtn, 0);
+            this.Controls.SetChildIndex(this.startBtn, 0);
+            this.Controls.SetChildIndex(this.holddur, 0);
+            this.Controls.SetChildIndex(this.irvInfo, 0);
             this.interval.ResumeLayout(false);
             this.interval.PerformLayout();
             this.repeat.ResumeLayout(false);
@@ -691,7 +708,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label timeslbl;
         private System.Windows.Forms.Label activemacrolbl;
-        private System.Windows.Forms.Label infolbl;
         private Krypton.Toolkit.KryptonButton settingsBtn;
         private Krypton.Toolkit.KryptonButton stopBtn;
         private Krypton.Toolkit.KryptonButton startBtn;
@@ -712,6 +728,8 @@
         private System.Windows.Forms.Label hd_millislbl;
         private Krypton.Toolkit.KryptonNumericUpDown hdMillis;
         private Krypton.Toolkit.KryptonNumericUpDown repeatTimes;
+        private Krypton.Toolkit.KryptonRadioButton holdForeverBtn;
+        private Krypton.Toolkit.KryptonRadioButton holdTimeBtn;
     }
 }
 

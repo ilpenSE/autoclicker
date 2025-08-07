@@ -36,6 +36,7 @@
             this.saveBtn = new Krypton.Toolkit.KryptonButton();
             this.discardBtn = new Krypton.Toolkit.KryptonButton();
             this.htkbox = new Krypton.Toolkit.KryptonTextBox();
+            this.infolbl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.langBtn)).BeginInit();
             this.SuspendLayout();
             // 
@@ -43,7 +44,7 @@
             // 
             this.langlbl.AutoSize = true;
             this.langlbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.langlbl.Location = new System.Drawing.Point(24, 62);
+            this.langlbl.Location = new System.Drawing.Point(19, 64);
             this.langlbl.Name = "langlbl";
             this.langlbl.Size = new System.Drawing.Size(72, 17);
             this.langlbl.TabIndex = 15;
@@ -53,7 +54,7 @@
             // 
             this.htklbl.AutoSize = true;
             this.htklbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.htklbl.Location = new System.Drawing.Point(24, 107);
+            this.htklbl.Location = new System.Drawing.Point(19, 108);
             this.htklbl.Name = "htklbl";
             this.htklbl.Size = new System.Drawing.Size(52, 17);
             this.htklbl.TabIndex = 17;
@@ -63,7 +64,7 @@
             // 
             this.titlelbl.AutoSize = true;
             this.titlelbl.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F);
-            this.titlelbl.Location = new System.Drawing.Point(23, 21);
+            this.titlelbl.Location = new System.Drawing.Point(19, 16);
             this.titlelbl.Name = "titlelbl";
             this.titlelbl.Size = new System.Drawing.Size(91, 26);
             this.titlelbl.TabIndex = 19;
@@ -79,7 +80,7 @@
             "Deutsch",
             "Français",
             "Italiano"});
-            this.langBtn.Location = new System.Drawing.Point(148, 62);
+            this.langBtn.Location = new System.Drawing.Point(138, 60);
             this.langBtn.Name = "langBtn";
             this.langBtn.Size = new System.Drawing.Size(132, 28);
             this.langBtn.StateCommon.ComboBox.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
@@ -104,7 +105,7 @@
             // 
             // saveBtn
             // 
-            this.saveBtn.Location = new System.Drawing.Point(23, 146);
+            this.saveBtn.Location = new System.Drawing.Point(19, 144);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(120, 46);
             this.saveBtn.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(230)))), ((int)(((byte)(150)))));
@@ -132,9 +133,9 @@
             // 
             // discardBtn
             // 
-            this.discardBtn.Location = new System.Drawing.Point(155, 146);
+            this.discardBtn.Location = new System.Drawing.Point(150, 144);
             this.discardBtn.Name = "discardBtn";
-            this.discardBtn.Size = new System.Drawing.Size(125, 46);
+            this.discardBtn.Size = new System.Drawing.Size(120, 46);
             this.discardBtn.StateNormal.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(140)))));
             this.discardBtn.StateNormal.Back.Color2 = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
             this.discardBtn.StateNormal.Border.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -160,7 +161,7 @@
             // 
             // htkbox
             // 
-            this.htkbox.Location = new System.Drawing.Point(148, 107);
+            this.htkbox.Location = new System.Drawing.Point(138, 105);
             this.htkbox.Name = "htkbox";
             this.htkbox.Size = new System.Drawing.Size(132, 27);
             this.htkbox.StateCommon.Back.Color1 = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
@@ -176,12 +177,29 @@
             this.htkbox.MouseEnter += new System.EventHandler(this.htkbox_MouseEnter);
             this.htkbox.MouseLeave += new System.EventHandler(this.htkbox_MouseLeave);
             // 
+            // infolbl
+            // 
+            this.infolbl.AutoSize = true;
+            this.infolbl.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.infolbl.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.infolbl.Font = new System.Drawing.Font("Microsoft YaHei", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.infolbl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
+            this.infolbl.Location = new System.Drawing.Point(5, 197);
+            this.infolbl.Name = "infolbl";
+            this.infolbl.Size = new System.Drawing.Size(104, 16);
+            this.infolbl.TabIndex = 26;
+            this.infolbl.Text = "ilpeN © 2025, v1.3";
+            this.infolbl.Click += new System.EventHandler(this.infolbl_Click);
+            this.infolbl.MouseEnter += new System.EventHandler(this.infolbl_MouseHover);
+            this.infolbl.MouseLeave += new System.EventHandler(this.infolbl_MouseLeave);
+            // 
             // SettingsMenu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(20)))));
-            this.ClientSize = new System.Drawing.Size(292, 212);
+            this.ClientSize = new System.Drawing.Size(292, 218);
+            this.Controls.Add(this.infolbl);
             this.Controls.Add(this.htkbox);
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.discardBtn);
@@ -190,11 +208,23 @@
             this.Controls.Add(this.htklbl);
             this.Controls.Add(this.langlbl);
             this.ForeColor = System.Drawing.Color.White;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "SettingsMenu";
+            this.Padding = new System.Windows.Forms.Padding(5);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Settings";
             this.Load += new System.EventHandler(this.SettingsMenu_Load);
+            this.Controls.SetChildIndex(this.langlbl, 0);
+            this.Controls.SetChildIndex(this.htklbl, 0);
+            this.Controls.SetChildIndex(this.titlelbl, 0);
+            this.Controls.SetChildIndex(this.langBtn, 0);
+            this.Controls.SetChildIndex(this.discardBtn, 0);
+            this.Controls.SetChildIndex(this.saveBtn, 0);
+            this.Controls.SetChildIndex(this.htkbox, 0);
+            this.Controls.SetChildIndex(this.infolbl, 0);
             ((System.ComponentModel.ISupportInitialize)(this.langBtn)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -209,5 +239,6 @@
         private Krypton.Toolkit.KryptonButton saveBtn;
         private Krypton.Toolkit.KryptonButton discardBtn;
         private Krypton.Toolkit.KryptonTextBox htkbox;
+        private System.Windows.Forms.Label infolbl;
     }
 }

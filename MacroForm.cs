@@ -3,6 +3,7 @@ using Krypton.Toolkit;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -91,13 +92,17 @@ namespace AutoClicker
 
         Timer blinkTimer = new Timer();
         int blinkCount = 0;
-        private void ShowErr(string msg)
+        private void ShowMessage(string msg, bool silent = false, bool isError = true)
         {
-            blinkTimer.Start();
-            SystemSounds.Hand.Play();
+            if (!silent)
+            {
+                blinkTimer.Start();
+                SystemSounds.Hand.Play();
+            }
 
             errlbl.Visible = true;
             errlbl.Text = msg;
+            errlbl.ForeColor = isError ? Color.FromArgb(214, 89, 77) : Color.Green;
             errlbl.Location = new Point((this.Size.Width - errlbl.Size.Width) / 2, errlbl.Location.Y);
         }
 
@@ -120,7 +125,7 @@ namespace AutoClicker
         {
             if (list.SelectedItems.Count == 0)
             {
-                ShowErr(Resources.info_selectmacro);
+                ShowMessage(Resources.info_selectmacro);
                 return;
             }
 
@@ -128,44 +133,79 @@ namespace AutoClicker
             DialogResult = DialogResult.OK;
         }
 
-        private void LoadMacroList(string selectedMacroName = null)
+        private void LoadMacroList()
         {
             list.Items.Clear();
             list.Select();
 
-            foreach (var kvp in _macros)
+            if (_macros.TryGetValue("DEFAULT", out var defaultMacro))
             {
-                bool isDefault = kvp.Key == "DEFAULT";
-                var item = new ListViewItem(kvp.Key.ToString() == "DEFAULT" ? Resources.defaultmacro : kvp.Key.ToString());
-                item.SubItems.Add(isDefault ? Resources.defaultmacrodesc : (kvp.Value.Description ?? ""));
-
-                item.Tag = kvp.Key;
-
-                bool isActive = item.Tag.ToString() == ACTIVE_MACRO_NAME;
-
+                var item = new ListViewItem(Resources.defaultmacro);
+                item.SubItems.Add(Resources.defaultmacrodesc);
+                item.Tag = "DEFAULT";
                 list.Items.Add(item);
-
-                if (isActive)
-                {
-                    item.Selected = true;
-                    item.Focused = true;
-                    item.EnsureVisible();
-                }
             }
 
+            foreach (var kvp in _macros
+        .Where(kvp => kvp.Key != "DEFAULT")
+        .OrderBy(kvp => kvp.Key, StringComparer.CurrentCultureIgnoreCase))
+            {
+                AddItemToMacroList(kvp.Key.ToString(), kvp.Value.Description);
+            }
+
+            var activeItem = list.Items
+                .Cast<ListViewItem>()
+                .FirstOrDefault(item => item.Tag?.ToString() == ACTIVE_MACRO_NAME);
+            
+            if (activeItem != null)
+            {
+                activeItem.Selected = true;
+                activeItem.Focused = true;
+                activeItem.EnsureVisible();
+            }
         }
 
         private void createBtn_Click(object sender, EventArgs e)
         {
-            using (var createForm = new MacroCreateForm())
+            string baseName = Resources.newmacroname;
+            string newName;
+            int i = 1;
+
+            // Benzersiz isim bul
+            do
             {
-                if (createForm.ShowDialog() == DialogResult.OK)
-                {
-                    LoadMacroList();
-                    AdjustColumnWidths();
-                }
+                newName = $"{baseName} {i}";
+                i++;
             }
+            while (_macros.ContainsKey(newName));
+
+            // Yeni makroyu oluştur
+            var newMacro = MacroManager.GetDefaultMacro();
+            newMacro.Name = newName;
+            newMacro.Description = Resources.nodesc;
+
+            _macros[newName] = newMacro;
+            MacroManager.SaveMacro(newName, newMacro);
+
+            // Listeyi yenile
+            AddItemToMacroList(newName);
+            AdjustColumnWidths();
+
+            // Başarılı mesajı göster
+            ShowMessage(Resources.macrocreated, true, false);
         }
+
+        private void AddItemToMacroList(string name, string description = "")
+        {
+            var item = new ListViewItem(name);
+            bool hasNoDescription = string.IsNullOrEmpty(description) || string.IsNullOrWhiteSpace(description);
+            item.SubItems.Add(hasNoDescription ? Resources.nodesc : description);
+
+            item.Tag = name;
+
+            list.Items.Add(item);
+        }
+
 
         private void deleteBtn_Click(object sender, EventArgs e) => deleteMacro();
 
@@ -175,14 +215,14 @@ namespace AutoClicker
         {
             if (list.SelectedItems.Count == 0)
             {
-                ShowErr(Resources.wrn_selectmacrodel);
+                ShowMessage(Resources.wrn_selectmacrodel);
                 return;
             }
 
             string name = list.SelectedItems[0].Tag.ToString();
             if (name == "DEFAULT")
             {
-                ShowErr(Resources.wrn_cantdeldef);
+                ShowMessage(Resources.wrn_cantdeldef);
                 return;
             }
 
@@ -216,7 +256,7 @@ namespace AutoClicker
             // DEFAULT makrosu düzenlenemez
             if (item.Tag.ToString() == "DEFAULT")
             {
-                ShowErr(Resources.wrn_canteditdef);
+                ShowMessage(Resources.wrn_canteditdef);
                 return;
             }
 
@@ -262,7 +302,7 @@ namespace AutoClicker
 
             if (string.IsNullOrWhiteSpace(newText))
             {
-                ShowErr(Resources.err_emptynamedesc);
+                ShowMessage(Resources.err_emptynamedesc);
                 return;
             }
 
@@ -310,22 +350,21 @@ namespace AutoClicker
 
         private void MacroForm_Load(object sender, EventArgs e)
         {
-            list.View = View.Details;
-            list.FullRowSelect = true;
-            list.OwnerDraw = true;
+            typeof(Control).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(list, true, null);
 
             // Önce boş ekle
             list.Columns.Add(Resources.lblname);
             list.Columns.Add(Resources.lbldesc);
 
-            AdjustColumnWidths();
 
             LoadMacroList();
-
             list.KeyDown += list_KeyDown;
             list.MouseDoubleClick += list_MouseDoubleClick;
+
             list.DrawColumnHeader += list_DrawColumnHeader;
-            list.DrawItem += list_DrawItem;
+            
             list.DrawSubItem += list_DrawSubItem;
             list.MouseMove += list_MouseMove;
             list.MouseLeave += list_MouseLeave;
@@ -336,6 +375,8 @@ namespace AutoClicker
             {
                 btn.StateCommon.Content.ShortText.Font = MainMenu.ButtonFont;
             }
+            AdjustColumnWidths();
+
         }
 
 
@@ -365,11 +406,6 @@ namespace AutoClicker
         }
 
 
-        private void list_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            // SubItem'lar ayrı çizileceği için burası boş kalabilir
-        }
-
         private ListViewItem hoveredItem = null;
         private void list_MouseMove(object sender, MouseEventArgs e)
         {
@@ -377,7 +413,7 @@ namespace AutoClicker
             if (item != hoveredItem)
             {
                 hoveredItem = item;
-                list.Invalidate(); // yeniden çizim
+                list.Invalidate();
             }
         }
 
@@ -393,7 +429,6 @@ namespace AutoClicker
         private void list_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
             bool selected = e.Item.Selected;
-
             bool hovered = (hoveredItem == e.Item);
 
             Color backColor = selected
@@ -408,40 +443,27 @@ namespace AutoClicker
                     ? Color.LightBlue
                     : Color.White;
 
-            // Arka planı çiz
             using (SolidBrush backBrush = new SolidBrush(backColor))
                 e.Graphics.FillRectangle(backBrush, e.Bounds);
 
-            // Yazıyı çiz
+            Font fontToUse = list.Font;
+            if (e.ColumnIndex == 1 && e.SubItem.Text == Resources.nodesc)
+            {
+                fontToUse = new Font(list.Font, FontStyle.Italic);
+            }
+
             TextRenderer.DrawText(
                 e.Graphics,
                 e.SubItem.Text,
-                list.Font,
+                fontToUse,
                 e.Bounds,
                 textColor,
-                TextFormatFlags.Left
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis
             );
-
-            // Sağ boşluğu doldur (son sütunsa)
-            if (e.ColumnIndex == list.Columns.Count - 1)
-            {
-                int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
-                int fullRowWidth = list.ClientSize.Width - scrollBarWidth;
-
-                int usedWidth = 0;
-                foreach (ColumnHeader col in list.Columns)
-                    usedWidth += col.Width;
-
-                int remainingWidth = fullRowWidth - usedWidth;
-
-                if (remainingWidth > 0)
-                {
-                    Rectangle fillRect = new Rectangle(e.Bounds.Right, e.Bounds.Top, remainingWidth, e.Bounds.Height);
-                    using (Brush brush = new SolidBrush(backColor))
-                        e.Graphics.FillRectangle(brush, fillRect);
-                }
-            }
         }
+
+
+
 
         private void list_MouseDoubleClick(object sender, MouseEventArgs e)
         {

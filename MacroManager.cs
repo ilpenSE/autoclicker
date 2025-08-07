@@ -6,18 +6,19 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Xml.Linq;
 
 public class MacroModel
 {
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
-    public MouseButton MouseButton { get; set; } = MouseButton.LEFT;
-    public ClickType ClickType { get; set; } = ClickType.SINGLE;
-    public Position Position { get; set; } = new Position();
-    public int Interval { get; set; } = 100;
-    public RepeatTimes RepeatTimes { get; set; } = new RepeatTimes();
-    public ClickMod ClickMode { get; set; } = ClickMod.CLICK;
-    public int HoldDuration { get; set; } = 1000;
+    public MouseButton MouseButton { get; set; } = MacroManager.DefaultMouseButton;
+    public ClickType ClickType { get; set; } = MacroManager.DefaultClickType;
+    public Position Position { get; set; } = MacroManager.DefaultPosition;
+    public int Interval { get; set; } = MacroManager.DefaultInterval;
+    public RepeatTimes RepeatTimes { get; set; } = MacroManager.DefaultRepeatTimes;
+    public ClickMod ClickMode { get; set; } = MacroManager.DefaultClickMod;
+    public HoldOpts HoldOptions { get; set; } = MacroManager.DefaultHoldOptions;
 
     public override bool Equals(object obj)
     {
@@ -30,8 +31,8 @@ public class MacroModel
                MouseButton == other.MouseButton &&
                ClickType == other.ClickType &&
                Interval == other.Interval &&
-               HoldDuration == other.HoldDuration &&
                ClickMode == other.ClickMode &&
+               HoldOptions.Equals(other.HoldOptions) &&
                Position.Equals(other.Position) &&
                RepeatTimes.Equals(other.RepeatTimes);
     }
@@ -47,8 +48,8 @@ public class MacroModel
             hash = hash * 23 + MouseButton.GetHashCode();
             hash = hash * 23 + ClickType.GetHashCode();
             hash = hash * 23 + Interval.GetHashCode();
-            hash = hash * 23 + HoldDuration.GetHashCode();
             hash = hash * 23 + ClickMode.GetHashCode();
+            hash = hash * 23 + (HoldOptions?.GetHashCode() ?? 0);
             hash = hash * 23 + (Position?.GetHashCode() ?? 0);
             hash = hash * 23 + (RepeatTimes?.GetHashCode() ?? 0);
             return hash;
@@ -58,28 +59,30 @@ public class MacroModel
 
 }
 
-public class DefaultMacro
+public static class MacroManager
 {
-    public MouseButton DefaultMouseButton { get; private set; } = MouseButton.LEFT;
-    public ClickType DefaultClickType { get; private set; } = ClickType.SINGLE;
-    public Position DefaultPosition { get; private set; } = new Position
+    public static MouseButton DefaultMouseButton { get; private set; } = MouseButton.LEFT;
+    public static ClickType DefaultClickType { get; private set; } = ClickType.SINGLE;
+    public static Position DefaultPosition { get; private set; } = new Position
     {
         X = 0,
         Y = 0,
         CurrentPosition = true
     };
-    public RepeatTimes DefaultRepeatTimes { get; private set; } = new RepeatTimes
+    public static RepeatTimes DefaultRepeatTimes { get; private set; } = new RepeatTimes
     {
         Count = 1,
         RepeatForever = true
     };
-    public ClickMod DefaultClickMod { get; private set; } = ClickMod.CLICK;
-    public int DefaultInterval { get; private set; } = 100;
-    public int DefaultHoldDuration { get; private set; } = 1000;
-}
+    public static ClickMod DefaultClickMod { get; private set; } = ClickMod.CLICK;
+    public static int DefaultInterval { get; private set; } = 100;
+    public static HoldOpts DefaultHoldOptions { get; private set; } = new HoldOpts
+    {
+        HoldForever = false,
+        Duration = 1000
+    };
 
-public static class MacroManager
-{
+
     public static Dictionary<string, MacroModel> Macros { get; private set; }
 
     static MacroManager()
@@ -177,7 +180,6 @@ public static class MacroManager
 
     private static Dictionary<string, MacroModel> FixMacros(Dictionary<string, MacroModel> macros)
     {
-        var def = new DefaultMacro();
 
         foreach (var macro in macros.Values)
         {
@@ -188,35 +190,40 @@ public static class MacroManager
                 macro.Description = Resources.nodesc;
 
             if (!Enum.IsDefined(typeof(MouseButton), macro.MouseButton))
-                macro.MouseButton = def.DefaultMouseButton;
+                macro.MouseButton = DefaultMouseButton;
 
             if (!Enum.IsDefined(typeof(ClickType), macro.ClickType))
-                macro.ClickType = def.DefaultClickType;
+                macro.ClickType = DefaultClickType;
 
             if (macro.Position == null)
-                macro.Position = def.DefaultPosition;
+                macro.Position = DefaultPosition;
             else
             {
-                if (macro.Position.X < 0) macro.Position.X = def.DefaultPosition.X;
-                if (macro.Position.Y < 0) macro.Position.Y = def.DefaultPosition.Y;
+                if (macro.Position.X < 0) macro.Position.X = DefaultPosition.X;
+                if (macro.Position.Y < 0) macro.Position.Y = DefaultPosition.Y;
             }
 
-            if (macro.Interval < 0)
-                macro.Interval = def.DefaultInterval;
+            if (macro.Interval <= 0)
+                macro.Interval = DefaultInterval;
 
             if (macro.RepeatTimes == null)
-                macro.RepeatTimes = def.DefaultRepeatTimes;
+                macro.RepeatTimes = DefaultRepeatTimes;
             else
             {
                 if (macro.RepeatTimes.Count < 0)
-                    macro.RepeatTimes.Count = def.DefaultRepeatTimes.Count;
+                    macro.RepeatTimes.Count = DefaultRepeatTimes.Count;
+            }
+
+            if (macro.HoldOptions == null)
+                macro.HoldOptions = DefaultHoldOptions;
+            else
+            {
+                if (macro.HoldOptions.Duration < 0)
+                    macro.HoldOptions.Duration = DefaultHoldOptions.Duration;
             }
 
             if (!Enum.IsDefined(typeof(ClickMod), macro.ClickMode))
-                macro.ClickMode = def.DefaultClickMod;
-
-            if (macro.HoldDuration <= 0)
-                macro.HoldDuration = def.DefaultHoldDuration;
+                macro.ClickMode = DefaultClickMod;
         }
 
         // DEFAULT makro yoksa ekle
@@ -238,18 +245,17 @@ public static class MacroManager
 
     public static MacroModel GetDefaultMacro()
     {
-        DefaultMacro def = new DefaultMacro();
         return new MacroModel
         {
             Name = "DEFAULT",
             Description = "The defaults.",
-            MouseButton = def.DefaultMouseButton,
-            ClickType = def.DefaultClickType,
-            Position = def.DefaultPosition,
-            Interval = def.DefaultInterval,
-            RepeatTimes = def.DefaultRepeatTimes,
-            ClickMode = def.DefaultClickMod,
-            HoldDuration = def.DefaultHoldDuration
+            MouseButton = DefaultMouseButton,
+            ClickType = DefaultClickType,
+            Position = DefaultPosition,
+            Interval = DefaultInterval,
+            RepeatTimes = DefaultRepeatTimes,
+            ClickMode = DefaultClickMod,
+            HoldOptions = DefaultHoldOptions
         };
     }
 

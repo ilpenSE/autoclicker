@@ -35,48 +35,71 @@ public class ClickerEngine
 
     public void Stop() => _cts?.Cancel();
 
-    private async Task RunClickLoop(CancellationToken token)
+  private async Task RunClickLoop(CancellationToken token)
+  {
+    if (_macro.ClickMode == ClickMod.CLICK)
     {
-        if (_macro.ClickMode == ClickMod.CLICK)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                Click();
-                await Task.Delay(_macro.Interval, token);
-            }
-        }
-        else if (_macro.ClickMode == ClickMod.HOLD)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                MouseDown();
-                try
-                {
-                    await Task.Delay(_macro.HoldDuration, token);
-                }
-                catch (TaskCanceledException)
-                {
-                    // even if task cancelled, mouse up have to be called
-                }
-                finally
-                {
-                    MouseUp();
-                }
-
-                try
-                {
-                    await Task.Delay(_macro.Interval, token);
-                }
-                catch (TaskCanceledException)
-                {
-                    // loop ends here
-                    break;
-                }
-            }
-        }
-
+      while (!token.IsCancellationRequested)
+      {
+        Click();
+        await Task.Delay(_macro.Interval, token);
+      }
     }
-    private void Click()
+    else if (_macro.ClickMode == ClickMod.HOLD)
+    {
+      MouseDown();
+
+      try
+      {
+        if (_macro.HoldOptions.HoldForever)
+        {
+          await Task.Delay(Timeout.Infinite, token);
+        }
+        else
+        {
+          await Task.Delay(_macro.HoldOptions.Duration, token);
+        }
+      }
+      catch (TaskCanceledException)
+      {
+      }
+      finally
+      {
+        MouseUp();
+      }
+
+      if (!_macro.HoldOptions.HoldForever)
+      {
+        while (!token.IsCancellationRequested)
+        {
+          MouseDown();
+
+          try
+          {
+            await Task.Delay(_macro.HoldOptions.Duration, token);
+          }
+          catch (TaskCanceledException)
+          {
+            break;
+          }
+          finally
+          {
+            MouseUp();
+          }
+
+          try
+          {
+            await Task.Delay(_macro.Interval, token);
+          }
+          catch (TaskCanceledException)
+          {
+            break;
+          }
+        }
+      }
+    }
+  }
+  private void Click()
     {
         int down = MOUSEEVENTF_LEFTDOWN, up = MOUSEEVENTF_LEFTUP;
         switch (_macro.MouseButton)

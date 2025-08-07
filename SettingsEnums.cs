@@ -56,6 +56,32 @@ public class RepeatTimes
     }
 }
 
+public class HoldOpts
+{
+    public int Duration { get; set; } = 1000;
+    public bool HoldForever { get; set; } = false;
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as HoldOpts;
+        if (other == null)
+            return false;
+
+        return Duration == other.Duration &&
+               HoldForever == other.HoldForever;
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 23 + Duration.GetHashCode();
+            hash = hash * 23 + HoldForever.GetHashCode();
+            return hash;
+        }
+    }
+}
 
 public enum MouseButton
 {
