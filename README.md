@@ -1,5 +1,5 @@
 
-# 🖱️ AutoClicker – Advanced and Lightweight Macro Clicker
+# 🖱️ AutoClicker – Advanced and Lightweight Macro Clicker (Out Of Support)
 
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![Framework](https://img.shields.io/badge/.NET-Framework%204.8-blue)
