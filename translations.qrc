@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/locale/en_US.qm</file>
+        <file>assets/locale/tr_TR.qm</file>
+    </qresource>
+</RCC>
