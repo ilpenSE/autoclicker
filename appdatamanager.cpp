@@ -10,55 +10,59 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-bool AppDataManager::ensureAppDataFolderExists() {
-    // AppData\Roaming yolu alınıyor
-    QString roamingPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-
-    // QStandardPaths::AppDataLocation zaten genellikle "Roaming/<OrgName>/<AppName>" verir,
-    // Ama direkt "AutoClicker2" eklenebilir:
-    QString appFolderPath = QDir(roamingPath).filePath("AutoClicker2");
-
-    QDir dir(appFolderPath);
-    if (!dir.exists()) {
-        bool created = dir.mkpath(".");
-        if (created) {
-            Logger::instance().fsInfo("Directory created: " + appFolderPath);
-        } else {
-            Logger::instance().fsError("Directory cannot be created: " + appFolderPath);
-        }
-
-        return created;
-    } else {
-        Logger::instance().fsInfo("Directory already exists: " + appFolderPath);
-        return true;
+QString AppDataManager::appFolderPath() {
+#ifdef Q_OS_WIN
+    QString roaming = qEnvironmentVariable("APPDATA");
+    if (roaming.isEmpty()) {
+        roaming = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     }
+    return QDir(roaming).filePath("AutoClicker2");
+#else
+    QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    return QDir(base).filePath("AutoClicker2");
+#endif
 }
 
-// Ayar dosyası yolu
+bool AppDataManager::ensureAppDataFolderExists() {
+    QDir dir(appFolderPath());
+    if (!dir.exists()) {
+        if (!dir.mkpath(".")) {
+            Logger::instance().fsError("Directory cannot be created: " + appFolderPath());
+            return false;
+        }
+        Logger::instance().fsInfo("Directory created: " + appFolderPath());
+    } else {
+        Logger::instance().fsInfo("Directory already exists: " + appFolderPath());
+    }
+
+    // logs klasörü
+    QString logsPath = dir.filePath("logs");
+    QDir logsDir(logsPath);
+    if (!logsDir.exists()) {
+        if (logsDir.mkpath(".")) {
+            Logger::instance().fsInfo("Logs folder created: " + logsPath);
+        } else {
+            Logger::instance().fsError("Logs folder cannot be created: " + logsPath);
+        }
+    }
+
+    return true;
+}
+
 QString AppDataManager::settingsFilePath() {
-    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir dir(appDataPath);
-    if (!dir.exists()) dir.mkpath(".");
-    return dir.filePath("settings.json");
+    return QDir(appFolderPath()).filePath("settings.json");
 }
 
-// Dosya var mı?
 bool AppDataManager::checkSettingsFileExists() {
-    QFile file(settingsFilePath());
-    return file.exists();
+    return QFile::exists(settingsFilePath());
 }
 
-// Dosya oluştur (default içeriği SettingsManager'dan alabilirsin veya buraya koyabilirsin)
 bool AppDataManager::createSettingsFile() {
     if (checkSettingsFileExists()) return true;
-
-    // Default içeriği SettingsManager'dan al
     QJsonObject defaultSettings = SettingsManager::instance().defaultSettings();
-
     return saveSettingsJson(defaultSettings);
 }
 
-// Dosyayı onar / eksik alanları tamamla
 bool AppDataManager::fixSettingsFile() {
     QFile file(settingsFilePath());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -77,11 +81,10 @@ bool AppDataManager::fixSettingsFile() {
     }
 
     QJsonObject settingsObj = doc.object();
-
     bool changed = SettingsManager::instance().validateAndFixSettings(settingsObj);
     if (changed) {
         return saveSettingsJson(settingsObj);
     }
-
-    return true; // Sağlam ve değişiklik yok
+    return true;
 }
+

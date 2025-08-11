@@ -2,6 +2,8 @@
 #include <QDateTime>
 #include <QTextStream>
 #include <QDebug>
+#include <QDir>
+#include "appdatamanager.h"
 
 Logger& Logger::instance() {
     static Logger _instance;
@@ -11,10 +13,25 @@ Logger& Logger::instance() {
 Logger::Logger(QObject* parent)
     : QObject(parent)
 {
-    QString fileName = QDateTime::currentDateTime().toString("dd.MM.yyyy-hh:mm:ss") + ".log";
-    m_logFile.setFileName(fileName);
+    // AppData/logs klasörü yolu
+    QString logsDirPath = AppDataManager::instance().appFolderPath() + "/logs";
+
+    // Klasör yoksa oluştur
+    QDir dir;
+    if (!dir.exists(logsDirPath)) {
+        if (!dir.mkpath(logsDirPath)) {
+            qWarning() << "[LOG/WARNING] Log klasörü oluşturulamadı:" << logsDirPath;
+        }
+    }
+
+    // Dosya adı
+    QString fileName = QDateTime::currentDateTime().toString("dd.MM.yyyy-hh.mm.ss") + ".log";
+    QString filePath = logsDirPath + "/" + fileName;
+
+    m_logFile.setFileName(filePath);
+
     if (!m_logFile.open(QIODevice::Append | QIODevice::Text)) {
-        qWarning() << "[LOG/WARNING] Log dosyası açılamadı:" << fileName;
+        qWarning() << "[LOG/WARNING] Log dosyası açılamadı:" << filePath;
     }
 }
 
