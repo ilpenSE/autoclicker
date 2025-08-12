@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
         // Ayar dosyası yok veya bozuksa default oluşturup kaydet
         settings = SettingsManager::instance().defaultSettings();
         SettingsManager::instance().saveSettings(settingsPath, settings);
+        Logger::instance().fsWarning("Settings file was deleted or corrupted, created one.");
     }
 
     // Ayarları doğrula ve gerekirse düzelt

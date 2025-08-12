@@ -60,6 +60,8 @@ bool AppDataManager::checkSettingsFileExists() {
 bool AppDataManager::createSettingsFile() {
     if (checkSettingsFileExists()) return true;
     QJsonObject defaultSettings = SettingsManager::instance().defaultSettings();
+
+    Logger::instance().fsInfo("Creating settings.json file");
     return saveSettingsJson(defaultSettings);
 }
 
