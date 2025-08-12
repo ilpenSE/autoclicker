@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>assets/locale/en_US.qm</file>
         <file>assets/locale/tr_TR.qm</file>
+        <file>assets/locale/de_DE.qm</file>
+        <file>assets/locale/fr_FR.qm</file>
+        <file>assets/locale/it_IT.qm</file>
     </qresource>
 </RCC>

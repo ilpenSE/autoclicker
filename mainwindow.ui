@@ -27,6 +27,19 @@
      <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
     </property>
    </widget>
+   <widget class="QLabel" name="testlabel">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>140</y>
+      <width>131</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hello World</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

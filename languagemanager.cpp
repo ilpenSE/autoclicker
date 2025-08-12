@@ -40,7 +40,7 @@ bool LanguageManager::loadLanguage(const Language &lang) {
     return loadLanguage(languageToLocale(lang));
 }
 
-QString getsyslang() {
+QString LanguageManager::getsyslang() {
     return QLocale::system().name(); // sistem default dil kodunu döner (en_US, tr_TR gibi)
 }
 

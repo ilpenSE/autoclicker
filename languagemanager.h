@@ -38,6 +38,7 @@ public:
     bool loadLanguage(const QString &languageCode = QString());
     bool loadLanguage(const Language &lang);
 
+    QString getsyslang();
     QString getCurrentLanguageStr();
     Language getCurrentLanguage();
     QTranslator* translator() { return &m_translator; }

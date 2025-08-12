@@ -29,8 +29,11 @@ FORMS += \
     mainwindow.ui
 
 TRANSLATIONS += \
-    ./assets/locale/en_US.ts \
-    ./assets/locale/tr_TR.ts
+    assets/locale/en_US.ts \
+    assets/locale/tr_TR.ts \
+    assets/locale/de_DE.ts \
+    assets/locale/fr_FR.ts \
+    assets/locale/it_IT.ts
 CONFIG += lrelease
 CONFIG += embed_translations
 

@@ -7,7 +7,7 @@
 
 #include <QJsonObject>
 
-bool supressLangChange = false;
+bool suppressLangBoxChange = true;
 
 MainWindow::MainWindow(const QJsonObject& settings, QWidget *parent)
     : QMainWindow(parent)
@@ -18,10 +18,10 @@ MainWindow::MainWindow(const QJsonObject& settings, QWidget *parent)
     connect(&LanguageManager::instance(), &LanguageManager::languageChanged,
             this, &MainWindow::retranslateUi);
 
-    // LANGUAGE KULLANIMI: ui->testlabel->setText(tr("Hello World"));
+    // LANGUAGE KULLANIMI:
+    ui->testlabel->setText(tr("Hello World"));
 
     // langbox ayarlaması
-    supressLangChange = true;
     QStringList langs;
     langs << "English";
     langs << "Türkçe";
@@ -30,7 +30,10 @@ MainWindow::MainWindow(const QJsonObject& settings, QWidget *parent)
     langs << "Italiano";
     ui->langBox->addItems(langs);
     ui->langBox->setCurrentIndex(static_cast<int>(LanguageManager::instance().getCurrentLanguage()));
-    supressLangChange = false;
+
+    // qDebug() << static_cast<int>(LanguageManager::instance().getCurrentLanguage());
+
+    suppressLangBoxChange = false;
 }
 
 void MainWindow::updateSetting(const QString& key, const QJsonValue& value)
@@ -58,7 +61,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_langBox_currentIndexChanged(int index)
 {
-    if (!supressLangChange) {
+    if (!suppressLangBoxChange) {
+        qDebug() << "index: " << index;
         LanguageManager::instance().changeLanguage(static_cast<Language>(index));
         updateSetting("Language", LanguageManager::instance().getCurrentLanguageStr());
 

@@ -46,7 +46,16 @@ int main(int argc, char *argv[])
     }
 
     // dili yükle
-    if (!LanguageManager::instance().loadLanguage()) {
+    bool isFirstRun = settings["FirstRun"].toBool(true);
+    qDebug() << "First run mı: " << isFirstRun;
+    qDebug() << "Sistem locali: " << LanguageManager::instance().getsyslang();
+    if (isFirstRun) {
+        settings["Language"] = LanguageManager::instance().getsyslang();
+        settings["FirstRun"] = false;
+        SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), settings);
+    }
+
+    if (!LanguageManager::instance().loadLanguage(settings["Language"].toString("en_US"))) {
         Logger::instance().langError("(From main) Language cannot be loaded.");
         QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
         return -1;
