@@ -19,6 +19,7 @@ SOURCES += \
 HEADERS += \
     Enums.h \
     appdatamanager.h \
+    consts.h \
     languagemanager.h \
     logger.h \
     mainwindow.h \

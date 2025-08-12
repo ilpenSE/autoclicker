@@ -3,6 +3,7 @@
 
 #include "languagemanager.h"
 #include "versionmanager.h"
+#include "consts.h"
 
 #include <QObject>
 #include <QJsonObject>
@@ -25,12 +26,12 @@ public:
         obj["DefaultHotkey"] = "F6";
         obj["FirstRun"] = true;
         obj["ActiveMacros"] = QJsonArray{"DEFAULT"};
-        obj["Version"] = "2.0";
+        obj["Version"] = APP_VERSION;
         return obj;
     }
 
     // fonksiyonlar
-    bool validateAndFixSettings(QJsonObject& settingsObj);
+    void validateAndFixSettings(QJsonObject &settingsObj);
     bool saveSettings(const QString& path, const QJsonObject& settingsObj);
     QJsonObject loadSettings(const QString& path, bool& ok);
 

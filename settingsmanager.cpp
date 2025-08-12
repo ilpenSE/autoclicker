@@ -1,6 +1,6 @@
 #include "settingsmanager.h"
-#include "appdatamanager.h"
 #include "logger.h"
+#include "consts.h"
 
 #include <QFile>
 #include <QJsonDocument>
@@ -8,52 +8,92 @@
 #include <QJsonArray>
 
 // Tüm ayarları kontrol eder ve düzeltir
-bool SettingsManager::validateAndFixSettings(QJsonObject& settingsObj)
-{
-    bool changed = false;
+void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
+    QJsonObject defaults = defaultSettings();
 
-    const QJsonObject defaults = defaultSettings();
-
-    // Language kontrolü
-    QString lang = settingsObj.value("Language").toString();
-    if (!supportedLanguages.contains(lang)) {
-        Logger::instance().sWarning("Language value corrupted or out-of-support, setting it to default: " + lang);
-        settingsObj["Language"] = defaults["Language"];
-        changed = true;
+    // Tanınmayan key’leri sil
+    for (auto it = settingsObj.begin(); it != settingsObj.end();) {
+        if (!defaults.contains(it.key())) {
+            it = settingsObj.erase(it);
+            Logger::instance().sWarning("Undefined key found: " + it.key() + ", deleting it.");
+        } else {
+            ++it;
+        }
     }
 
-    // DefaultHotkey kontrolü
-    QString hotkey = settingsObj.value("DefaultHotkey").toString();
-    QRegularExpression hotkeyRegex("^(Shift \\+ |Ctrl \\+ |Alt \\+ )*(F[1-9][0-2]?)$");
-    if (!hotkeyRegex.match(hotkey).hasMatch()) {
-        Logger::instance().sWarning("DefaultHotkey corrupted, setting it to default: " + hotkey);
+    // Eksik değerleri default ile tamamla
+    for (auto it = defaults.begin(); it != defaults.end(); ++it) {
+        if (!settingsObj.contains(it.key())) {
+            settingsObj[it.key()] = it.value();
+            Logger::instance().sWarning("The key " + it.key() + " cannot be found, adding it");
+        }
+    }
+
+    // DefaultHotkey kontrolü: örn. "Ctrl+F6", "Shift+Alt+X" gibi olmalı
+    if (settingsObj.contains("DefaultHotkey") && settingsObj["DefaultHotkey"].isString()) {
+        QString hotkey = settingsObj["DefaultHotkey"].toString();
+
+        // Basit regex ile Ctrl, Shift, Alt içeren ve bir harf/fonksiyon tuşu kontrolü
+        static const QRegularExpression hotkeyRegex("^(Ctrl\\+|Shift\\+|Alt\\+)*[A-Za-z0-9]+$");
+
+        if (!hotkeyRegex.match(hotkey).hasMatch()) {
+            // Hatalıysa default ile değiştir
+            settingsObj["DefaultHotkey"] = defaults["DefaultHotkey"];
+            Logger::instance().sWarning("Default Hotkey was provided wrong, defaulting it");
+        }
+    } else {
         settingsObj["DefaultHotkey"] = defaults["DefaultHotkey"];
-        changed = true;
+        Logger::instance().sWarning("Default Hotkey was not provided, adding it.");
     }
 
-    // FirstRun kontrolü
-    if (!settingsObj.contains("FirstRun") || !settingsObj.value("FirstRun").isBool()) {
-        Logger::instance().sWarning("FirstRun corrupted, settings it to default.");
-        settingsObj["FirstRun"] = defaults["FirstRun"];
-        changed = true;
+    // Language kontrolü: sadece izin verilenler olmalı
+    static const QStringList allowedLanguages = LanguageManager::instance().localeToLanguageMap.keys();
+    if (settingsObj.contains("Language") && settingsObj["Language"].isString()) {
+        QString lang = settingsObj["Language"].toString();
+        if (!allowedLanguages.contains(lang)) {
+            settingsObj["Language"] = defaults["Language"];
+            Logger::instance().sWarning("Language was provided wrong, defaulting it");
+        }
+    } else {
+        settingsObj["Language"] = defaults["Language"];
+        Logger::instance().sWarning("Language was not provided, adding it.");
     }
 
-    // ActiveMacros kontrolü
-    if (!settingsObj.contains("ActiveMacros") || !settingsObj.value("ActiveMacros").isArray()) {
-        Logger::instance().sWarning("ActiveMacros corrupted, setting it to default.");
-        settingsObj["ActiveMacros"] = defaults["ActiveMacros"];
-        changed = true;
+    // Version kontrolü: consts.h'den APP_VERSION ile aynı olmalı
+    if (settingsObj.contains("Version") && settingsObj["Version"].isString()) {
+        QString verinfile = settingsObj["Version"].toString();
+        if (verinfile != APP_VERSION) {
+            settingsObj["Version"] = APP_VERSION;
+            Logger::instance().sWarning("Updating settings file version from " + verinfile + " to " + APP_VERSION);
+        }
+    } else {
+        settingsObj["Version"] = APP_VERSION;
+        Logger::instance().sWarning("Settings file version cannot be found, setting it to " + APP_VERSION);
     }
 
-    // Version kontrolü
-    QString ver = settingsObj.value("Version").toString();
-    if (ver.isEmpty()) {
-        Logger::instance().sWarning("Version is empty, setting it to default.");
-        settingsObj["Version"] = currentVersion;
-        changed = true;
-    }
+    // ActiveMacros güvenlik filtresi (SQL injection gibi açıkları engeller)
+    if (settingsObj["ActiveMacros"].isArray()) {
+        QJsonArray filtered;
+        const QJsonArray &macros = settingsObj["ActiveMacros"].toArray();
 
-    return changed;
+        /*
+         * Burda makro ismi 1-50 karakter arasında olmalı
+         * İsim şartları:
+         * Türkçe karakterler dahil olmak üzere tüm büyük/küçük harfler
+         * Rakamlar (0-9)
+         * Alttan tire (_), Tire (-) ve Boşluk
+         */
+        static const QRegularExpression safeName("^[A-Za-zÇĞİÖŞÜçğıöşü0-9 _-]{1,50}$"); // sadece güvenli karakterler
+
+        for (const auto &macroVal : macros) {
+            if (macroVal.isString() && safeName.match(macroVal.toString()).hasMatch()) {
+                filtered.append(macroVal);
+            } else {
+                Logger::instance().sWarning("This macro name isn't valid: " + macroVal.toString());
+            }
+        }
+        settingsObj["ActiveMacros"] = filtered;
+    }
 }
 
 // Dosyadan ayarları okur, parse eder ve döner

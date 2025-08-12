@@ -66,7 +66,7 @@ bool AppDataManager::createSettingsFile() {
 bool AppDataManager::fixSettingsFile() {
     QFile file(settingsFilePath());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "settings.json açılamadı, oluşturulacak";
+        Logger::instance().fsWarning("Settings.json cannot be opened, will be created.");
         return createSettingsFile();
     }
 
@@ -76,15 +76,13 @@ bool AppDataManager::fixSettingsFile() {
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        qWarning() << "settings.json parse hatası, oluşturulacak";
+        Logger::instance().fsWarning("Settings.json parse error, will be created.");
         return createSettingsFile();
     }
 
     QJsonObject settingsObj = doc.object();
-    bool changed = SettingsManager::instance().validateAndFixSettings(settingsObj);
-    if (changed) {
-        return saveSettingsJson(settingsObj);
-    }
-    return true;
+    SettingsManager::instance().validateAndFixSettings(settingsObj);
+
+    return saveSettingsJson(settingsObj);
 }
 

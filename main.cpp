@@ -4,6 +4,7 @@
 #include "appdatamanager.h"
 #include "logger.h"
 #include "versionmanager.h"
+#include "consts.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -16,7 +17,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     // Version initializationları
-    VersionManager::instance().initVer("2.0-beta1");
+    VersionManager::instance().initVer(APP_VERSION);
 
     // AppData verilerini kontrol et
     if (!AppDataManager::instance().ensureAppDataFolderExists()) {
@@ -39,16 +40,11 @@ int main(int argc, char *argv[])
     }
 
     // Ayarları doğrula ve gerekirse düzelt
-    bool changed = SettingsManager::instance().validateAndFixSettings(settings);
-
-    if (changed) {
-        SettingsManager::instance().saveSettings(settingsPath, settings);
-    }
+    SettingsManager::instance().validateAndFixSettings(settings);
+    SettingsManager::instance().saveSettings(settingsPath, settings);
 
     // dili yükle
     bool isFirstRun = settings["FirstRun"].toBool(true);
-    qDebug() << "First run mı: " << isFirstRun;
-    qDebug() << "Sistem locali: " << LanguageManager::instance().getsyslang();
     if (isFirstRun) {
         settings["Language"] = LanguageManager::instance().getsyslang();
         settings["FirstRun"] = false;
