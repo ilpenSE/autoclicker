@@ -6,42 +6,177 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>710</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Auto Clicker</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QComboBox" name="langBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>230</y>
-      <width>141</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="contextMenuPolicy">
-     <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="testlabel">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>140</y>
-      <width>131</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Hello World</string>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QToolBar" name="toolBar">
+      <property name="movable">
+       <bool>false</bool>
+      </property>
+      <addaction name="actionAddMacro"/>
+      <addaction name="actionEditMacro"/>
+      <addaction name="actionDeleteMacro"/>
+      <addaction name="separator"/>
+      <addaction name="actionStart"/>
+      <addaction name="actionStop"/>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTableWidget" name="tableMacros">
+      <column>
+       <property name="text">
+        <string>No</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>İsim</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Açıklama</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Kısayol Tuşu</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="layoutBottom">
+      <item>
+       <widget class="QLabel" name="labelTheme">
+        <property name="text">
+         <string>Tema:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="themeBox">
+        <item>
+         <property name="text">
+          <string>Koyu</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Açık</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelLang">
+        <property name="text">
+         <string>Dil:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="langBox">
+        <item>
+         <property name="text">
+          <string>English</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Türkçe</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Deutsch</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Français</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Italiano</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAddMacro">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/assets/icons/add.svg</normaloff>:/assets/icons/add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Makro Ekle</string>
+   </property>
+  </action>
+  <action name="actionEditMacro">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/assets/icons/edit.svg</normaloff>:/assets/icons/edit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Makro Düzenle</string>
+   </property>
+  </action>
+  <action name="actionDeleteMacro">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/assets/icons/delete.svg</normaloff>:/assets/icons/delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Makro Sil</string>
+   </property>
+  </action>
+  <action name="actionStart">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/assets/icons/play.svg</normaloff>:/assets/icons/play.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Başlat</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/assets/icons/stop.svg</normaloff>:/assets/icons/stop.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Durdur</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

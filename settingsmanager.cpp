@@ -72,17 +72,18 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
     }
 
     // ActiveMacros güvenlik filtresi (SQL injection gibi açıkları engeller)
-    if (settingsObj["ActiveMacros"].isArray()) {
+    /*
+     if (settingsObj["ActiveMacros"].isArray()) {
         QJsonArray filtered;
         const QJsonArray &macros = settingsObj["ActiveMacros"].toArray();
 
-        /*
+
          * Burda makro ismi 1-50 karakter arasında olmalı
          * İsim şartları:
          * Türkçe karakterler dahil olmak üzere tüm büyük/küçük harfler
          * Rakamlar (0-9)
          * Alttan tire (_), Tire (-) ve Boşluk
-         */
+         *
         static const QRegularExpression safeName("^[A-Za-zÇĞİÖŞÜçğıöşü0-9 _-]{1,50}$"); // sadece güvenli karakterler
 
         for (const auto &macroVal : macros) {
@@ -93,7 +94,7 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
             }
         }
         settingsObj["ActiveMacros"] = filtered;
-    }
+    } */
 }
 
 // Dosyadan ayarları okur, parse eder ve döner

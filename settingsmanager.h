@@ -23,10 +23,11 @@ public:
     {
         QJsonObject obj;
         obj["Language"] = "en_US";
-        obj["DefaultHotkey"] = "F6";
+        obj["DefaultHotkey"] = "F6"; // modifier destekli
         obj["FirstRun"] = true;
-        obj["ActiveMacros"] = QJsonArray{"DEFAULT"};
+        obj["ActiveMacro"] = 1; // sqlite içindeki id
         obj["Version"] = APP_VERSION;
+        obj["Theme"] = "dark";
         return obj;
     }
 

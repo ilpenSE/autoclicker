@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "versionmanager.h"
 #include "consts.h"
+#include "thememanager.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -55,6 +56,14 @@ int main(int argc, char *argv[])
     if (!LanguageManager::instance().loadLanguage(settings["Language"].toString("en_US"))) {
         Logger::instance().langError("(From main) Language cannot be loaded.");
         QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
+        return -1;
+    }
+
+    // temayı yükle
+    QString theme = settings["Theme"].toString("dark");
+    if (!ThemeManager::instance().applyTheme(theme)) {
+        Logger::instance().langError("(From main) Theme cannot be loaded.");
+        QMessageBox::critical(NULL, "Error", "Theme cannot be loaded.");
         return -1;
     }
 

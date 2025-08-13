@@ -30,6 +30,11 @@ public:
     void sWarning(const QString& message);
     void sError(const QString& message);
 
+    // themes log
+    void thInfo(const QString& message);
+    void thWarning(const QString& message);
+    void thError(const QString& message);
+
 private:
     explicit Logger(QObject* parent = nullptr);
     ~Logger() override;

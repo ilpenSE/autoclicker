@@ -12,9 +12,11 @@ SOURCES += \
     appdatamanager.cpp \
     languagemanager.cpp \
     logger.cpp \
+    macromanager.cpp \
     main.cpp \
     mainwindow.cpp \
-    settingsmanager.cpp
+    settingsmanager.cpp \
+    thememanager.cpp
 
 HEADERS += \
     Enums.h \
@@ -22,8 +24,10 @@ HEADERS += \
     consts.h \
     languagemanager.h \
     logger.h \
+    macromanager.h \
     mainwindow.h \
     settingsmanager.h \
+    thememanager.h \
     versionmanager.h
 
 FORMS += \
@@ -44,4 +48,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    icons.qrc \
     translations.qrc

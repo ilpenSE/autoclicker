@@ -23,9 +23,12 @@ public:
     ~MainWindow();
 
 private slots:
+    void addItemToMacros(const QString& name, const QString& desc, const QString& htk);
+    void adjustTableColumns();
     void retranslateUi();
 
-    void on_langBox_currentIndexChanged(int index);
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     QJsonObject m_settings;

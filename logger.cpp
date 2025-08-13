@@ -40,17 +40,30 @@ Logger::~Logger() {
         m_logFile.close();
 }
 
+// theme logs
+void Logger::thInfo(const QString& message) {
+    log("[THEMES/INFO]", message);
+}
+
+void Logger::thWarning(const QString& message) {
+    log("[THEMES/WARNING]", message);
+}
+
+void Logger::thError(const QString& message) {
+    log("[THEMES/ERROR]", message);
+}
+
 // settings logs
 void Logger::sInfo(const QString& message) {
-    log("[FS/INFO]", message);
+    log("[SETTINGS/INFO]", message);
 }
 
 void Logger::sWarning(const QString& message) {
-    log("[FS/WARNING]", message);
+    log("[SETTINGS/WARNING]", message);
 }
 
 void Logger::sError(const QString& message) {
-    log("[FS/ERROR]", message);
+    log("[SETTINGS/ERROR]", message);
 }
 
 // file system logs
