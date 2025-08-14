@@ -1,5 +1,5 @@
 QT       += core gui
-
+QT += sql
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -13,9 +13,11 @@ SOURCES += \
     languagemanager.cpp \
     logger.cpp \
     macromanager.cpp \
+    macroselectionwin.cpp \
     main.cpp \
     mainwindow.cpp \
     settingsmanager.cpp \
+    settingswin.cpp \
     thememanager.cpp
 
 HEADERS += \
@@ -25,13 +27,17 @@ HEADERS += \
     languagemanager.h \
     logger.h \
     macromanager.h \
+    macroselectionwin.h \
     mainwindow.h \
     settingsmanager.h \
+    settingswin.h \
     thememanager.h \
     versionmanager.h
 
 FORMS += \
-    mainwindow.ui
+    macroselectionwin.ui \
+    mainwindow.ui \
+    settingswin.ui
 
 TRANSLATIONS += \
     assets/locale/en_US.ts \

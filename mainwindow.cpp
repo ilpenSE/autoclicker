@@ -4,16 +4,20 @@
 #include "logger.h"
 #include "settingsmanager.h"
 #include "appdatamanager.h"
+#include "thememanager.h"
+#include "macromanager.h"
 
 #include <QJsonObject>
 #include <QResizeEvent>
 #include <QTimer>
+#include <QMessageBox>
 
 bool suppressLangBoxChange = true;
 
-MainWindow::MainWindow(const QJsonObject& settings, QWidget *parent)
+MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros, QWidget *parent)
     : QMainWindow(parent)
     , m_settings(settings)
+    , m_macros(macros)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -21,12 +25,30 @@ MainWindow::MainWindow(const QJsonObject& settings, QWidget *parent)
             this, &MainWindow::retranslateUi);
 
     QTimer::singleShot(0, this, &MainWindow::adjustTableColumns);
+    ui->actionsTable->verticalHeader()->setVisible(false);
 
     // langbox ayarlaması
+    /*
+    QStringList langs;
+    langs << "English";
+    langs << "Türkçe";
+    langs << "Deutsch";
+    langs << "Français";
+    langs << "Italiano";
+    ui->langBox->addItems(langs);
     ui->langBox->setCurrentIndex(static_cast<int>(LanguageManager::instance().getCurrentLanguage()));
     suppressLangBoxChange = false;
+    */
 
-    addItemToMacros("salla hacı", "bu bir açıklamadır", "F6");
+    // themebox ayarlaması
+    /*
+    ui->themeBox->clear();
+    QString visname = ThemeManager::instance().getVisibleName(getSetting("Theme").toString());
+    ui->themeBox->addItems(ThemeManager::instance().availableThemes());
+    ui->themeBox->setCurrentText(visname);
+    */
+
+    // addAction(1, "bu bir açıklamadır", "F6");
 }
 
 void MainWindow::updateSetting(const QString& key, const QJsonValue& value)
@@ -42,29 +64,43 @@ QJsonValue MainWindow::getSetting(const QString& key) const
     return m_settings.value(key);
 }
 
-void MainWindow::addItemToMacros(const QString& name, const QString& desc, const QString& htk) {
-    int row = ui->tableMacros->rowCount();
-    ui->tableMacros->insertRow(row);
+/*
+void createNewMacro() {
+    QString err;
+    const int id = MacroManager::instance().createMacro("Yeni Makro 1", "Açıklama", "DEF", &err);
+    if (id < 0) QMessageBox::warning(this, "Hata", err);
+} */
 
-    ui->tableMacros->setItem(row, 0, new QTableWidgetItem(QString::number(row + 1)));
-    ui->tableMacros->setItem(row, 1, new QTableWidgetItem(name));
-    ui->tableMacros->setItem(row, 2, new QTableWidgetItem(desc));
-    ui->tableMacros->setItem(row, 3, new QTableWidgetItem(htk));
-
+void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
+    QString err;
+    if (!MacroManager::instance().setActionsForMacro(macroId, actions, &err)) {
+        Logger::instance().mError(err);
+        QMessageBox::warning(this, "Error", err);
+    }
 }
+
+void MainWindow::addAction(int order, const QString& action_type, const QString& adds) {
+    int row = ui->actionsTable->rowCount();
+    ui->actionsTable->insertRow(row);
+
+    ui->actionsTable->setItem(row, 0, new QTableWidgetItem(QString::number(order)));
+    ui->actionsTable->setItem(row, 1, new QTableWidgetItem(action_type));
+    ui->actionsTable->setItem(row, 2, new QTableWidgetItem(adds));
+}
+
 
 void MainWindow::retranslateUi()
 {
     ui->retranslateUi(this);
 }
+
 void MainWindow::adjustTableColumns()
 {
-    int tableWidth = ui->tableMacros->viewport()->width();
+    int tableWidth = ui->actionsTable->viewport()->width();
 
-    ui->tableMacros->setColumnWidth(0, tableWidth * 0.10); // No
-    ui->tableMacros->setColumnWidth(1, tableWidth * 0.30); // İsim
-    ui->tableMacros->setColumnWidth(2, tableWidth * 0.40); // Açıklama
-    ui->tableMacros->setColumnWidth(3, tableWidth * 0.20); // Kısayol
+    ui->actionsTable->setColumnWidth(0, tableWidth * 0.10); // Order
+    ui->actionsTable->setColumnWidth(1, tableWidth * 0.40); // action type
+    ui->actionsTable->setColumnWidth(2, tableWidth * 0.50); // additional
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)

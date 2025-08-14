@@ -35,6 +35,11 @@ public:
     void thWarning(const QString& message);
     void thError(const QString& message);
 
+    // macros log
+    void mInfo(const QString& message);
+    void mWarning(const QString& message);
+    void mError(const QString& message);
+
 private:
     explicit Logger(QObject* parent = nullptr);
     ~Logger() override;

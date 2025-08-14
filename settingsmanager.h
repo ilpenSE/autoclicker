@@ -35,7 +35,6 @@ public:
     void validateAndFixSettings(QJsonObject &settingsObj);
     bool saveSettings(const QString& path, const QJsonObject& settingsObj);
     QJsonObject loadSettings(const QString& path, bool& ok);
-
 private:
     const QStringList supportedLanguages = LanguageManager::instance().localeToLanguageMap.keys();
     const QString currentVersion = VersionManager::instance().version();

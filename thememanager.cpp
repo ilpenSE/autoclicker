@@ -3,9 +3,17 @@
 #include "logger.h"
 #include "appdatamanager.h"
 #include <QApplication>
+#include <QJsonObject>
+
+// key: görünür isim, value: dosya ismi
+QMap<QString, QString> themeMap;
+QMap<QString, QString> reversedThemeMap;
 
 ThemeManager::ThemeManager(QObject* parent)
-    : QObject(parent) {}
+    : QObject(parent) {
+    loadThemesFromJson();
+    reversedThemeMap = reverseThemeMap();
+}
 
 QString ThemeManager::themesDirPath() const {
     QString path = AppDataManager::instance().appFolderPath();
@@ -17,6 +25,11 @@ QString ThemeManager::themesDirPath() const {
     return dir.absolutePath();
 }
 
+QString ThemeManager::themesJsonPath() const {
+    QString path = AppDataManager::instance().appFolderPath();
+    return path + "/themes.json";
+}
+
 QString ThemeManager::readQssFile(const QString& filePath) const {
     QFile file(filePath);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -26,8 +39,46 @@ QString ThemeManager::readQssFile(const QString& filePath) const {
     return QString::fromUtf8(file.readAll());
 }
 
-bool ThemeManager::applyTheme(const QString& themeName) {
-    QString filePath = themesDirPath() + "/" + themeName + ".qss";
+void ThemeManager::loadThemesFromJson() {
+    themeMap.clear();
+
+    QFile file(themesJsonPath());
+    if (!file.exists()) {
+        Logger::instance().fsError("themes.json not found: " + themesJsonPath());
+        return;
+    }
+
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        Logger::instance().fsError("Cannot open themes.json: " + themesJsonPath());
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isObject()) {
+        Logger::instance().fsError("themes.json is not a valid JSON object.");
+        // FIXME: appdatamanager'da themes.json kontrolleri yapılsın
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    for (auto it = obj.begin(); it != obj.end(); ++it) {
+        QString qssFile = it.key();
+        QString visibleName = it.value().toString();
+        themeMap[visibleName] = qssFile;
+        Logger::instance().thInfo("Theme loaded, visible name: " + visibleName + " / file name: " + qssFile);
+    }
+
+    Logger::instance().thInfo("Loaded themes from themes.json");
+}
+
+bool ThemeManager::applyTheme(const QString& visibleName) {
+    if (!themeMap.contains(visibleName)) {
+        Logger::instance().thError("Theme not found: " + visibleName);
+        return false;
+    }
+
+    QString qssFileName = themeMap[visibleName];
+    QString filePath = themesDirPath() + "/" + qssFileName + ".qss";
     if (!QFile::exists(filePath)) {
         Logger::instance().fsError("Theme file cannot be found: " + filePath);
         return false;
@@ -40,17 +91,22 @@ bool ThemeManager::applyTheme(const QString& themeName) {
     }
 
     qApp->setStyleSheet(qss);
-    Logger::instance().thInfo("Theme applied: " + themeName);
+    Logger::instance().thInfo("Theme applied: " + visibleName);
     return true;
 }
 
-QStringList ThemeManager::availableThemes() const {
-    QDir dir(themesDirPath());
-    QStringList themes;
-    QStringList files = dir.entryList(QStringList() << "*.qss", QDir::Files);
-    for (const QString& file : files) {
-        QString thname = QFileInfo(file).baseName();
-        themes << thname;
+QMap<QString, QString> ThemeManager::reverseThemeMap() const {
+    QMap<QString, QString> reversed;
+    for (auto it = themeMap.constBegin(); it != themeMap.constEnd(); ++it) {
+        reversed[it.value()] = it.key();
     }
-    return themes;
+    return reversed;
+}
+
+QStringList ThemeManager::availableThemes() const {
+    return themeMap.keys();
+}
+
+QString ThemeManager::getVisibleName(const QString& filename) {
+    return reversedThemeMap[filename];
 }

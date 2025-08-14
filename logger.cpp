@@ -105,6 +105,19 @@ void Logger::logError(const QString& message) {
     log("[ERROR]", message);
 }
 
+// macros logs
+void Logger::mInfo(const QString& message) {
+    log("[MACROS/INFO]", message);
+}
+
+void Logger::mWarning(const QString &message) {
+    log("[MACROS/WARNING]", message);
+}
+
+void Logger::mError(const QString& message) {
+    log("[MACROS/ERROR]", message);
+}
+
 void Logger::log(const QString& level, const QString& message) {
     QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
     QString logLine = QString("%1 %2 %3").arg(timeStamp, level, message);

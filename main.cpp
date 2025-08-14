@@ -6,6 +6,7 @@
 #include "versionmanager.h"
 #include "consts.h"
 #include "thememanager.h"
+#include "macromanager.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
     SettingsManager::instance().validateAndFixSettings(settings);
     SettingsManager::instance().saveSettings(settingsPath, settings);
 
-    // dili yükle
+    // ilk açılışta dili değiştir
     bool isFirstRun = settings["FirstRun"].toBool(true);
     if (isFirstRun) {
         settings["Language"] = LanguageManager::instance().getsyslang();
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
         SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), settings);
     }
 
+    // dili yükle
     if (!LanguageManager::instance().loadLanguage(settings["Language"].toString("en_US"))) {
         Logger::instance().langError("(From main) Language cannot be loaded.");
         QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
@@ -61,13 +63,20 @@ int main(int argc, char *argv[])
 
     // temayı yükle
     QString theme = settings["Theme"].toString("dark");
-    if (!ThemeManager::instance().applyTheme(theme)) {
-        Logger::instance().langError("(From main) Theme cannot be loaded.");
+    if (!ThemeManager::instance().applyTheme(ThemeManager::instance().getVisibleName(theme))) {
+        Logger::instance().thError("(From main) Theme cannot be loaded, file name: " + theme + " visible name: " + ThemeManager::instance().getVisibleName(theme));
         QMessageBox::critical(NULL, "Error", "Theme cannot be loaded.");
         return -1;
     }
 
-    MainWindow w(settings);
+    // makroyu database'ini yükle
+    if (!MacroManager::instance().init()) {
+        QMessageBox::critical(NULL, "Error", "Database cannot be opened!");
+        return -1;
+    }
+    QVector<Macro> macros = MacroManager::instance().getAllMacros();
+
+    MainWindow w(settings, macros);
     w.show();
     return app.exec();
 }

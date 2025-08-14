@@ -17,9 +17,13 @@ public:
     }
 
     // fonksiyonlar
-    bool applyTheme(const QString& themeName);
+    bool applyTheme(const QString& visibleName);
     QStringList availableThemes() const;
     QString themesDirPath() const;
+    QString themesJsonPath() const;
+    void loadThemesFromJson();
+    QMap<QString, QString> reverseThemeMap() const;
+    QString getVisibleName(const QString& filename);
 
 private:
     QString readQssFile(const QString& filePath) const;

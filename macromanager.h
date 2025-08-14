@@ -1,34 +1,77 @@
-#ifndef MacroManager_H
-#define MacroManager_H
-
-#include "logger.h"
-
+#pragma once
 #include <QObject>
-#include <QDir>
-#include <QStandardPaths>
-#include <QFile>
-#include <QDebug>
-#include <QJsonDocument>
+#include <QSqlDatabase>
+#include <QVector>
+#include <QString>
+#include <optional>
 
-class MacroManager : public QObject {
+#include "Enums.h"
+
+struct Macro {
+    int id = -1;
+    QString name;
+    QString description;
+    QString hotkey; // "DEF" | "F6" | "Shift + F6" ...
+};
+
+struct MacroAction {
+    int id = -1;
+    int macro_id = -1;
+    int order = 0;
+    ActionType action_type;   // "mouse" | "keyboard"
+    ClickType click_type;    // "CLICK" | "HOLD" | "HOVER"
+    int repeat = 1;        // 0 = infinite
+    std::optional<QString> position;      // "x, y"
+    bool current_pos = true;              // uses current cursor pos
+    int interval = 0;                     // ms
+    std::optional<int> hold_duration;     // ms
+    std::optional<int> hover_duration;    // ms
+    int click_count = 1;
+    std::optional<MouseButton> mouse_button;  // "LEFT" | "RIGHT" | "MID" | ...
+};
+
+class MacroManager final : public QObject {
     Q_OBJECT
 public:
-    static MacroManager& instance()
-    {
-        static MacroManager _instance;
-        return _instance;
-    }
+    static MacroManager& instance(); // Meyers Singleton
 
-    // fonksiyonlar
+    // init + schema
+    bool init();
+    bool isOpen() const;
+
+    // Macros
+    QVector<Macro> getAllMacros() const;
+    std::optional<Macro> getMacroById(int id) const;
+    std::optional<Macro> getMacroByName(const QString& name) const;
+    int  createMacro(const QString& name, const QString& description, const QString& hotkey, QString* error=nullptr);
+    bool updateMacro(const Macro& m, QString* error=nullptr);
+    bool deleteMacro(int id, QString* error=nullptr);
+
+    // Actions
+    QVector<MacroAction> getActions(int macroId) const;
+    int  addAction(const MacroAction& a, QString* error=nullptr);
+    bool updateAction(const MacroAction& a, QString* error=nullptr);
+    bool deleteAction(int actionId, QString* error=nullptr);
+    bool setActionsForMacro(int macroId, const QVector<MacroAction>& actions, QString* error=nullptr); // transaction
+    bool normalizeOrders(int macroId, QString* error=nullptr);
+
+    // Validation (public in case UI needs to pre-check)
+    bool validateMacroName(const QString& name, QString* error=nullptr) const;
+    bool validateMacroDescription(const QString& desc, QString* error=nullptr) const;
+    bool validateHotkey(const QString& hotkey, QString* error=nullptr) const;
+    bool validateAction(const MacroAction& a, QString* error=nullptr) const;
+
+    // Path helper
+    QString dbPath() const;
 
 private:
-    explicit MacroManager(QObject *parent = nullptr) : QObject(parent) {}
-
-    // Copy ve assign engelle
+    explicit MacroManager(QObject* parent=nullptr);
     MacroManager(const MacroManager&) = delete;
     MacroManager& operator=(const MacroManager&) = delete;
 
-    ~MacroManager() override = default;
-};
+    bool ensureSchema(QString* error=nullptr);
+    bool ensureDefaultMacro(QString* error=nullptr);
+    bool execQuery(QSqlQuery& q, const char* ctx, QString* error) const;
 
-#endif // MACROMANAGER_H
+    QSqlDatabase m_db;
+};
