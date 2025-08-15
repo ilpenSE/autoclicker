@@ -59,29 +59,27 @@ bool MacroManager::ensureSchema(QString* error) {
         ");";
     if (!q.exec(createMacros)) return execQuery(q, "create Macros", error);
 
-    // MacroActions
     const char* createActions =
         "CREATE TABLE IF NOT EXISTS MacroActions ("
-        " id INTEGER PRIMARY KEY AUTOINCREMENT,"
         " macro_id INTEGER NOT NULL,"
         " \"order\" INTEGER NOT NULL,"
         " action_type TEXT NOT NULL,"
         " click_type TEXT NOT NULL,"
         " repeat INTEGER NOT NULL,"
         " position TEXT NULL,"
-        " current_pos INTEGER NOT NULL,"   // 0/1
+        " current_position INTEGER NOT NULL,"
         " interval INTEGER NOT NULL,"
         " hold_duration INTEGER NULL,"
         " hover_duration INTEGER NULL,"
         " click_count INTEGER NOT NULL,"
         " mouse_button TEXT NULL,"
+        " PRIMARY KEY(macro_id, \"order\"),"  // Composite primary key
         " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
         ");";
     if (!q.exec(createActions)) return execQuery(q, "create MacroActions", error);
 
     return true;
 }
-
 bool MacroManager::ensureDefaultMacro(QString* error) {
     QSqlQuery q(m_db);
     if (!q.exec("SELECT COUNT(*) FROM Macros;")) return execQuery(q, "count Macros", error);
@@ -97,12 +95,12 @@ bool MacroManager::ensureDefaultMacro(QString* error) {
     insM.addBindValue(DEFAULT_MACRO_ID);
     insM.addBindValue("DEFAULT");
     insM.addBindValue("The defaults.");
-    insM.addBindValue("F6");
+    insM.addBindValue("DEF");
     if (!insM.exec()) { m_db.rollback(); return execQuery(insM, "insert DEFAULT Macro", error); }
 
     QSqlQuery insA(m_db);
     insA.prepare("INSERT INTO MacroActions("
-                 "macro_id, \"order\", action_type, click_type, repeat, position, current_pos,"
+                 "macro_id, \"order\", action_type, click_type, repeat, position, current_position,"
                  " interval, hold_duration, hover_duration, click_count, mouse_button)"
                  " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
     insA.addBindValue(DEFAULT_MACRO_ID);
@@ -270,111 +268,272 @@ bool MacroManager::deleteMacro(int id, QString* error) {
 QVector<MacroAction> MacroManager::getActions(int macroId) const {
     QVector<MacroAction> out;
     QSqlQuery q(m_db);
-    q.prepare("SELECT id, macro_id, \"order\", action_type, click_type, repeat, position, current_pos,"
+    q.prepare("SELECT macro_id, \"order\", action_type, click_type, repeat, position, current_position,"
               " interval, hold_duration, hover_duration, click_count, mouse_button "
-              "FROM MacroActions WHERE macro_id=? ORDER BY \"order\" ASC, id ASC");
+              "FROM MacroActions WHERE macro_id=? ORDER BY \"order\" ASC");
     q.addBindValue(macroId);
     if (!q.exec()) return out;
+
     while (q.next()) {
         MacroAction a;
-        a.id = q.value(0).toInt();
-        a.macro_id = q.value(1).toInt();
-        a.order = q.value(2).toInt();
-        a.repeat = q.value(5).toInt();
-        a.position = q.isNull(6) ? std::optional<QString>{} : std::optional<QString>{q.value(6).toString()};
-        a.current_pos = q.value(7).toInt() != 0;
-        a.interval = q.value(8).toInt();
-        a.hold_duration = q.isNull(9) ? std::optional<int>{} : std::optional<int>{q.value(9).toInt()};
-        a.hover_duration = q.isNull(10) ? std::optional<int>{} : std::optional<int>{q.value(10).toInt()};
-        a.click_count = q.value(11).toInt();
-        out.push_back(std::move(a));
+        a.macro_id = q.value(0).toInt();
+        a.order = q.value(1).toInt();
+        a.repeat = q.value(4).toInt();
+        a.position = q.isNull(5) ? std::optional<QString>{} : std::optional<QString>{q.value(5).toString()};
+        a.current_pos = q.value(6).toInt() != 0;
+        a.interval = q.value(7).toInt();
+        a.hold_duration = q.isNull(8) ? std::optional<int>{} : std::optional<int>{q.value(8).toInt()};
+        a.hover_duration = q.isNull(9) ? std::optional<int>{} : std::optional<int>{q.value(9).toInt()};
+        a.click_count = q.value(10).toInt();
 
-        // action type enum cast
-        QString strAct = q.value(3).toString();
+        // Enum casting'ler
+        QString strAct = q.value(2).toString();
         auto actOpt = strToActionType(strAct);
         if (!actOpt) {
-            Logger::instance().mError("Invalid action type: " + strAct + " in " + QString::number(a.id));
+            Logger::instance().mError("Invalid action type: " + strAct + " for macro " + QString::number(a.macro_id) + " order " + QString::number(a.order));
+            continue;
         }
         a.action_type = *actOpt;
 
-        // click type enum cast
-        QString strClick = q.value(4).toString();
+        QString strClick = q.value(3).toString();
         auto clickOpt = strToClickType(strClick);
         if (!clickOpt) {
-            Logger::instance().mError("Invalid click type: " + strClick + " in " + QString::number(a.id));
+            Logger::instance().mError("Invalid click type: " + strClick + " for macro " + QString::number(a.macro_id) + " order " + QString::number(a.order));
+            continue;
         }
         a.click_type = *clickOpt;
 
-        // mouse button enum cast
-        if (!q.isNull(12)) {
-            auto btnOpt = strToMouseButton(q.value(12).toString());
-            if (btnOpt) a.mouse_button = *btnOpt;
+        if (!q.isNull(11)) {
+            auto btnOpt = strToMouseButton(q.value(11).toString());
+            if (btnOpt) {
+                a.mouse_button = *btnOpt;
+            }
         }
+
+        out.push_back(std::move(a));
     }
     return out;
 }
 
-int MacroManager::addAction(const MacroAction& a, QString* error) {
-    if (!validateAction(a, error)) return -1;
-
-    // Determine next order if caller didn't set meaningful order
-    int ord = a.order;
-    if (ord < 0) {
-        QSqlQuery q(m_db);
-        q.prepare("SELECT IFNULL(MAX(\"order\"), -1) + 1 FROM MacroActions WHERE macro_id=?");
-        q.addBindValue(a.macro_id);
-        if (!q.exec() || !q.next()) { execQuery(q, "max order", error); return -1; }
-        ord = q.value(0).toInt();
-    }
-
-    QSqlQuery q(m_db);
-    q.prepare("INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, repeat, position, current_pos,"
-              " interval, hold_duration, hover_duration, click_count, mouse_button)"
-              " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-    q.addBindValue(a.macro_id);
-    q.addBindValue(ord);
-    q.addBindValue(actionTypeToStr(a.action_type));
-    q.addBindValue(clickTypeToStr(a.click_type));
-    q.addBindValue(a.repeat);
-    if (a.position.has_value()) q.addBindValue(a.position.value()); else q.addBindValue(QVariant(QVariant::String));
-    q.addBindValue(a.current_pos ? 1 : 0);
-    q.addBindValue(a.interval);
-    if (a.hold_duration.has_value()) q.addBindValue(a.hold_duration.value()); else q.addBindValue(QVariant(QVariant::Int));
-    if (a.hover_duration.has_value()) q.addBindValue(a.hover_duration.value()); else q.addBindValue(QVariant(QVariant::Int));
-    q.addBindValue(a.click_count);
-    if (a.mouse_button.has_value()) q.addBindValue(mouseButtonToStr(a.mouse_button.value())); else q.addBindValue(QVariant(QVariant::String));
-    if (!q.exec()) { execQuery(q, "insert Action", error); return -1; }
-    return q.lastInsertId().toInt();
-}
-
-bool MacroManager::updateAction(const MacroAction& a, QString* error) {
+bool MacroManager::addAction(const MacroAction& a, QString* error) {
     if (!validateAction(a, error)) return false;
 
-    QSqlQuery q(m_db);
-    q.prepare("UPDATE MacroActions SET macro_id=?, \"order\"=?, action_type=?, click_type=?, repeat=?, position=?,"
-              " current_pos=?, interval=?, hold_duration=?, hover_duration=?, click_count=?, mouse_button=? WHERE id=?");
-    q.addBindValue(a.macro_id);
-    q.addBindValue(a.order);
-    q.addBindValue(actionTypeToStr(a.action_type));
-    q.addBindValue(clickTypeToStr(a.click_type));
-    q.addBindValue(a.repeat);
-    if (a.position.has_value()) q.addBindValue(a.position.value()); else q.addBindValue(QVariant(QVariant::String));
-    q.addBindValue(a.current_pos ? 1 : 0);
-    q.addBindValue(a.interval);
-    if (a.hold_duration.has_value()) q.addBindValue(a.hold_duration.value()); else q.addBindValue(QVariant(QVariant::Int));
-    if (a.hover_duration.has_value()) q.addBindValue(a.hover_duration.value()); else q.addBindValue(QVariant(QVariant::Int));
-    q.addBindValue(a.click_count);
-    if (a.mouse_button.has_value()) q.addBindValue(mouseButtonToStr(a.mouse_button.value())); else q.addBindValue(QVariant(QVariant::String));
-    q.addBindValue(a.id);
-    if (!q.exec()) return execQuery(q, "update Action", error);
+    Logger::instance().mInfo(QString("Adding action: macro_id=%1, action_type=%2")
+                                 .arg(a.macro_id).arg(actionTypeToStr(a.action_type)));
+
+    if (!m_db.transaction()) {
+        if (error) *error = "Transaction failed";
+        return false;
+    }
+
+    // Her zaman en sona ekle - order'ı otomatik belirle
+    QSqlQuery maxQ(m_db);
+    maxQ.prepare("SELECT IFNULL(MAX(\"order\"), -1) + 1 FROM MacroActions WHERE macro_id=?");
+    maxQ.addBindValue(a.macro_id);
+    if (!maxQ.exec() || !maxQ.next()) {
+        m_db.rollback();
+        execQuery(maxQ, "get max order", error);
+        return false;
+    }
+    int targetOrder = maxQ.value(0).toInt();
+
+    Logger::instance().mInfo(QString("Auto-assigned order: %1").arg(targetOrder));
+
+    // Yeni action'ı ekle - targetOrder kullan, a.order DEĞİL!
+    QSqlQuery insQ(m_db);
+    insQ.prepare("INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, repeat, position, current_position,"
+                 " interval, hold_duration, hover_duration, click_count, mouse_button)"
+                 " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+    insQ.addBindValue(a.macro_id);
+    insQ.addBindValue(targetOrder);  // Burada targetOrder kullanıyoruz
+    insQ.addBindValue(actionTypeToStr(a.action_type));
+    insQ.addBindValue(clickTypeToStr(a.click_type));
+    insQ.addBindValue(a.repeat);
+    if (a.position.has_value()) insQ.addBindValue(a.position.value()); else insQ.addBindValue(QVariant(QVariant::String));
+    insQ.addBindValue(a.current_pos ? 1 : 0);
+    insQ.addBindValue(a.interval);
+    if (a.hold_duration.has_value()) insQ.addBindValue(a.hold_duration.value()); else insQ.addBindValue(QVariant(QVariant::Int));
+    if (a.hover_duration.has_value()) insQ.addBindValue(a.hover_duration.value()); else insQ.addBindValue(QVariant(QVariant::Int));
+    insQ.addBindValue(a.click_count);
+    if (a.mouse_button.has_value()) insQ.addBindValue(mouseButtonToStr(a.mouse_button.value())); else insQ.addBindValue(QVariant(QVariant::String));
+
+    if (!insQ.exec()) {
+        m_db.rollback();
+        execQuery(insQ, "insert Action", error);
+        return false;
+    }
+
+    if (!m_db.commit()) {
+        m_db.rollback();
+        if (error) *error = "Commit failed";
+        return false;
+    }
+
+    Logger::instance().mInfo(QString("Action added successfully with order: %1").arg(targetOrder));
     return true;
 }
 
-bool MacroManager::deleteAction(int actionId, QString* error) {
+// deleteAction() da order'ları normalize etsin:
+bool MacroManager::deleteAction(int macroId, int order, QString* error) {
+    if (!m_db.transaction()) {
+        if (error) *error = "Transaction failed";
+        return false;
+    }
+
+    // Action'ı sil
+    QSqlQuery delQ(m_db);
+    delQ.prepare("DELETE FROM MacroActions WHERE macro_id=? AND \"order\"=?");
+    delQ.addBindValue(macroId);
+    delQ.addBindValue(order);
+    if (!delQ.exec()) {
+        m_db.rollback();
+        return execQuery(delQ, "delete Action", error);
+    }
+
+    // Silinen action'dan sonraki order'ları 1 azalt
+    QSqlQuery shiftQ(m_db);
+    shiftQ.prepare("UPDATE MacroActions SET \"order\" = \"order\" - 1 "
+                   "WHERE macro_id=? AND \"order\" > ?");
+    shiftQ.addBindValue(macroId);
+    shiftQ.addBindValue(order);
+    if (!shiftQ.exec()) {
+        m_db.rollback();
+        return execQuery(shiftQ, "shift orders after delete", error);
+    }
+
+    if (!m_db.commit()) {
+        m_db.rollback();
+        if (error) *error = "Commit failed";
+        return false;
+    }
+
+    return true;
+}
+
+// Bir action'ı yukarı taşı
+bool MacroManager::moveActionUp(int macroId, int order, QString* error) {
+    if (order <= 0) {
+        if (error) *error = "Already at top position";
+        return false;
+    }
+    return swapActions(macroId, order, order - 1, error);
+}
+
+// Bir action'ı aşağı taşı
+bool MacroManager::moveActionDown(int macroId, int order, QString* error) {
+    // Maksimum order'ı kontrol et
+    QSqlQuery maxQ(m_db);
+    maxQ.prepare("SELECT MAX(\"order\") FROM MacroActions WHERE macro_id=?");
+    maxQ.addBindValue(macroId);
+    if (!maxQ.exec() || !maxQ.next()) {
+        return execQuery(maxQ, "get max order", error);
+    }
+    int maxOrder = maxQ.value(0).toInt();
+
+    if (order >= maxOrder) {
+        if (error) *error = "Already at bottom position";
+        return false;
+    }
+    return swapActions(macroId, order, order + 1, error);
+}
+
+// İki action'ın yerlerini değiştir
+bool MacroManager::swapActions(int macroId, int order1, int order2, QString* error) {
+    if (!m_db.transaction()) {
+        if (error) *error = "Transaction failed";
+        return false;
+    }
+
+    // Geçici order kullanarak swap yap (-1000 gibi)
+    const int tempOrder = -1000;
+
     QSqlQuery q(m_db);
-    q.prepare("DELETE FROM MacroActions WHERE id=?");
-    q.addBindValue(actionId);
-    if (!q.exec()) return execQuery(q, "delete Action", error);
+
+    // İlk action'ı geçici order'a taşı
+    q.prepare("UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
+    q.addBindValue(tempOrder);
+    q.addBindValue(macroId);
+    q.addBindValue(order1);
+    if (!q.exec()) {
+        m_db.rollback();
+        return execQuery(q, "move to temp", error);
+    }
+
+    // İkinci action'ı birincinin yerine taşı
+    q.prepare("UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
+    q.addBindValue(order1);
+    q.addBindValue(macroId);
+    q.addBindValue(order2);
+    if (!q.exec()) {
+        m_db.rollback();
+        return execQuery(q, "move second", error);
+    }
+
+    // Geçici action'ı ikincinin yerine taşı
+    q.prepare("UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
+    q.addBindValue(order2);
+    q.addBindValue(macroId);
+    q.addBindValue(tempOrder);
+    if (!q.exec()) {
+        m_db.rollback();
+        return execQuery(q, "move from temp", error);
+    }
+
+    if (!m_db.commit()) {
+        m_db.rollback();
+        if (error) *error = "Commit failed";
+        return false;
+    }
+
+    return true;
+}
+
+bool MacroManager::updateAction(int macroId, int oldOrder, const MacroAction& newAction, QString* error) {
+    if (!validateAction(newAction, error)) return false;
+
+    if (!m_db.transaction()) { if (error) *error = "Transaction failed"; return false; }
+
+    // Eski action'ı sil
+    QSqlQuery delQ(m_db);
+    delQ.prepare("DELETE FROM MacroActions WHERE macro_id=? AND \"order\"=?");
+    delQ.addBindValue(macroId);
+    delQ.addBindValue(oldOrder);
+    if (!delQ.exec()) {
+        m_db.rollback();
+        execQuery(delQ, "delete old action", error);
+        return false;
+    }
+
+    // Yeni action'ı ekle
+    QSqlQuery insQ(m_db);
+    insQ.prepare("INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, repeat, position, current_position,"
+                 " interval, hold_duration, hover_duration, click_count, mouse_button)"
+                 " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+    insQ.addBindValue(newAction.macro_id);
+    insQ.addBindValue(newAction.order);
+    insQ.addBindValue(actionTypeToStr(newAction.action_type));
+    insQ.addBindValue(clickTypeToStr(newAction.click_type));
+    insQ.addBindValue(newAction.repeat);
+    if (newAction.position.has_value()) insQ.addBindValue(newAction.position.value()); else insQ.addBindValue(QVariant(QVariant::String));
+    insQ.addBindValue(newAction.current_pos ? 1 : 0);
+    insQ.addBindValue(newAction.interval);
+    if (newAction.hold_duration.has_value()) insQ.addBindValue(newAction.hold_duration.value()); else insQ.addBindValue(QVariant(QVariant::Int));
+    if (newAction.hover_duration.has_value()) insQ.addBindValue(newAction.hover_duration.value()); else insQ.addBindValue(QVariant(QVariant::Int));
+    insQ.addBindValue(newAction.click_count);
+    if (newAction.mouse_button.has_value()) insQ.addBindValue(mouseButtonToStr(newAction.mouse_button.value())); else insQ.addBindValue(QVariant(QVariant::String));
+
+    if (!insQ.exec()) {
+        m_db.rollback();
+        execQuery(insQ, "insert updated action", error);
+        return false;
+    }
+
+    if (!m_db.commit()) {
+        m_db.rollback();
+        if (error) *error = "Commit failed";
+        return false;
+    }
+
     return true;
 }
 
@@ -387,7 +546,7 @@ bool MacroManager::setActionsForMacro(int macroId, const QVector<MacroAction>& a
     if (!del.exec()) { m_db.rollback(); return execQuery(del, "clear actions", error); }
 
     QSqlQuery ins(m_db);
-    ins.prepare("INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, repeat, position, current_pos,"
+    ins.prepare("INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, repeat, position, current_position,"
                 " interval, hold_duration, hover_duration, click_count, mouse_button)"
                 " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 

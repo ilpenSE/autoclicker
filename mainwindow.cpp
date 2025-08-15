@@ -48,7 +48,17 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
     ui->themeBox->setCurrentText(visname);
     */
 
-    // addAction(1, "bu bir açıklamadır", "F6");
+    int activeMacro = getSetting("ActiveMacro").toInt(1);
+    QString activeMacroName = MacroManager::instance().getMacroById(activeMacro)->name;
+
+    ui->labelActiveMacro->setText("Aktif Makro: " + activeMacroName + " (Değiştirmek için dokunun)");
+
+    QVector<MacroAction> actions = MacroManager::instance().getActions(activeMacro);
+
+    for (int i = 0; i < actions.length(); i++) {
+        MacroAction act = actions.at(i);
+        addAction(act.order, actionTypeToStr(act.action_type), "yarak");
+    }
 }
 
 void MainWindow::updateSetting(const QString& key, const QJsonValue& value)

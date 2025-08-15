@@ -15,7 +15,6 @@ struct Macro {
 };
 
 struct MacroAction {
-    int id = -1;
     int macro_id = -1;
     int order = 0;
     ActionType action_type;   // "mouse" | "keyboard"
@@ -49,11 +48,15 @@ public:
 
     // Actions
     QVector<MacroAction> getActions(int macroId) const;
-    int  addAction(const MacroAction& a, QString* error=nullptr);
-    bool updateAction(const MacroAction& a, QString* error=nullptr);
-    bool deleteAction(int actionId, QString* error=nullptr);
+    bool addAction(const MacroAction& a, QString* error=nullptr);
+    bool updateAction(int macroId, int oldOrder, const MacroAction& newAction, QString* error=nullptr);
+    bool deleteAction(int macroId, int order, QString* error=nullptr);
     bool setActionsForMacro(int macroId, const QVector<MacroAction>& actions, QString* error=nullptr); // transaction
     bool normalizeOrders(int macroId, QString* error=nullptr);
+
+    bool moveActionUp(int macroId, int order, QString* error=nullptr);
+    bool moveActionDown(int macroId, int order, QString* error=nullptr);
+    bool swapActions(int macroId, int order1, int order2, QString* error=nullptr);
 
     // Validation (public in case UI needs to pre-check)
     bool validateMacroName(const QString& name, QString* error=nullptr) const;

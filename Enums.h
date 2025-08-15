@@ -12,8 +12,8 @@ enum class Language { ENGLISH, TURKISH, GERMAN, FRENCH, ITALIAN };
 // Enum → QString
 inline QString actionTypeToStr(ActionType t) {
     switch(t) {
-    case ActionType::MOUSE: return "MOUSE";
-    case ActionType::KEYBOARD: return "KEYBOARD";
+    case ActionType::MOUSE: return "mouse";
+    case ActionType::KEYBOARD: return "keyboard";
     }
     return {};
 }
@@ -38,9 +38,9 @@ inline QString mouseButtonToStr(MouseButton b) {
 
 // QString → Enum
 inline std::optional<ActionType> strToActionType(const QString& str) {
-    QString s = str.trimmed().toUpper();
-    if (s == "MOUSE") return ActionType::MOUSE;
-    if (s == "KEYBOARD") return ActionType::KEYBOARD;
+    QString s = str.trimmed().toLower();
+    if (s == "mouse") return ActionType::MOUSE;
+    if (s == "keyboard") return ActionType::KEYBOARD;
     return std::nullopt;
 }
 
