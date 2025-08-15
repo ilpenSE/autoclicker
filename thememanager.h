@@ -24,6 +24,7 @@ public:
     void loadThemesFromJson();
     QMap<QString, QString> reverseThemeMap() const;
     QString getVisibleName(const QString& filename);
+    QString getFileName(const QString& visibleName);
 
 private:
     QString readQssFile(const QString& filePath) const;

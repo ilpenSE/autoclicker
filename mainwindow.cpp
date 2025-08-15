@@ -4,15 +4,14 @@
 #include "logger.h"
 #include "settingsmanager.h"
 #include "appdatamanager.h"
-#include "thememanager.h"
 #include "macromanager.h"
+#include "settingswin.h"
+
 
 #include <QJsonObject>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QMessageBox>
-
-bool suppressLangBoxChange = true;
 
 MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros, QWidget *parent)
     : QMainWindow(parent)
@@ -27,59 +26,42 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
     QTimer::singleShot(0, this, &MainWindow::adjustTableColumns);
     ui->actionsTable->verticalHeader()->setVisible(false);
 
-    // langbox ayarlaması
-    /*
-    QStringList langs;
-    langs << "English";
-    langs << "Türkçe";
-    langs << "Deutsch";
-    langs << "Français";
-    langs << "Italiano";
-    ui->langBox->addItems(langs);
-    ui->langBox->setCurrentIndex(static_cast<int>(LanguageManager::instance().getCurrentLanguage()));
-    suppressLangBoxChange = false;
-    */
-
-    // themebox ayarlaması
-    /*
-    ui->themeBox->clear();
-    QString visname = ThemeManager::instance().getVisibleName(getSetting("Theme").toString());
-    ui->themeBox->addItems(ThemeManager::instance().availableThemes());
-    ui->themeBox->setCurrentText(visname);
-    */
-
+    // makro ayarlamaları
     int activeMacro = getSetting("ActiveMacro").toInt(1);
-    QString activeMacroName = MacroManager::instance().getMacroById(activeMacro)->name;
+    Logger::instance().sInfo("(MainWindow) ActiveMacro from getSetting: " + QString::number(activeMacro));
 
-    ui->labelActiveMacro->setText("Aktif Makro: " + activeMacroName + " (Değiştirmek için dokunun)");
-
-    QVector<MacroAction> actions = MacroManager::instance().getActions(activeMacro);
-
-    for (int i = 0; i < actions.length(); i++) {
-        MacroAction act = actions.at(i);
-        addAction(act.order, actionTypeToStr(act.action_type), "yarak");
+    auto macroOpt = MacroManager::instance().getMacroById(activeMacro);
+    if (macroOpt.has_value()) {
+        QString activeMacroName = macroOpt->name;
+        ui->labelActiveMacro->setText(tr("active macro label").replace("#MCR", activeMacroName));
+        QVector<MacroAction> actions = MacroManager::instance().getActions(activeMacro);
+        for (int i = 0; i < actions.length(); i++) {
+            MacroAction act = actions.at(i);
+            addAction(act.order, actionTypeToStr(act.action_type), "yarak");
+        }
+        Logger::instance().sInfo("(MainWindow) Active macro set to: " + activeMacroName + " (ID: " + QString::number(activeMacro) + ")");
+    } else {
+        Logger::instance().sError("(MainWindow) Active macro not found with ID: " + QString::number(activeMacro));
+        // Fallback to first macro or default
+        if (!m_macros.isEmpty()) {
+            ui->labelActiveMacro->setText(tr("active macro label").replace("#MCR", m_macros.first().name));
+        }
     }
 }
 
-void MainWindow::updateSetting(const QString& key, const QJsonValue& value)
-{
-    m_settings[key] = value;
-
-    QString settingsPath = AppDataManager::instance().settingsFilePath();
-    SettingsManager::instance().saveSettings(settingsPath, m_settings);
-}
 
 QJsonValue MainWindow::getSetting(const QString& key) const
 {
     return m_settings.value(key);
 }
 
-/*
-void createNewMacro() {
-    QString err;
-    const int id = MacroManager::instance().createMacro("Yeni Makro 1", "Açıklama", "DEF", &err);
-    if (id < 0) QMessageBox::warning(this, "Hata", err);
-} */
+void MainWindow::setSetting(const QString& key, const QJsonValue& value)
+{
+    m_settings[key] = value;
+    // Dosyaya da kaydet
+    QString settingsPath = AppDataManager::instance().settingsFilePath();
+    SettingsManager::instance().saveSettings(settingsPath, m_settings);
+}
 
 void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
     QString err;
@@ -125,16 +107,38 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-/*
-void MainWindow::on_langBox_currentIndexChanged(int index)
+void MainWindow::on_actionSettings_triggered()
 {
-    if (!suppressLangBoxChange) {
-        qDebug() << "index: " << index;
-        LanguageManager::instance().changeLanguage(static_cast<Language>(index));
-        updateSetting("Language", LanguageManager::instance().getCurrentLanguageStr());
+    // ÖNEMLİ: SettingsWin'e geçerli ayarları ver
+    Logger::instance().sInfo("(MainWindow) Opening settings with ActiveMacro: " + QString::number(m_settings["ActiveMacro"].toInt()));
 
-        Logger::instance().logInfo(LanguageManager::instance().getCurrentLanguageStr());
+    SettingsWin settingsDialog(m_settings, this);
+    int result = settingsDialog.exec();
+
+    if (result == QDialog::Accepted) {
+        // ÖNEMLİ: Settings dialog'dan güncellenmiş ayarları al
+        QJsonObject updatedSettings = settingsDialog.m_settings;
+
+        // Ayarları güncelle
+        m_settings = updatedSettings;
+
+        // Dosyaya kaydet
+        QString settingsPath = AppDataManager::instance().settingsFilePath();
+        SettingsManager::instance().saveSettings(settingsPath, m_settings);
+
+        Logger::instance().sInfo("Settings updated successfully");
+        Logger::instance().sInfo("New Language: " + m_settings["Language"].toString());
+        Logger::instance().sInfo("New Theme: " + m_settings["Theme"].toString());
+        Logger::instance().sInfo("Active Macro: " + QString::number(m_settings["ActiveMacro"].toInt()));
+
+        // UI'ı güncelle (aktif makro label'ı vs)
+        int activeMacro = m_settings["ActiveMacro"].toInt(1);
+        auto macroOpt = MacroManager::instance().getMacroById(activeMacro);
+        if (macroOpt.has_value()) {
+            ui->labelActiveMacro->setText(tr("active macro label").replace("#MCR", macroOpt->name));
+        }
+
+    } else {
+        Logger::instance().sInfo("Settings changes discarded");
     }
 }
-*/
-

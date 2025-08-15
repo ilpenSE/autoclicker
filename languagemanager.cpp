@@ -23,6 +23,7 @@ bool LanguageManager::changeLanguage(const QString &languageCode)
     bool loaded = m_translator.load(":/assets/locale/" + languageCode);
     if (loaded) {
         QApplication::instance()->installTranslator(&m_translator);
+        m_currentLocale = languageCode; // Mevcut locale'i kaydet
         emit languageChanged();
         Logger::instance().langInfo("Language changed to " + languageCode);
     } else {
@@ -62,10 +63,18 @@ bool LanguageManager::loadLanguage(const QString &languageCode)
 }
 
 QString LanguageManager::getCurrentLanguageStr() {
-    return m_translator.language();
+    // m_translator.language() güvenilir olmayabilir, kendi kaydettiğimizi kullan
+    return m_currentLocale.isEmpty() ? "en_US" : m_currentLocale;
 }
 
 Language LanguageManager::getCurrentLanguage() {
-    return localeToLanguage(m_translator.language());
-}
+    QString current = getCurrentLanguageStr();
+    Language lang = localeToLanguage(current);
 
+    // Debug için
+    Logger::instance().langInfo(QString("getCurrentLanguage() - current locale: %1, mapped to enum: %2")
+                                    .arg(current)
+                                    .arg(static_cast<int>(lang)));
+
+    return lang;
+}

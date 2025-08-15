@@ -38,28 +38,58 @@ int main(int argc, char *argv[])
     if (!ok) {
         // Ayar dosyası yok veya bozuksa default oluşturup kaydet
         settings = SettingsManager::instance().defaultSettings();
+
+        // ÖNEMLİ: İlk kez çalışıyorsa sistem dilini kullan
+        bool isFirstRun = true;
+        if (isFirstRun) {
+            settings["Language"] = LanguageManager::instance().getsyslang();
+            settings["FirstRun"] = false;
+        }
+
         SettingsManager::instance().saveSettings(settingsPath, settings);
         Logger::instance().fsWarning("Settings file was deleted or corrupted, created one.");
+    } else {
+        // ÖNEMLİ: Dosya mevcutsa SADECE eksik ayarları ekle, mevcut ayarları değiştirme!
+        bool needsUpdate = false;
+
+        // Sadece eksik ayarları kontrol et
+        QJsonObject defaults = SettingsManager::instance().defaultSettings();
+        for (auto it = defaults.begin(); it != defaults.end(); ++it) {
+            if (!settings.contains(it.key())) {
+                settings[it.key()] = it.value();
+                needsUpdate = true;
+                Logger::instance().sWarning("Missing key added: " + it.key());
+            }
+        }
+
+        // Version güncelle
+        if (settings["Version"].toString() != APP_VERSION) {
+            settings["Version"] = APP_VERSION;
+            needsUpdate = true;
+        }
+
+        // Sadece değişiklik varsa kaydet
+        if (needsUpdate) {
+            SettingsManager::instance().saveSettings(settingsPath, settings);
+        }
     }
 
-    // Ayarları doğrula ve gerekirse düzelt
-    SettingsManager::instance().validateAndFixSettings(settings);
-    SettingsManager::instance().saveSettings(settingsPath, settings);
+    // ÖNEMLİ: Burada dili yüklerken dosyadan okunan değeri kullan
+    QString savedLanguage = settings["Language"].toString("en_US");
+    Logger::instance().langInfo("(From main) Loading language from settings: " + savedLanguage);
 
-    // ilk açılışta dili değiştir
-    bool isFirstRun = settings["FirstRun"].toBool(true);
-    if (isFirstRun) {
-        settings["Language"] = LanguageManager::instance().getsyslang();
-        settings["FirstRun"] = false;
-        SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), settings);
+    if (!LanguageManager::instance().loadLanguage(savedLanguage)) {
+        Logger::instance().langError("(From main) Language cannot be loaded: " + savedLanguage);
+        // Fallback olarak English'i dene
+        if (!LanguageManager::instance().loadLanguage("en_US")) {
+            QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
+            return -1;
+        }
     }
 
-    // dili yükle
-    if (!LanguageManager::instance().loadLanguage(settings["Language"].toString("en_US"))) {
-        Logger::instance().langError("(From main) Language cannot be loaded.");
-        QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
-        return -1;
-    }
+    // Debug: Yüklenen dili kontrol et
+    Logger::instance().langInfo("(From main) Language loaded successfully. Current: " +
+                                LanguageManager::instance().getCurrentLanguageStr());
 
     // temayı yükle
     QString theme = settings["Theme"].toString("dark");
@@ -75,6 +105,10 @@ int main(int argc, char *argv[])
         return -1;
     }
     QVector<Macro> macros = MacroManager::instance().getAllMacros();
+
+    // Debug: ActiveMacro değerini kontrol et
+    int activeMacro = settings["ActiveMacro"].toInt(1);
+    Logger::instance().sInfo("(From main) ActiveMacro from settings: " + QString::number(activeMacro));
 
     MainWindow w(settings, macros);
     w.show();

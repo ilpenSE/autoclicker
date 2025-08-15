@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QRegularExpression>
 
 class SettingsManager : public QObject {
     Q_OBJECT

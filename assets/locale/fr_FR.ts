@@ -4,8 +4,20 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <source>Hello World</source>
-        <translation>hello gg ez</translation>
+        <source>active macro label</source>
+        <translation>Macro actif : #MCR (Appuyez pour changer)</translation>
+    </message>
+    <message>
+        <source>active macro label unsaved</source>
+        <translation>Macro actif : #MCR* (Non enregistré) (Appuyez pour changer)</translation>
+    </message>
+    <message>
+        <source>save</source>
+        <translation>Enregistrer</translation>
+    </message>
+    <message>
+        <source>cancel</source>
+        <translation>Annuler</translation>
     </message>
 </context>
 </TS>

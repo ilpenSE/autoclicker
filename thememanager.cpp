@@ -107,6 +107,10 @@ QStringList ThemeManager::availableThemes() const {
     return themeMap.keys();
 }
 
+QString ThemeManager::getFileName(const QString& visibleName) {
+    return themeMap[visibleName];
+}
+
 QString ThemeManager::getVisibleName(const QString& filename) {
     return reversedThemeMap[filename];
 }

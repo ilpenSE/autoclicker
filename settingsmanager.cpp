@@ -7,21 +7,21 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-// Tüm ayarları kontrol eder ve düzeltir
+// Tüm ayarları kontrol eder ve düzeltir - SADECE eksik olanları ekle, mevcut değerleri değiştirme!
 void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
     QJsonObject defaults = defaultSettings();
 
-    // Tanınmayan key’leri sil
+    // Tanınmayan key'leri sil
     for (auto it = settingsObj.begin(); it != settingsObj.end();) {
         if (!defaults.contains(it.key())) {
-            it = settingsObj.erase(it);
             Logger::instance().sWarning("Undefined key found: " + it.key() + ", deleting it.");
+            it = settingsObj.erase(it);
         } else {
             ++it;
         }
     }
 
-    // Eksik değerleri default ile tamamla
+    // ÖNEMLİ: SADECE eksik değerleri ekle, mevcut değerleri DOKUNMA!
     for (auto it = defaults.begin(); it != defaults.end(); ++it) {
         if (!settingsObj.contains(it.key())) {
             settingsObj[it.key()] = it.value();
@@ -29,37 +29,7 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
         }
     }
 
-    // DefaultHotkey kontrolü: örn. "Ctrl+F6", "Shift+Alt+X" gibi olmalı
-    if (settingsObj.contains("DefaultHotkey") && settingsObj["DefaultHotkey"].isString()) {
-        QString hotkey = settingsObj["DefaultHotkey"].toString();
-
-        // Basit regex ile Ctrl, Shift, Alt içeren ve bir harf/fonksiyon tuşu kontrolü
-        static const QRegularExpression hotkeyRegex("^(Ctrl\\+|Shift\\+|Alt\\+)*[A-Za-z0-9]+$");
-
-        if (!hotkeyRegex.match(hotkey).hasMatch()) {
-            // Hatalıysa default ile değiştir
-            settingsObj["DefaultHotkey"] = defaults["DefaultHotkey"];
-            Logger::instance().sWarning("Default Hotkey was provided wrong, defaulting it");
-        }
-    } else {
-        settingsObj["DefaultHotkey"] = defaults["DefaultHotkey"];
-        Logger::instance().sWarning("Default Hotkey was not provided, adding it.");
-    }
-
-    // Language kontrolü: sadece izin verilenler olmalı
-    static const QStringList allowedLanguages = LanguageManager::instance().localeToLanguageMap.keys();
-    if (settingsObj.contains("Language") && settingsObj["Language"].isString()) {
-        QString lang = settingsObj["Language"].toString();
-        if (!allowedLanguages.contains(lang)) {
-            settingsObj["Language"] = defaults["Language"];
-            Logger::instance().sWarning("Language was provided wrong, defaulting it");
-        }
-    } else {
-        settingsObj["Language"] = defaults["Language"];
-        Logger::instance().sWarning("Language was not provided, adding it.");
-    }
-
-    // Version kontrolü: consts.h'den APP_VERSION ile aynı olmalı
+    // Version kontrolü: sadece version güncelle, diğer hiçbir şeye dokunma
     if (settingsObj.contains("Version") && settingsObj["Version"].isString()) {
         QString verinfile = settingsObj["Version"].toString();
         if (verinfile != APP_VERSION) {
@@ -71,30 +41,11 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
         Logger::instance().sWarning("Settings file version cannot be found, setting it to " + APP_VERSION);
     }
 
-    // ActiveMacros güvenlik filtresi (SQL injection gibi açıkları engeller)
-    /*
-     if (settingsObj["ActiveMacros"].isArray()) {
-        QJsonArray filtered;
-        const QJsonArray &macros = settingsObj["ActiveMacros"].toArray();
+    // DİĞER TÜM KONTROLLERS SİLİNDİ!
+    // Language, ActiveMacro, Theme, DefaultHotkey kontrollerini kaldırdım
+    // Çünkü bunlar kullanıcının mevcut ayarlarını bozuyor
 
-
-         * Burda makro ismi 1-50 karakter arasında olmalı
-         * İsim şartları:
-         * Türkçe karakterler dahil olmak üzere tüm büyük/küçük harfler
-         * Rakamlar (0-9)
-         * Alttan tire (_), Tire (-) ve Boşluk
-         *
-        static const QRegularExpression safeName("^[A-Za-zÇĞİÖŞÜçğıöşü0-9 _-]{1,50}$"); // sadece güvenli karakterler
-
-        for (const auto &macroVal : macros) {
-            if (macroVal.isString() && safeName.match(macroVal.toString()).hasMatch()) {
-                filtered.append(macroVal);
-            } else {
-                Logger::instance().sWarning("This macro name isn't valid: " + macroVal.toString());
-            }
-        }
-        settingsObj["ActiveMacros"] = filtered;
-    } */
+    Logger::instance().sInfo("Settings validated. Only missing keys added and version updated.");
 }
 
 // Dosyadan ayarları okur, parse eder ve döner
@@ -135,5 +86,6 @@ bool SettingsManager::saveSettings(const QString& path, const QJsonObject& setti
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
 
+    Logger::instance().fsInfo("Settings saved to: " + path);
     return true;
 }

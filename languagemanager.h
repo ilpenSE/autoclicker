@@ -52,6 +52,7 @@ signals:
 private:
     explicit LanguageManager(QObject *parent = nullptr) : QObject(parent) {}
     QTranslator m_translator;
+    QString m_currentLocale; // Mevcut locale'i takip etmek için
 
     // Copy ve assign engelle
     LanguageManager(const LanguageManager&) = delete;

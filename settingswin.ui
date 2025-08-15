@@ -24,7 +24,7 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="comboLanguage"/>
+      <widget class="QComboBox" name="langBox"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="labelHotkey">
@@ -42,8 +42,7 @@
         <widget class="QPushButton" name="btnSelectHotkey">
          <property name="icon">
           <iconset resource="icons.qrc">
-           <normaloff>:/assets/icons/select.svg</normaloff>
-          </iconset>
+           <normaloff>:/assets/icons/select.svg</normaloff>:/assets/icons/select.svg</iconset>
          </property>
         </widget>
        </item>
@@ -57,7 +56,7 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QComboBox" name="comboTheme"/>
+      <widget class="QComboBox" name="themeBox"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="labelPatchNotes">
@@ -79,32 +78,36 @@
     <layout class="QHBoxLayout" name="layoutButtons">
      <item>
       <widget class="QPushButton" name="btnSave">
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/assets/icons/save.svg</normaloff>
-        </iconset>
-       </property>
        <property name="text">
         <string>Kaydet</string>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/assets/icons/save.svg</normaloff>:/assets/icons/save.svg</iconset>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnDiscard">
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/assets/icons/cancel.svg</normaloff>
-        </iconset>
-       </property>
        <property name="text">
         <string>Vazgeç</string>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/assets/icons/cancel.svg</normaloff>:/assets/icons/cancel.svg</iconset>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="horizontalSpacerSettings">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>

@@ -18,9 +18,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(const QJsonObject& settings, const QVector<Macro>& macros, QWidget *parent = nullptr);
 
-    void updateSetting(const QString& key, const QJsonValue& value);
-    QJsonValue getSetting(const QString& key) const;
-
     ~MainWindow();
 
 private slots:
@@ -28,6 +25,9 @@ private slots:
     void adjustTableColumns();
     void retranslateUi();
     void saveActions(int macroId, const QVector<MacroAction>& actions);
+    QJsonValue getSetting(const QString& key) const;
+    void setSetting(const QString& key, const QJsonValue& value);
+    void on_actionSettings_triggered();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
