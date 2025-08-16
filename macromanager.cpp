@@ -126,17 +126,12 @@ bool MacroManager::execQuery(QSqlQuery& q, const char* ctx, QString* error) cons
     return false;
 }
 
-// ===== Validation =====
+// ===== Basic Validation =====
 bool MacroManager::validateMacroName(const QString& name, QString* error) const {
     // 1-20 chars, letters/digits/_/-/space
     static QRegularExpression rx(R"(^[A-Za-zöçşğüÖÇŞİĞ0-9 _-]{1,20}$)");
     if (!rx.match(name).hasMatch()) {
-        if (error) *error = "Name length can be between 1-20 and only contains A-Z a-z 0-9 _ - and space.";
-        return false;
-    }
-
-    if (getMacroByName(name)) {
-        if (error) *error = "A macro with this name exists!";
+        if (error) *error = "Name length can be between 1-20 and only contains A-Z a-z 0-9 _ - and space: " + name;
         return false;
     }
 
@@ -145,7 +140,7 @@ bool MacroManager::validateMacroName(const QString& name, QString* error) const 
 bool MacroManager::validateMacroDescription(const QString& desc, QString* error) const {
     static QRegularExpression rx(R"(^[A-Za-zöçşğüÖÇŞİĞ0-9 _-]{1,100}$)");
     if (!rx.match(desc).hasMatch()) {
-        if (error) *error = "Description can be between 1-100 and only contains A-Z a-z 0-9 _ - and space.";
+        if (error) *error = "Description can be between 1-100 and only contains A-Z a-z 0-9 _ - and space: " + desc;
         return false;
     }
     return true;
@@ -159,7 +154,7 @@ bool MacroManager::validateHotkey(const QString& hotkey, QString* error) const {
         R"(^(?:(?:Ctrl|Shift|Alt)\s*\+\s*){0,3}(?:F([1-9]|1[0-9]|2[0-4])|[A-Z0-9])$)"
         );
     if (!rx.match(hotkey).hasMatch()) {
-        if (error) *error = "Invalid hotkey. Eg: DEF, F7, Shift + F6, Ctrl + Alt + A";
+        if (error) *error = "Invalid hotkey: " + hotkey;
         return false;
     }
     // guard forbidden keys

@@ -21,13 +21,16 @@ public:
     ~MainWindow();
 
 private slots:
-    void addAction(int order, const QString& action_type, const QString& adds);
+    void addActionToTable(MacroAction a);
     void adjustTableColumns();
     void retranslateUi();
     void saveActions(int macroId, const QVector<MacroAction>& actions);
     QJsonValue getSetting(const QString& key) const;
     void setSetting(const QString& key, const QJsonValue& value);
     void on_actionSettings_triggered();
+    void loadLanguage();
+    void onThemeChanged();
+
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -36,5 +39,8 @@ private:
     QJsonObject m_settings;
     QVector<Macro> m_macros;
     Ui::MainWindow *ui;
+
+    void setupDynamicIcons();
+    void refreshIcons();
 };
 #endif // MAINWINDOW_H

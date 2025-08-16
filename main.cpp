@@ -21,6 +21,9 @@ int main(int argc, char *argv[])
     // Version initializationları
     VersionManager::instance().initVer(APP_VERSION);
 
+    // ikon ayarla
+    app.setWindowIcon(QIcon(":/assets/icons/icon.ico"));
+
     // AppData verilerini kontrol et
     if (!AppDataManager::instance().ensureAppDataFolderExists()) {
         Logger::instance().langError("(From main) AppData cannot be created or found.");
@@ -87,10 +90,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Debug: Yüklenen dili kontrol et
-    Logger::instance().langInfo("(From main) Language loaded successfully. Current: " +
-                                LanguageManager::instance().getCurrentLanguageStr());
-
     // temayı yükle
     QString theme = settings["Theme"].toString("dark");
     if (!ThemeManager::instance().applyTheme(ThemeManager::instance().getVisibleName(theme))) {
@@ -105,10 +104,6 @@ int main(int argc, char *argv[])
         return -1;
     }
     QVector<Macro> macros = MacroManager::instance().getAllMacros();
-
-    // Debug: ActiveMacro değerini kontrol et
-    int activeMacro = settings["ActiveMacro"].toInt(1);
-    Logger::instance().sInfo("(From main) ActiveMacro from settings: " + QString::number(activeMacro));
 
     MainWindow w(settings, macros);
     w.show();

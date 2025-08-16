@@ -6,5 +6,7 @@
         <file>assets/icons/save.svg</file>
         <file>assets/icons/select.svg</file>
         <file>assets/icons/settings.svg</file>
+        <file>assets/icons/info.svg</file>
+        <file>assets/icons/icon.ico</file>
     </qresource>
 </RCC>

@@ -22,6 +22,9 @@ private slots:
     void retranslateUi();
     void updateSetting(const QString& key, const QJsonValue& value);
     void loadLanguage();
+    void setupDynamicIcons();
+    void refreshIcons();
+    void onThemeChanged();
     void on_btnSave_clicked();
 
     void on_btnDiscard_clicked();

@@ -1,9 +1,13 @@
+// macromanager.h - Enhanced Validation System Additions
 #pragma once
 #include <QObject>
 #include <QSqlDatabase>
 #include <QVector>
 #include <QString>
+#include <QHash>
+#include <QSet>
 #include <optional>
+#include <functional>
 
 #include "Enums.h"
 
@@ -58,7 +62,7 @@ public:
     bool moveActionDown(int macroId, int order, QString* error=nullptr);
     bool swapActions(int macroId, int order1, int order2, QString* error=nullptr);
 
-    // Validation (public in case UI needs to pre-check)
+    // Basic Validation (existing)
     bool validateMacroName(const QString& name, QString* error=nullptr) const;
     bool validateMacroDescription(const QString& desc, QString* error=nullptr) const;
     bool validateHotkey(const QString& hotkey, QString* error=nullptr) const;

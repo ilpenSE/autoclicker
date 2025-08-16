@@ -6,6 +6,8 @@
 #include "settingsmanager.h"
 #include "appdatamanager.h"
 
+#include <QTimer>
+
 SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
     : QDialog(parent)
     , m_settings(settings)
@@ -14,6 +16,11 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
     ui->setupUi(this);
     connect(&LanguageManager::instance(), &LanguageManager::languageChanged,
             this, &SettingsWin::retranslateUi);
+
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged,
+            this, &SettingsWin::onThemeChanged);
+
+    QTimer::singleShot(0, this, &SettingsWin::setupDynamicIcons);
 
     // langbox ayarlaması
     QStringList langs;
@@ -53,6 +60,46 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
     retranslateUi();
 }
 
+void SettingsWin::setupDynamicIcons() {
+    // Use assets/icons from the project directory
+    QString iconsPath = ":/assets/icons"; // Resource path
+
+    // Setup QActions with dynamic icons
+    // save
+    if (ui->btnSave) {
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnSave,
+            iconsPath + "/save.svg",
+            QSize(24, 24)
+            );
+    }
+    // discard
+    if (ui->btnDiscard) {
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnDiscard,
+            iconsPath + "/cancel.svg",
+            QSize(24, 24)
+            );
+    }
+
+    Logger::instance().sInfo("Dynamic icons setup completed");
+}
+
+void SettingsWin::onThemeChanged() {
+    // This slot is called when theme changes
+    // Icons are automatically updated by ThemeManager
+    Logger::instance().sInfo("Theme changed, icons updated automatically");
+
+    // You can add additional theme-related updates here if needed
+    refreshIcons();
+}
+
+void SettingsWin::refreshIcons() {
+    // Force refresh all icons if needed
+    ThemeManager::instance().refreshAllIcons();
+}
+
+
 void SettingsWin::loadLanguage() {
     // MAIN WINDOW HARİCİ KULLANILAN TRANSLATELERDE BÖYLE YAP YOKSA BU CLASSI ALIR
     ui->btnSave->setText(QApplication::translate("MainWindow", "save"));
@@ -85,18 +132,12 @@ SettingsWin::~SettingsWin()
 
 void SettingsWin::on_btnSave_clicked()
 {
-    // ÖNEMLI: Mevcut ActiveMacro değerini koru
+    // Mevcut ActiveMacro değerini koru
     int currentActiveMacro = m_settings["ActiveMacro"].toInt();
 
     // language değerini kaydet
     Language selectedLang = static_cast<Language>(ui->langBox->currentIndex());
     QString selectedLocale = LanguageManager::instance().languageToLocale(selectedLang);
-
-    // Debug için
-    Logger::instance().langInfo(QString("Selected language index: %1, enum: %2, locale: %3")
-                                    .arg(ui->langBox->currentIndex())
-                                    .arg(static_cast<int>(selectedLang))
-                                    .arg(selectedLocale));
 
     LanguageManager::instance().changeLanguage(selectedLang);
     m_settings["Language"] = selectedLocale;
@@ -112,14 +153,8 @@ void SettingsWin::on_btnSave_clicked()
         Logger::instance().thError("Theme cannot be changed to " + themeVisibleName + ", file name: " + themeFileName);
     }
 
-    // ÖNEMLI: ActiveMacro'yu geri yükle
+    // ActiveMacro'yu geri yükle
     m_settings["ActiveMacro"] = currentActiveMacro;
-
-    // Debug için
-    Logger::instance().sInfo(QString("Saving settings - Language: %1, Theme: %2, ActiveMacro: %3")
-                                 .arg(selectedLocale)
-                                 .arg(themeFileName)
-                                 .arg(currentActiveMacro));
 
     // Kaydet
     SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), m_settings);
