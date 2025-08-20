@@ -7,6 +7,7 @@
 #include "macromanager.h"
 #include "settingswin.h"
 #include "thememanager.h"
+#include "macroselectionwin.h"
 
 #include <QJsonObject>
 #include <QResizeEvent>
@@ -30,6 +31,7 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged,
             this, &MainWindow::onThemeChanged);
 
+    // tablo ui ayarlamaları
     QTimer::singleShot(0, this, &MainWindow::adjustTableColumns);
     ui->actionsTable->verticalHeader()->setVisible(false);
 
@@ -37,29 +39,31 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
     QTimer::singleShot(0, this, &MainWindow::setupDynamicIcons);
 
     // makro ayarlamaları
-    int activeMacro = getSetting("ActiveMacro").toInt(1);
-    auto macroOpt = MacroManager::instance().getMacroById(activeMacro);
-    if (macroOpt.has_value()) {
-        // aktif makroyu çek ve ayarla
-        QString activeMacroName = macroOpt->name;
-        ui->labelActiveMacro->setText(tr("active macro label").replace("#MCR", activeMacroName));
+    setActiveMacro(getSetting("ActiveMacro").toInt(1));
 
-        // aksiyon ekleme
-        QVector<MacroAction> actions = MacroManager::instance().getActions(activeMacro);
-        for (int i = 0; i < actions.length(); i++) {
-            MacroAction act = actions.at(i);
-            addActionToTable(act);
-        }
-        Logger::instance().sInfo("(MainWindow) Active macro set to: " + activeMacroName + " (ID: " + QString::number(activeMacro) + ")");
+    loadLanguage();
+}
+
+void MainWindow::setActiveMacro(int id) {
+    auto macro = MacroManager::instance().getMacroById(id);
+    if (macro.has_value()) {
+        QString activeMacroName = macro->name;
+        ui->actionActiveMacro->setText(tr("active macro label").replace("#MCR", activeMacroName));
+        Logger::instance().sInfo("(MainWindow) Active macro set to: " + activeMacroName + " (ID: " + QString::number(id) + ")");
     } else {
-        Logger::instance().sError("(MainWindow) Active macro not found with ID: " + QString::number(activeMacro));
+        Logger::instance().sError("(MainWindow) Active macro not found with ID: " + QString::number(id));
         // Fallback to first macro or default
         if (!m_macros.isEmpty()) {
-            ui->labelActiveMacro->setText(tr("active macro label").replace("#MCR", m_macros.first().name));
+            ui->actionActiveMacro->setText(tr("active macro label").replace("#MCR", m_macros.first().name));
+            id = m_macros.first().id;
         }
     }
 
-    loadLanguage();
+    ui->actionsTable->setRowCount(0);
+    QVector<MacroAction> acts = MacroManager::instance().getActions(id);
+    for (const MacroAction& act : acts) {
+        addActionToTable(act);
+    }
 }
 
 void MainWindow::setupDynamicIcons() {
@@ -117,9 +121,6 @@ QJsonValue MainWindow::getSetting(const QString& key) const
 void MainWindow::setSetting(const QString& key, const QJsonValue& value)
 {
     m_settings[key] = value;
-    // Dosyaya da kaydet
-    QString settingsPath = AppDataManager::instance().settingsFilePath();
-    SettingsManager::instance().saveSettings(settingsPath, m_settings);
 }
 
 void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
@@ -140,21 +141,21 @@ void MainWindow::addActionToTable(MacroAction a) {
     QString action_type_str = actionTypeToStr(a.action_type);
     QTableWidgetItem *atype = new QTableWidgetItem();
     atype->setData(Qt::UserRole, action_type_str);
-    atype->setText(tr(qPrintable("atype " + action_type_str.toLower())));
+    atype->setText(tr(qPrintable((action_type_str == "-" ? "" : "atype ") + action_type_str.toLower())));
     ui->actionsTable->setItem(row, 1, atype);
 
     // click type itemi ekleme
     QString click_type_str = clickTypeToStr(a.click_type);
     QTableWidgetItem *ctype = new QTableWidgetItem();
     ctype->setData(Qt::UserRole, click_type_str);
-    ctype->setText(tr(qPrintable("ctype " + click_type_str.toLower())));
+    ctype->setText(tr(qPrintable((click_type_str == "-" ? "" :"ctype ") + click_type_str.toLower())));
     ui->actionsTable->setItem(row, 2, ctype);
 
     // mouse btn itemi ekleme
     QString msbtnstr = a.mouse_button.has_value() ? mouseButtonToStr(a.mouse_button.value()) : "-";
     QTableWidgetItem *msbtn = new QTableWidgetItem();
     msbtn->setData(Qt::UserRole, msbtnstr); // - = NULL
-    msbtn->setText(tr(qPrintable("msbtn " + msbtnstr.toLower())));
+    msbtn->setText(tr(qPrintable((msbtnstr == "-" ? "" : "msbtn ") + msbtnstr.toLower())));
     ui->actionsTable->setItem(row, 3, msbtn);
 
     ui->actionsTable->setItem(row, 4, new QTableWidgetItem(QString::number(a.repeat)));
@@ -163,7 +164,7 @@ void MainWindow::addActionToTable(MacroAction a) {
 }
 
 void MainWindow::loadLanguage() {
-    // ACTIONS TABLOSU ÇEVİRİLERİ
+    // MACRO ACTIONS TABLOSU ÇEVİRİLERİ
 
     // itemler
     for (int i = 0; i < ui->actionsTable->rowCount(); i++) {
@@ -235,15 +236,19 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 MainWindow::~MainWindow()
 {
+    QString settingsPath = AppDataManager::instance().settingsFilePath();
+    if (SettingsManager::instance().saveSettings(settingsPath, m_settings)) {
+        Logger::instance().fsInfo("The settings file has been synchronized with the UI.");
+    } else {
+        Logger::instance().fsError("Failed to synchronize the settings file with the UI.”");
+    }
+
     Logger::instance().logInfo("Closing the app...");
     delete ui;
 }
 
 void MainWindow::on_actionSettings_triggered()
 {
-    // ÖNEMLİ: SettingsWin'e geçerli ayarları ver
-    Logger::instance().sInfo("(MainWindow) Opening settings with ActiveMacro: " + QString::number(m_settings["ActiveMacro"].toInt()));
-
     SettingsWin settingsDialog(m_settings, this);
     int result = settingsDialog.exec();
 
@@ -254,17 +259,35 @@ void MainWindow::on_actionSettings_triggered()
         // Ayarları güncelle
         m_settings = updatedSettings;
 
-        // Dosyaya kaydet
-        QString settingsPath = AppDataManager::instance().settingsFilePath();
-        SettingsManager::instance().saveSettings(settingsPath, m_settings);
-
         // UI'ı güncelle (aktif makro label'ı vs)
         int activeMacro = m_settings["ActiveMacro"].toInt(1);
-        auto macroOpt = MacroManager::instance().getMacroById(activeMacro);
-        if (macroOpt.has_value()) {
-            ui->labelActiveMacro->setText(tr("active macro label").replace("#MCR", macroOpt->name));
-        }
+        setActiveMacro(activeMacro);
     } else {
         Logger::instance().sInfo("Settings changes discarded");
     }
 }
+
+void MainWindow::refreshMacros() {
+    m_macros = MacroManager::instance().getAllMacros();
+    Logger::instance().mInfo(QString("Macros refreshed. Count: %1").arg(m_macros.size()));
+}
+
+void MainWindow::on_actionActiveMacro_triggered()
+{
+    refreshMacros();
+
+    MacroSelectionWin selectionDialog(m_macros, this);
+    int res = selectionDialog.exec();
+
+    if (res == QDialog::Accepted) {
+        // selectionDialog.activeMacroId artık gerçek SQL ID'si
+        int newActiveMacroId = selectionDialog.activeMacroId;
+
+        // Aktif makroyu ayarla
+        setActiveMacro(newActiveMacroId);
+        setSetting("ActiveMacro", newActiveMacroId);
+
+        Logger::instance().mInfo("Active macro set to ID: " + QString::number(newActiveMacroId));
+    }
+}
+

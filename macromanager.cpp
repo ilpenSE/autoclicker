@@ -49,15 +49,44 @@ bool MacroManager::ensureSchema(QString* error) {
     // Enable foreign keys
     if (!q.exec("PRAGMA foreign_keys = ON;")) return execQuery(q, "PRAGMA", error);
 
-    // Macros
-    const char* createMacros =
-        "CREATE TABLE IF NOT EXISTS Macros ("
-        " id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        " name TEXT NOT NULL UNIQUE,"
-        " description TEXT NOT NULL,"
-        " hotkey TEXT NOT NULL"
-        ");";
-    if (!q.exec(createMacros)) return execQuery(q, "create Macros", error);
+    // Migration kontrolü - eğer tablo AUTOINCREMENT ile varsa migrate et
+    QSqlQuery checkQ(m_db);
+    if (!checkQ.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='Macros'")) {
+        return execQuery(checkQ, "check table exists", error);
+    }
+
+    bool tableExists = checkQ.next();
+    checkQ.finish(); // Query'yi kapat
+
+    if (tableExists) {
+        // Tablo mevcut, AUTOINCREMENT kontrolü yap
+        QSqlQuery schemaQ(m_db);
+        if (!schemaQ.exec("SELECT sql FROM sqlite_master WHERE type='table' AND name='Macros'")) {
+            return execQuery(schemaQ, "check table schema", error);
+        }
+        if (schemaQ.next()) {
+            QString createSql = schemaQ.value(0).toString();
+            schemaQ.finish(); // Query'yi kapat
+
+            if (createSql.contains("AUTOINCREMENT", Qt::CaseInsensitive)) {
+                Logger::instance().mInfo("Migrating table from AUTOINCREMENT to sequential IDs...");
+                if (!migrateToSequentialIds(error)) {
+                    return false;
+                }
+                Logger::instance().mInfo("Migration completed successfully");
+            }
+        }
+    } else {
+        // Tablo yok, yeni oluştur
+        const char* createMacros =
+            "CREATE TABLE Macros ("
+            " id INTEGER PRIMARY KEY,"  // AUTOINCREMENT yok
+            " name TEXT NOT NULL UNIQUE,"
+            " description TEXT NOT NULL,"
+            " hotkey TEXT NOT NULL"
+            ");";
+        if (!q.exec(createMacros)) return execQuery(q, "create Macros", error);
+    }
 
     const char* createActions =
         "CREATE TABLE IF NOT EXISTS MacroActions ("
@@ -73,7 +102,7 @@ bool MacroManager::ensureSchema(QString* error) {
         " hover_duration INTEGER NULL,"
         " click_count INTEGER NOT NULL,"
         " mouse_button TEXT NULL,"
-        " PRIMARY KEY(macro_id, \"order\"),"  // Composite primary key
+        " PRIMARY KEY(macro_id, \"order\"),"
         " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
         ");";
     if (!q.exec(createActions)) return execQuery(q, "create MacroActions", error);
@@ -200,6 +229,14 @@ QVector<Macro> MacroManager::getAllMacros() const {
     return out;
 }
 
+bool MacroManager::existsMacro(int id) {
+    return getMacroById(id) != std::nullopt;
+}
+
+bool MacroManager::existsMacro(const QString& name) {
+    return getMacroByName(name) != std::nullopt;
+}
+
 std::optional<Macro> MacroManager::getMacroById(int id) const {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, name, description, hotkey FROM Macros WHERE id=?");
@@ -227,17 +264,25 @@ int MacroManager::createMacro(const QString& name, const QString& description, c
     if (!validateMacroName(name, error) || !validateMacroDescription(description, error) || !validateHotkey(hotkey, error))
         return -1;
 
+    if (existsMacro(name)) {
+        if (error) *error = "A macro with this name exists!";
+        return -1;
+    }
+
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO Macros(name, description, hotkey) VALUES(?,?,?)");
     q.addBindValue(name);
     q.addBindValue(description);
     q.addBindValue(hotkey);
-    if (!q.exec()) { execQuery(q, "insert Macro", error); return -1; }
+    if (!q.exec()) {
+        execQuery(q, "insert Macro", error);
+        return -1;
+    }
     return q.lastInsertId().toInt();
 }
 
 bool MacroManager::updateMacro(const Macro& m, QString* error) {
-    if (m.id == DEFAULT_MACRO_ID) { if (error) *error="DEFAULT makrosu düzenlenemez."; return false; }
+    if (m.id == DEFAULT_MACRO_ID) { if (error) *error="DEFAULT cannot be edited."; return false; }
     if (!validateMacroName(m.name, error) || !validateMacroDescription(m.description, error) || !validateHotkey(m.hotkey, error))
         return false;
 
@@ -250,8 +295,14 @@ bool MacroManager::updateMacro(const Macro& m, QString* error) {
     return q.exec();
 }
 
+// db: def, m1, m2
+// ui: def, m1
+bool MacroManager::updateAllMacros(QVector<Macro> macros) {
+    return true;
+}
+
 bool MacroManager::deleteMacro(int id, QString* error) {
-    if (id == DEFAULT_MACRO_ID) { if (error) *error="DEFAULT makrosu silinemez."; return false; }
+    if (id == DEFAULT_MACRO_ID) { if (error) *error="DEFAULT cannot be deleted."; return false; }
     QSqlQuery q(m_db);
     q.prepare("DELETE FROM Macros WHERE id=?");
     q.addBindValue(id);
@@ -577,4 +628,139 @@ bool MacroManager::normalizeOrders(int macroId, QString* error) {
     if (acts.isEmpty()) return true;
     for (int i=0;i<acts.size();++i) acts[i].order = i;
     return setActionsForMacro(macroId, acts, error);
+}
+
+// ====== MIGRATION ==========
+bool MacroManager::migrateToSequentialIds(QString* error) {
+    Logger::instance().mInfo("Starting migration to sequential IDs");
+
+    // Önce tüm açık query'leri temizle
+    m_db.close();
+    if (!m_db.open()) {
+        if (error) *error = "Failed to reopen database for migration";
+        return false;
+    }
+
+    // PRAGMA ayarları
+    QSqlQuery pragmaQ(m_db);
+    pragmaQ.exec("PRAGMA foreign_keys = OFF");  // Migration sırasında foreign key'leri kapat
+
+    if (!m_db.transaction()) {
+        if (error) *error = "Transaction failed";
+        return false;
+    }
+
+    try {
+        QSqlQuery q(m_db);
+
+        // 1. Yeni tablo yapısını oluştur (farklı isimlerle)
+        const char* createNewMacros =
+            "CREATE TABLE Macros_new ("
+            " id INTEGER PRIMARY KEY,"  // AUTOINCREMENT yok
+            " name TEXT NOT NULL UNIQUE,"
+            " description TEXT NOT NULL,"
+            " hotkey TEXT NOT NULL"
+            ");";
+        if (!q.exec(createNewMacros)) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "create new macros table", error);
+        }
+
+        const char* createNewActions =
+            "CREATE TABLE MacroActions_new ("
+            " macro_id INTEGER NOT NULL,"
+            " \"order\" INTEGER NOT NULL,"
+            " action_type TEXT NOT NULL,"
+            " click_type TEXT NOT NULL,"
+            " repeat INTEGER NOT NULL,"
+            " position TEXT NULL,"
+            " current_position INTEGER NOT NULL,"
+            " interval INTEGER NOT NULL,"
+            " hold_duration INTEGER NULL,"
+            " hover_duration INTEGER NULL,"
+            " click_count INTEGER NOT NULL,"
+            " mouse_button TEXT NULL,"
+            " PRIMARY KEY(macro_id, \"order\"),"
+            " FOREIGN KEY(macro_id) REFERENCES Macros_new(id) ON DELETE CASCADE"
+            ");";
+        if (!q.exec(createNewActions)) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "create new actions table", error);
+        }
+
+        // Debug: Mevcut tablo yapısını kontrol et
+        if (!q.exec("PRAGMA table_info(MacroActions)")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "get table info", error);
+        }
+
+        QStringList oldColumns;
+        while (q.next()) {
+            oldColumns << q.value(1).toString(); // column name
+        }
+        Logger::instance().mInfo(QString("Old MacroActions columns: %1").arg(oldColumns.join(", ")));
+
+        // 2. Verileri kopyala
+        if (!q.exec("INSERT INTO Macros_new (id, name, description, hotkey) "
+                    "SELECT id, name, description, hotkey FROM Macros ORDER BY id")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "copy macros data", error);
+        }
+
+        // MacroActions için sütunları explicit belirt
+        if (!q.exec("INSERT INTO MacroActions_new (macro_id, \"order\", action_type, click_type, repeat, position, current_position, interval, hold_duration, hover_duration, click_count, mouse_button) "
+                    "SELECT macro_id, \"order\", action_type, click_type, repeat, position, current_position, interval, hold_duration, hover_duration, click_count, mouse_button FROM MacroActions")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "copy actions data", error);
+        }
+
+        // 3. Eski tabloları sil
+        if (!q.exec("DROP TABLE MacroActions")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "drop old actions", error);
+        }
+
+        if (!q.exec("DROP TABLE Macros")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "drop old macros", error);
+        }
+
+        // 4. Yeni tabloları rename et
+        if (!q.exec("ALTER TABLE Macros_new RENAME TO Macros")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "rename macros table", error);
+        }
+
+        if (!q.exec("ALTER TABLE MacroActions_new RENAME TO MacroActions")) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            return execQuery(q, "rename actions table", error);
+        }
+
+        if (!m_db.commit()) {
+            m_db.rollback();
+            pragmaQ.exec("PRAGMA foreign_keys = ON");
+            if (error) *error = "Commit failed";
+            return false;
+        }
+
+        // Foreign key'leri tekrar aç
+        pragmaQ.exec("PRAGMA foreign_keys = ON");
+        Logger::instance().mInfo("Migration completed successfully");
+        return true;
+
+    } catch (...) {
+        m_db.rollback();
+        pragmaQ.exec("PRAGMA foreign_keys = ON");
+        if (error) *error = "Migration failed with exception";
+        return false;
+    }
 }

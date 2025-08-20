@@ -115,9 +115,6 @@ void SettingsWin::retranslateUi()
 void SettingsWin::updateSetting(const QString& key, const QJsonValue& value)
 {
     m_settings[key] = value;
-
-    QString settingsPath = AppDataManager::instance().settingsFilePath();
-    SettingsManager::instance().saveSettings(settingsPath, m_settings);
 }
 
 QJsonValue SettingsWin::getSetting(const QString& key) const
@@ -157,7 +154,6 @@ void SettingsWin::on_btnSave_clicked()
     m_settings["ActiveMacro"] = currentActiveMacro;
 
     // Kaydet
-    SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), m_settings);
     accept();
 }
 

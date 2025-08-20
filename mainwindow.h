@@ -25,12 +25,13 @@ private slots:
     void adjustTableColumns();
     void retranslateUi();
     void saveActions(int macroId, const QVector<MacroAction>& actions);
-    QJsonValue getSetting(const QString& key) const;
     void setSetting(const QString& key, const QJsonValue& value);
     void on_actionSettings_triggered();
     void loadLanguage();
     void onThemeChanged();
 
+
+    void on_actionActiveMacro_triggered();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -40,6 +41,9 @@ private:
     QVector<Macro> m_macros;
     Ui::MainWindow *ui;
 
+    void refreshMacros();
+    void setActiveMacro(int id);
+    QJsonValue getSetting(const QString& key) const;
     void setupDynamicIcons();
     void refreshIcons();
 };

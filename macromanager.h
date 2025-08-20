@@ -44,11 +44,14 @@ public:
 
     // Macros
     QVector<Macro> getAllMacros() const;
+    bool existsMacro(int id);
+    bool existsMacro(const QString& name);
     std::optional<Macro> getMacroById(int id) const;
     std::optional<Macro> getMacroByName(const QString& name) const;
     int  createMacro(const QString& name, const QString& description, const QString& hotkey, QString* error=nullptr);
     bool updateMacro(const Macro& m, QString* error=nullptr);
     bool deleteMacro(int id, QString* error=nullptr);
+    bool updateAllMacros(QVector<Macro> macros);
 
     // Actions
     QVector<MacroAction> getActions(int macroId) const;
@@ -68,6 +71,8 @@ public:
     bool validateHotkey(const QString& hotkey, QString* error=nullptr) const;
     bool validateAction(const MacroAction& a, QString* error=nullptr) const;
 
+    // Migration
+    bool migrateToSequentialIds(QString* error);
     // Path helper
     QString dbPath() const;
 
