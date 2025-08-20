@@ -39,6 +39,7 @@ protected:
 private:
     QJsonObject m_settings;
     QVector<Macro> m_macros;
+    Macro activeMacro;
     Ui::MainWindow *ui;
 
     void refreshMacros();

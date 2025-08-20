@@ -6,6 +6,8 @@
 
 #include "logger.h"
 #include "macromanager.h"
+#include "thememanager.h"
+#include "languagemanager.h"
 
 MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, QWidget *parent)
     : QDialog(parent)
@@ -14,6 +16,14 @@ MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, QWidget *parent)
 {
     ui->setupUi(this);
 
+    connect(&LanguageManager::instance(), &LanguageManager::languageChanged,
+            this, &MacroSelectionWin::retranslateUi);
+
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged,
+            this, &MacroSelectionWin::onThemeChanged);
+
+    QTimer::singleShot(0, this, &MacroSelectionWin::setupDynamicIcons);
+
     // tablo ayarlamaları
     QTimer::singleShot(0, this, &MacroSelectionWin::adjustTableColumns);
     ui->macrosTable->verticalHeader()->setVisible(false);
@@ -21,22 +31,79 @@ MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, QWidget *parent)
     for (const Macro& m : macros) {
         addMacro(m.name, m.description, m.hotkey);
     }
+
+    loadLang();
 }
 
 void MacroSelectionWin::adjustTableColumns()
 {
     int tableWidth = ui->macrosTable->viewport()->width();
 
-    ui->macrosTable->setColumnWidth(0, tableWidth * 0.10); // ID
+    ui->macrosTable->setColumnWidth(0, tableWidth * 0.08); // ID
     ui->macrosTable->setColumnWidth(1, tableWidth * 0.30); // NAME
     ui->macrosTable->setColumnWidth(2, tableWidth * 0.40); // DESCRIPTION
-    ui->macrosTable->setColumnWidth(3, tableWidth * 0.20); // HOTKEY
+    ui->macrosTable->setColumnWidth(3, tableWidth * 0.22); // HOTKEY
 }
 
 void MacroSelectionWin::resizeEvent(QResizeEvent* event)
 {
     QDialog::resizeEvent(event);
     adjustTableColumns();
+}
+
+void MacroSelectionWin::setupDynamicIcons() {
+    // Use assets/icons from the project directory
+    QString iconsPath = ":/assets/icons"; // Resource path
+
+    // Setup QActions with dynamic icons
+    // create
+    if (ui->btnCreate) {
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnCreate,
+            iconsPath + "/add.svg",
+            QSize(24, 24)
+            );
+    }
+    // delete
+    if (ui->btnDelete) {
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnDelete,
+            iconsPath + "/delete.svg",
+            QSize(24, 24)
+            );
+    }
+    // cancel
+    if (ui->btnCancel) {
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnCancel,
+            iconsPath + "/cancel.svg",
+            QSize(24, 24)
+            );
+    }
+    // select
+    if (ui->btnSelect) {
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnSelect,
+            iconsPath + "/select.svg",
+            QSize(24, 24)
+            );
+    }
+
+    Logger::instance().sInfo("Dynamic icons setup completed");
+}
+
+void MacroSelectionWin::onThemeChanged() {
+    // This slot is called when theme changes
+    // Icons are automatically updated by ThemeManager
+    Logger::instance().sInfo("Theme changed, icons updated automatically");
+
+    // You can add additional theme-related updates here if needed
+    refreshIcons();
+}
+
+void MacroSelectionWin::refreshIcons() {
+    // Force refresh all icons if needed
+    ThemeManager::instance().refreshAllIcons();
 }
 
 void MacroSelectionWin::addMacro(const QString& name, const QString& desc, const QString& htk) {
@@ -49,9 +116,27 @@ void MacroSelectionWin::addMacro(const QString& name, const QString& desc, const
     ui->macrosTable->setItem(row, 3, new QTableWidgetItem(htk));
 }
 
+QString MacroSelectionWin::trans(const QString& key) {
+    return QApplication::translate("MainWindow", qPrintable(key));
+}
+
+void MacroSelectionWin::loadLang() {
+    this->setWindowTitle(trans("macro selection title"));
+    ui->btnCancel->setText(trans("cancel"));
+    ui->btnCreate->setText(trans("create"));
+    ui->btnSelect->setText(trans("select"));
+    ui->btnDelete->setText(trans("delete"));
+
+    ui->macrosTable->setHorizontalHeaderLabels(QStringList()
+                                                << "ID"
+                                                << trans("name")
+                                                << trans("description")
+                                                << trans("hotkey"));
+}
 
 void MacroSelectionWin::retranslateUi() {
     ui->retranslateUi(this);
+    loadLang();
 }
 
 MacroSelectionWin::~MacroSelectionWin()

@@ -12,10 +12,6 @@
         <translation>Aktives Makro: #MCR* (Ungespeichert)</translation>
     </message>
     <message>
-        <source>save</source>
-        <translation>Speichern</translation>
-    </message>
-    <message>
         <source>cancel</source>
         <translation>Abbrechen</translation>
     </message>
@@ -99,5 +95,126 @@
         <source>msbtn left</source>
         <translation>Links</translation>
     </message>
+    <message>
+        <source>error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <source>about</source>
+        <translation>Über</translation>
+    </message>
+    <message>
+        <source>settings</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>
+        <source>save</source>
+        <translation>Speichern</translation>
+    </message>
+    <message>
+        <source>macro save</source>
+        <translation>Makro speichern</translation>
+    </message>
+    <message>
+        <source>add action</source>
+        <translation>Aktion hinzufügen</translation>
+    </message>
+    <message>
+        <source>edit action orders</source>
+        <translation>Reihenfolge bearbeiten</translation>
+    </message>
+    <message>
+        <source>delete action</source>
+        <translation>Aktion löschen</translation>
+    </message>
+    <message>
+        <source>start</source>
+        <translation>Starten</translation>
+    </message>
+    <message>
+        <source>stop</source>
+        <translation>Stoppen</translation>
+    </message>
+    <message>
+        <source>name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>hotkey</source>
+        <translation>Hotkey</translation>
+    </message>
+    <message>
+        <source>macro selection title</source>
+        <translation>Wähle ein Makro</translation>
+    </message>
+    <message>
+        <source>create</source>
+        <translation>Erstellen</translation>
+    </message>
+    <message>
+        <source>delete</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <source>select</source>
+        <translation>Auswählen</translation>
+    </message>
+    <message>
+        <source>language</source>
+        <translation>Sprache</translation>
+    </message>
+    <message>
+        <source>general hotkey</source>
+        <translation>Allgemeiner Hotkey</translation>
+    </message>
+    <message>
+        <source>theme</source>
+        <translation>Thema</translation>
+    </message>
+    <message>
+        <source>patch notes</source>
+        <translation>Patch-Hinweise</translation>
+    </message>
+    <message>
+        <source>active macro label tooltip</source>
+        <translation>Makro ändern</translation>
+    </message>
+    <message>
+        <source>macro save tooltip</source>
+        <translation>Aktionen des Makros speichern</translation>
+    </message>
+    <message>
+        <source>settings tooltip</source>
+        <translation>Öffnet die Einstellungen des AutoClickers</translation>
+    </message>
+    <message>
+        <source>about tooltip</source>
+        <translation>Informationen über AutoClicker</translation>
+    </message>
+    <message>
+        <source>add action tooltip</source>
+        <translation>Fügt dem ausgewählten Makro eine Aktion hinzu</translation>
+    </message>
+    <message>
+        <source>edit orders tooltip</source>
+        <translation>Ermöglicht das Umordnen von Aktionen</translation>
+    </message>
+    <message>
+        <source>delete action tooltip</source>
+        <translation>Ermöglicht das Löschen der ausgewählten Aktion</translation>
+    </message>
+    <message>
+        <source>start tooltip</source>
+        <translation>Startet den Clicker</translation>
+    </message>
+    <message>
+        <source>stop tooltip</source>
+        <translation>Stoppt den Clicker</translation>
+    </message>
+
 </context>
 </TS>

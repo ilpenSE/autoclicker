@@ -27,9 +27,15 @@ private slots:
     void onThemeChanged();
     void on_btnSave_clicked();
 
+    // hotkey ile alakalı
+    void onHotkeyReady(const QString& hotkey);
+    void on_btnSelectHotkey_clicked();
+    void onHotkeyChanged();
+
     void on_btnDiscard_clicked();
 
 private:
+    QString trans(const QString& key);
     Ui::SettingsWin *ui;
 };
 

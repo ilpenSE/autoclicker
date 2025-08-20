@@ -12,10 +12,6 @@
         <translation>Macro actif : #MCR* (Non enregistré)</translation>
     </message>
     <message>
-        <source>save</source>
-        <translation>Enregistrer</translation>
-    </message>
-    <message>
         <source>cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -99,5 +95,126 @@
         <source>msbtn left</source>
         <translation>Gauche</translation>
     </message>
+    <message>
+        <source>error</source>
+        <translation>Erreur</translation>
+    </message>
+    <message>
+        <source>about</source>
+        <translation>À propos</translation>
+    </message>
+    <message>
+        <source>settings</source>
+        <translation>Paramètres</translation>
+    </message>
+    <message>
+        <source>save</source>
+        <translation>Enregistrer</translation>
+    </message>
+    <message>
+        <source>macro save</source>
+        <translation>Enregistrer le macro</translation>
+    </message>
+    <message>
+        <source>add action</source>
+        <translation>Ajouter une action</translation>
+    </message>
+    <message>
+        <source>edit action orders</source>
+        <translation>Modifier l'ordre</translation>
+    </message>
+    <message>
+        <source>delete action</source>
+        <translation>Supprimer l'action</translation>
+    </message>
+    <message>
+        <source>start</source>
+        <translation>Démarrer</translation>
+    </message>
+    <message>
+        <source>stop</source>
+        <translation>Arrêter</translation>
+    </message>
+    <message>
+        <source>name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>description</source>
+        <translation>Description</translation>
+    </message>
+    <message>
+        <source>hotkey</source>
+        <translation>Touche rapide</translation>
+    </message>
+    <message>
+        <source>macro selection title</source>
+        <translation>Sélectionner un macro</translation>
+    </message>
+    <message>
+        <source>create</source>
+        <translation>Créer</translation>
+    </message>
+    <message>
+        <source>delete</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>select</source>
+        <translation>Sélectionner</translation>
+    </message>
+    <message>
+        <source>language</source>
+        <translation>Langue</translation>
+    </message>
+    <message>
+        <source>general hotkey</source>
+        <translation>Touche rapide générale</translation>
+    </message>
+    <message>
+        <source>theme</source>
+        <translation>Thème</translation>
+    </message>
+    <message>
+        <source>patch notes</source>
+        <translation>Notes de mise à jour</translation>
+    </message>
+    <message>
+        <source>active macro label tooltip</source>
+        <translation>Changer de macro</translation>
+    </message>
+    <message>
+        <source>macro save tooltip</source>
+        <translation>Enregistrer les actions du macro</translation>
+    </message>
+    <message>
+        <source>settings tooltip</source>
+        <translation>Ouvre les paramètres de l'AutoClicker</translation>
+    </message>
+    <message>
+        <source>about tooltip</source>
+        <translation>Informations sur l'AutoClicker</translation>
+    </message>
+    <message>
+        <source>add action tooltip</source>
+        <translation>Ajoute une action au macro sélectionné</translation>
+    </message>
+    <message>
+        <source>edit orders tooltip</source>
+        <translation>Permet de réorganiser les actions</translation>
+    </message>
+    <message>
+        <source>delete action tooltip</source>
+        <translation>Permet de supprimer l'action sélectionnée</translation>
+    </message>
+    <message>
+        <source>start tooltip</source>
+        <translation>Démarre le clicker</translation>
+    </message>
+    <message>
+        <source>stop tooltip</source>
+        <translation>Arrête le clicker</translation>
+    </message>
+
 </context>
 </TS>

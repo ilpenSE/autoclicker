@@ -41,10 +41,6 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
         Logger::instance().sWarning("Settings file version cannot be found, setting it to " + APP_VERSION);
     }
 
-    // DİĞER TÜM KONTROLLERS SİLİNDİ!
-    // Language, ActiveMacro, Theme, DefaultHotkey kontrollerini kaldırdım
-    // Çünkü bunlar kullanıcının mevcut ayarlarını bozuyor
-
     Logger::instance().sInfo("Settings validated. Only missing keys added and version updated.");
 }
 

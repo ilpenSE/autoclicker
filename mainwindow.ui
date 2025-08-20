@@ -38,7 +38,7 @@
        </font>
       </property>
       <property name="title">
-       <string>Makro Aksiyonları</string>
+       <string/>
       </property>
       <layout class="QVBoxLayout" name="actionsLayout">
        <property name="spacing">
@@ -171,7 +171,7 @@
             <string>Yeni aksiyon ekler</string>
            </property>
            <property name="text">
-            <string>Aksiyon Ekle</string>
+            <string>Add Action</string>
            </property>
           </widget>
          </item>
@@ -192,7 +192,7 @@
             <string>Seçili aksiyonu düzenler</string>
            </property>
            <property name="text">
-            <string>Düzenle</string>
+            <string>Edit Orders</string>
            </property>
           </widget>
          </item>
@@ -213,7 +213,7 @@
             <string>Seçili aksiyonu siler</string>
            </property>
            <property name="text">
-            <string>Sil</string>
+            <string>Delete Action</string>
            </property>
           </widget>
          </item>
@@ -229,38 +229,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnMoveUp">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>Seçili aksiyonu yukarı taşır</string>
-           </property>
-           <property name="text">
-            <string>Yukarı</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnMoveDown">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>Seçili aksiyonu aşağı taşır</string>
-           </property>
-           <property name="text">
-            <string>Aşağı</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -289,17 +257,17 @@
         <number>8</number>
        </property>
        <item>
-        <widget class="QLabel" name="labelStatus">
+        <widget class="QLabel" name="labelErrors">
          <property name="font">
           <font>
            <bold>true</bold>
           </font>
          </property>
          <property name="styleSheet">
-          <string notr="true">color: #4CAF50;</string>
+          <string notr="true">color: #db4335;</string>
          </property>
          <property name="text">
-          <string>Durum: Hazır</string>
+          <string>ERRORS SHOULD VISIBLE HERE</string>
          </property>
         </widget>
        </item>
@@ -333,7 +301,7 @@
           <string>Makro çalıştırmayı başlatır</string>
          </property>
          <property name="text">
-          <string>Başlat</string>
+          <string>Start</string>
          </property>
         </widget>
        </item>
@@ -357,7 +325,7 @@
           <string>Makro çalıştırmayı durdurur</string>
          </property>
          <property name="text">
-          <string>Durdur</string>
+          <string>Stop</string>
          </property>
         </widget>
        </item>

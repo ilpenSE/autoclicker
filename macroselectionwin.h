@@ -23,6 +23,9 @@ private slots:
     void addMacro(const QString& name, const QString& desc, const QString& htk);
     void adjustTableColumns();
     void retranslateUi();
+    void setupDynamicIcons();
+    void refreshIcons();
+    void onThemeChanged();
 
     void on_btnSelect_clicked();
 
@@ -36,6 +39,8 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
+    void loadLang();
+    QString trans(const QString& key);
     Ui::MacroSelectionWin *ui;
 };
 

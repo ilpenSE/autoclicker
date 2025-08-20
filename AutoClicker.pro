@@ -14,6 +14,7 @@ RC_FILE = appicon.rc
 
 SOURCES += \
     appdatamanager.cpp \
+    hotkeylineedit.cpp \
     iconutils.cpp \
     languagemanager.cpp \
     logger.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     Enums.h \
     appdatamanager.h \
     consts.h \
+    hotkeylineedit.h \
     iconutils.h \
     languagemanager.h \
     logger.h \

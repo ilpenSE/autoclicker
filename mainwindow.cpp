@@ -24,6 +24,8 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
 {
     ui->setupUi(this);
 
+    activeMacro = MacroManager::instance().getMacroById(getSetting("ActiveMacro").toInt(1)).value();
+
     connect(&LanguageManager::instance(), &LanguageManager::languageChanged,
             this, &MainWindow::retranslateUi);
 
@@ -42,6 +44,8 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
     setActiveMacro(getSetting("ActiveMacro").toInt(1));
 
     loadLanguage();
+
+    ui->labelErrors->setVisible(false);
 }
 
 void MainWindow::setActiveMacro(int id) {
@@ -49,6 +53,7 @@ void MainWindow::setActiveMacro(int id) {
     if (macro.has_value()) {
         QString activeMacroName = macro->name;
         ui->actionActiveMacro->setText(tr("active macro label").replace("#MCR", activeMacroName));
+        activeMacro = macro.value();
         Logger::instance().sInfo("(MainWindow) Active macro set to: " + activeMacroName + " (ID: " + QString::number(id) + ")");
     } else {
         Logger::instance().sError("(MainWindow) Active macro not found with ID: " + QString::number(id));
@@ -56,11 +61,12 @@ void MainWindow::setActiveMacro(int id) {
         if (!m_macros.isEmpty()) {
             ui->actionActiveMacro->setText(tr("active macro label").replace("#MCR", m_macros.first().name));
             id = m_macros.first().id;
+            activeMacro = MacroManager::instance().getMacroById(1).value();
         }
     }
 
     ui->actionsTable->setRowCount(0);
-    QVector<MacroAction> acts = MacroManager::instance().getActions(id);
+    static QVector<MacroAction> acts = MacroManager::instance().getActions(id);
     for (const MacroAction& act : acts) {
         addActionToTable(act);
     }
@@ -71,6 +77,14 @@ void MainWindow::setupDynamicIcons() {
     QString iconsPath = ":/assets/icons"; // Resource path
 
     // Setup QActions with dynamic icons
+    // active macro
+    if (ui->actionActiveMacro) {
+        ThemeManager::instance().setupDynamicAction(
+            ui->actionActiveMacro,
+            iconsPath + "/select.svg",
+            QSize(24, 24)
+            );
+    }
     // settings
     if (ui->actionSettings) {
         ThemeManager::instance().setupDynamicAction(
@@ -127,7 +141,7 @@ void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
     QString err;
     if (!MacroManager::instance().setActionsForMacro(macroId, actions, &err)) {
         Logger::instance().mError(err);
-        QMessageBox::warning(this, "Error", err);
+        QMessageBox::critical(this, tr("error"), err);
     }
 }
 
@@ -160,12 +174,16 @@ void MainWindow::addActionToTable(MacroAction a) {
 
     ui->actionsTable->setItem(row, 4, new QTableWidgetItem(QString::number(a.repeat)));
     ui->actionsTable->setItem(row, 5, new QTableWidgetItem(QString::number(a.interval)));
-    ui->actionsTable->setItem(row, 6, new QTableWidgetItem("Adds..."));
+    ui->actionsTable->setItem(row, 6, new QTableWidgetItem("..."));
 }
 
 void MainWindow::loadLanguage() {
-    // MACRO ACTIONS TABLOSU ÇEVİRİLERİ
+    // TOOLBAR ACTION ÇEVİRİLERİ
+    ui->actionAbout->setText(tr("about"));
+    ui->actionSettings->setText(tr("settings"));
+    ui->actionSave->setText(tr("macro save"));
 
+    // MACRO ACTIONS TABLOSU ÇEVİRİLERİ
     // itemler
     for (int i = 0; i < ui->actionsTable->rowCount(); i++) {
         QTableWidgetItem* atype = ui->actionsTable->item(i, 1);
@@ -190,6 +208,18 @@ void MainWindow::loadLanguage() {
     ui->actionsTable->horizontalHeaderItem(5)->setToolTip(tr("interval tooltip"));
     ui->actionsTable->horizontalHeaderItem(6)->setToolTip(tr("additionals tooltip"));
 
+    ui->btnStart->setToolTip(tr("start tooltip"));
+    ui->btnStop->setToolTip(tr("stop tooltip"));
+
+    ui->actionActiveMacro->setToolTip(tr("active macro label tooltip"));
+    ui->actionSave->setToolTip(tr("macro save tooltip"));
+    ui->actionSettings->setToolTip(tr("settings tooltip"));
+    ui->actionAbout->setToolTip(tr("about tooltip"));
+
+    ui->btnAddAction->setToolTip(tr("add action tooltip"));
+    ui->btnDeleteAction->setToolTip(tr("delete action tooltip"));
+    ui->btnEditAction->setToolTip(tr("edit orders tooltip"));
+
     // headerlar
     ui->actionsTable->setHorizontalHeaderLabels(QStringList()
                                                 << "No"
@@ -199,6 +229,15 @@ void MainWindow::loadLanguage() {
                                                 << tr("repeat")
                                                 << tr("interval")
                                                 << tr("additionals"));
+
+    // BUTONLAR
+    ui->btnAddAction->setText(tr("add action"));
+    ui->btnDeleteAction->setText(tr("delete action"));
+    ui->btnEditAction->setText(tr("edit action orders"));
+
+    QString htkStr = " (" + (activeMacro.hotkey == "DEF" ? getSetting("DefaultHotkey").toString() : activeMacro.hotkey) + ")";
+    ui->btnStart->setText(tr("start") + htkStr);
+    ui->btnStop->setText(tr("stop") + htkStr);
 }
 
 void MainWindow::retranslateUi()
@@ -259,11 +298,29 @@ void MainWindow::on_actionSettings_triggered()
         // Ayarları güncelle
         m_settings = updatedSettings;
 
-        // UI'ı güncelle (aktif makro label'ı vs)
-        int activeMacro = m_settings["ActiveMacro"].toInt(1);
-        setActiveMacro(activeMacro);
-    } else {
-        Logger::instance().sInfo("Settings changes discarded");
+        SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), updatedSettings);
+
+        qDebug() << m_settings["DefaultHotkey"].toString();
+
+        // UI güncellemeleri
+        // aktif makro
+        std::optional<Macro> query = MacroManager::instance().getMacroById(m_settings["ActiveMacro"].toInt(1));
+        Macro activeMacro;
+        if (query.has_value()) {
+            activeMacro = query.value();
+        }
+        setActiveMacro(activeMacro.id);
+        // hotkey
+        bool isDefaultHotkey = activeMacro.hotkey == "DEF";
+        QString startText = tr("start");
+        QString stopText = tr("stop");
+        QString appendedStr = " (" + (isDefaultHotkey ? m_settings["DefaultHotkey"].toString() : activeMacro.hotkey) + ")";
+
+        startText += appendedStr;
+        stopText += appendedStr;
+
+        ui->btnStart->setText(startText);
+        ui->btnStop->setText(stopText);
     }
 }
 
@@ -286,6 +343,10 @@ void MainWindow::on_actionActiveMacro_triggered()
         // Aktif makroyu ayarla
         setActiveMacro(newActiveMacroId);
         setSetting("ActiveMacro", newActiveMacroId);
+
+        QString htkStr = " (" + (activeMacro.hotkey == "DEF" ? getSetting("DefaultHotkey").toString() : activeMacro.hotkey) + ")";
+        ui->btnStart->setText(tr("start") + htkStr);
+        ui->btnStop->setText(tr("stop") + htkStr);
 
         Logger::instance().mInfo("Active macro set to ID: " + QString::number(newActiveMacroId));
     }

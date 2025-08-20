@@ -16,61 +16,77 @@
   <layout class="QVBoxLayout" name="verticalLayoutMain">
    <item>
     <layout class="QFormLayout" name="formLayoutSettings">
-     <item row="0" column="0">
-      <widget class="QLabel" name="labelLanguage">
-       <property name="text">
-        <string>Dil:</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="langBox"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="labelHotkey">
-       <property name="text">
-        <string>Varsayılan Hotkey:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <layout class="QHBoxLayout" name="layoutHotkey">
+      <layout class="QVBoxLayout" name="themeVBox">
        <item>
-        <widget class="QLineEdit" name="lineHotkey"/>
+        <widget class="QLabel" name="labelTheme">
+         <property name="text">
+          <string>Theme</string>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnSelectHotkey">
-         <property name="icon">
-          <iconset resource="icons.qrc">
-           <normaloff>:/assets/icons/select.svg</normaloff>:/assets/icons/select.svg</iconset>
+        <widget class="QComboBox" name="themeBox"/>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0" colspan="2">
+      <layout class="QVBoxLayout" name="hotkeyVBox">
+       <item>
+        <widget class="QLabel" name="labelHotkey">
+         <property name="text">
+          <string>General Hotkey</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="layoutHotkey">
+         <item>
+          <widget class="HotkeyLineEdit" name="lineHotkey"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnSelectHotkey">
+           <property name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/assets/icons/select.svg</normaloff>:/assets/icons/select.svg</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item row="5" column="0" colspan="2">
+      <layout class="QVBoxLayout" name="patchnotesVBox">
+       <item>
+        <widget class="QLabel" name="labelPatchNotes">
+         <property name="text">
+          <string>Patch Notes</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPlainTextEdit" name="plainPatchNotes">
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="labelTheme">
-       <property name="text">
-        <string>Tema:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="themeBox"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="labelPatchNotes">
-       <property name="text">
-        <string>Patch Notes:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QPlainTextEdit" name="plainPatchNotes">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
+     <item row="0" column="0">
+      <layout class="QVBoxLayout" name="langVBox">
+       <item>
+        <widget class="QLabel" name="labelLanguage">
+         <property name="text">
+          <string>Language</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="langBox"/>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

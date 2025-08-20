@@ -4,8 +4,8 @@
 #include "thememanager.h"
 #include "logger.h"
 #include "settingsmanager.h"
-#include "appdatamanager.h"
-
+#include "macromanager.h"
+#include <QMessageBox>
 #include <QTimer>
 
 SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
@@ -19,6 +19,16 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
 
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged,
             this, &SettingsWin::onThemeChanged);
+
+    // Hotkey widget bağlantıları
+    connect(ui->lineHotkey, &HotkeyLineEdit::hotkeyReady,
+            this, &SettingsWin::onHotkeyReady);
+    connect(ui->lineHotkey, &HotkeyLineEdit::hotkeyChanged,
+            this, &SettingsWin::onHotkeyChanged);
+
+    // Select hotkey butonu bağlantısı
+    connect(ui->btnSelectHotkey, &QPushButton::clicked,
+            this, &SettingsWin::on_btnSelectHotkey_clicked);
 
     QTimer::singleShot(0, this, &SettingsWin::setupDynamicIcons);
 
@@ -36,11 +46,6 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
     Language currentLang = LanguageManager::instance().getCurrentLanguage();
     ui->langBox->setCurrentIndex(static_cast<int>(currentLang));
 
-    // Debug için
-    Logger::instance().langInfo(QString("Current language enum: %1, index: %2")
-                                    .arg(static_cast<int>(currentLang))
-                                    .arg(ui->langBox->currentIndex()));
-
     // theme box ayarlaması
     QString currentThemeFile = getSetting("Theme").toString();
     QString visibleThemeName = ThemeManager::instance().getVisibleName(currentThemeFile);
@@ -57,7 +62,18 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
         ui->themeBox->setCurrentIndex(0);
     }
 
-    retranslateUi();
+    // hotkey box ayarlaması
+    QString currentHotkey = getSetting("DefaultHotkey").toString();
+    ui->lineHotkey->setHotkey(currentHotkey);
+
+    connect(ui->btnSelectHotkey, &QPushButton::clicked, this, [this]() {
+        if (ui->lineHotkey->isCapturing()) {
+            ui->lineHotkey->stopCapture(); // finalize
+        }
+        ui->lineHotkey->clearFocus(); // fokus kalksın
+    });
+
+    loadLanguage();
 }
 
 void SettingsWin::setupDynamicIcons() {
@@ -81,6 +97,15 @@ void SettingsWin::setupDynamicIcons() {
             QSize(24, 24)
             );
     }
+    // select hotkey icon btn
+    if (ui->btnSelectHotkey) {
+        ui->btnSelectHotkey->setProperty("iconOnly", true);
+        ThemeManager::instance().setupDynamicButton(
+            ui->btnSelectHotkey,
+            iconsPath + "/select.svg",
+            QSize(24, 24)
+            );
+    }
 
     Logger::instance().sInfo("Dynamic icons setup completed");
 }
@@ -99,11 +124,41 @@ void SettingsWin::refreshIcons() {
     ThemeManager::instance().refreshAllIcons();
 }
 
+void SettingsWin::onHotkeyReady(const QString& hotkey) {
+    Logger::instance().sInfo("Hotkey ready: " + hotkey);
+    // Hotkey hazır, otomatik olarak LineEdit'te görünecek
+}
+
+void SettingsWin::onHotkeyChanged() {
+    Logger::instance().sInfo("Hotkey changed to: " + ui->lineHotkey->getHotkey());
+}
+
+void SettingsWin::on_btnSelectHotkey_clicked() {
+    if (ui->lineHotkey->isCapturing()) {
+        // Capture modundaysa, hotkey'i tamamla
+        ui->lineHotkey->stopCapture();
+        Logger::instance().sInfo("Hotkey capture completed: " + ui->lineHotkey->getHotkey());
+    } else {
+        // Capture modunda değilse, başlat
+        ui->lineHotkey->startCapture();
+        Logger::instance().sInfo("Hotkey capture started");
+    }
+}
+
+QString SettingsWin::trans(const QString& key) {
+    return QApplication::translate("MainWindow", qPrintable(key));
+}
 
 void SettingsWin::loadLanguage() {
-    // MAIN WINDOW HARİCİ KULLANILAN TRANSLATELERDE BÖYLE YAP YOKSA BU CLASSI ALIR
-    ui->btnSave->setText(QApplication::translate("MainWindow", "save"));
-    ui->btnDiscard->setText(QApplication::translate("MainWindow", "cancel"));
+    this->setWindowTitle(trans("settings"));
+
+    ui->labelLanguage->setText(trans("language"));
+    ui->labelHotkey->setText(trans("general hotkey"));
+    ui->labelPatchNotes->setText(trans("patch notes"));
+    ui->labelTheme->setText(trans("theme"));
+
+    ui->btnSave->setText(trans("save"));
+    ui->btnDiscard->setText(trans("cancel"));
 }
 
 void SettingsWin::retranslateUi()
@@ -148,6 +203,20 @@ void SettingsWin::on_btnSave_clicked()
     }
     else {
         Logger::instance().thError("Theme cannot be changed to " + themeVisibleName + ", file name: " + themeFileName);
+    }
+
+    // Hotkey değerini kaydet
+    QString newHotkey = ui->lineHotkey->getHotkey();
+    if (!newHotkey.isEmpty()) {
+        QString error;
+        if (!MacroManager::instance().validateHotkey(newHotkey, &error)) {
+            Logger::instance().sError(error);
+            QMessageBox::critical(this, trans("error"), "No valid hotkey: " + newHotkey);
+            return;
+        }
+
+        m_settings["DefaultHotkey"] = newHotkey;
+        Logger::instance().sInfo("Default hotkey changed to: " + newHotkey);
     }
 
     // ActiveMacro'yu geri yükle

@@ -12,10 +12,6 @@
         <translation>Active Macro: #MCR* (Unsaved)</translation>
     </message>
     <message>
-        <source>save</source>
-        <translation>Save</translation>
-    </message>
-    <message>
         <source>cancel</source>
         <translation>Cancel</translation>
     </message>
@@ -98,6 +94,126 @@
     <message>
         <source>msbtn left</source>
         <translation>Left</translation>
+    </message>
+    <message>
+        <source>error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>about</source>
+        <translation>About</translation>
+    </message>
+    <message>
+        <source>settings</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <source>save</source>
+        <translation>Save</translation>
+    </message>
+    <message>
+        <source>macro save</source>
+        <translation>Save Macro</translation>
+    </message>
+    <message>
+        <source>add action</source>
+        <translation>Add Action</translation>
+    </message>
+    <message>
+        <source>edit action orders</source>
+        <translation>Edit Orders</translation>
+    </message>
+    <message>
+        <source>delete action</source>
+        <translation>Delete Action</translation>
+    </message>
+    <message>
+        <source>start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>stop</source>
+        <translation>Stop</translation>
+    </message>
+    <message>
+        <source>name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>description</source>
+        <translation>Description</translation>
+    </message>
+    <message>
+        <source>hotkey</source>
+        <translation>Hotkey</translation>
+    </message>
+    <message>
+        <source>macro selection title</source>
+        <translation>Select a Macro</translation>
+    </message>
+    <message>
+        <source>create</source>
+        <translation>Create</translation>
+    </message>
+    <message>
+        <source>delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <source>select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>language</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <source>general hotkey</source>
+        <translation>General Hotkey</translation>
+    </message>
+    <message>
+        <source>theme</source>
+        <translation>Theme</translation>
+    </message>
+    <message>
+        <source>patch notes</source>
+        <translation>Patch Notes</translation>
+    </message>
+    <message>
+        <source>active macro label tooltip</source>
+        <translation>Change macro</translation>
+    </message>
+    <message>
+        <source>macro save tooltip</source>
+        <translation>Save macro's actions</translation>
+    </message>
+    <message>
+        <source>settings tooltip</source>
+        <translation>Opens AutoClicker's settings</translation>
+    </message>
+    <message>
+        <source>about tooltip</source>
+        <translation>Information about AutoClicker</translation>
+    </message>
+    <message>
+        <source>add action tooltip</source>
+        <translation>Adds action to selected macro</translation>
+    </message>
+    <message>
+        <source>edit orders tooltip</source>
+        <translation>Lets you re-arrange actions</translation>
+    </message>
+    <message>
+        <source>delete action tooltip</source>
+        <translation>Lets you delete selected action</translation>
+    </message>
+    <message>
+        <source>start tooltip</source>
+        <translation>Starts the clicker</translation>
+    </message>
+    <message>
+        <source>stop tooltip</source>
+        <translation>Stops the clicker</translation>
     </message>
 </context>
 </TS>
