@@ -8,6 +8,8 @@
 #include "settingswin.h"
 #include "thememanager.h"
 #include "macroselectionwin.h"
+#include "hotkeyservice.h"
+#include "LoggerStream.h"
 
 #include <QJsonObject>
 #include <QResizeEvent>
@@ -24,7 +26,40 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
 {
     ui->setupUi(this);
 
+    // clicker ve hotkey ayarlamaları
+    clickEngine = ClickEngine::getInstance();
+    hotkeyService = HotkeyService::getInstance();
+
     activeMacro = MacroManager::instance().getMacroById(getSetting("ActiveMacro").toInt(1)).value();
+
+    // hotkey registeration
+    bool isDefKey = activeMacro.hotkey == "DEF";
+    QString htkstr = isDefKey ? getSetting("DefaultHotkey").toString() : activeMacro.hotkey;
+    if (!hotkeyService->registerHotkey(htkstr, activeMacro.id)) {
+        hserr() << "Hotkey registeration failed!";
+        return;
+    }
+
+    // clicker engine start/stop eventleri
+    connect(clickEngine, &ClickEngine::macroStarted, this, &MainWindow::onMacroStarted);
+    connect(clickEngine, &ClickEngine::macroStopped, this, &MainWindow::onMacroStopped);
+
+    // hotkey pressed eventleri
+    connect(hotkeyService, &HotkeyService::hotkeyPressed, this,
+            [this](int id) {
+                hsinfo() << "Hotkey pressed!";
+                if (clickEngine->isMacroRunning() && clickEngine->getCurrentMacroId() == id) {
+                    clickEngine->stopCurrentMacro();
+                } else {
+                    clickEngine->startMacro(id);
+                }
+            }
+            );
+
+    connect(hotkeyService, &HotkeyService::hotkeyRegistrationFailed, this,
+            [](int id, const QString& reason) {
+        hserr() << "Hotkey registration failed, reason: " << reason << ", id: " << id;
+    });
 
     connect(&LanguageManager::instance(), &LanguageManager::languageChanged,
             this, &MainWindow::retranslateUi);
@@ -48,15 +83,33 @@ MainWindow::MainWindow(const QJsonObject& settings, const QVector<Macro>& macros
     ui->labelErrors->setVisible(false);
 }
 
+void MainWindow::onMacroStarted(int id) {
+    minfo() << "Macro started: " << id;
+
+    ui->btnStart->setEnabled(false);
+    ui->btnStop->setEnabled(true);
+}
+
+void MainWindow::onMacroStopped(int id) {
+    minfo() << "Macro stopped: " << id;
+    ui->btnStart->setEnabled(true);
+    ui->btnStop->setEnabled(false);
+}
+
+void MainWindow::onMacroError(int id, const QString &error) {
+    merr() << "Macro error in " << id << ": " << error;
+}
+
+
 void MainWindow::setActiveMacro(int id) {
     auto macro = MacroManager::instance().getMacroById(id);
     if (macro.has_value()) {
         QString activeMacroName = macro->name;
         ui->actionActiveMacro->setText(tr("active macro label").replace("#MCR", activeMacroName));
         activeMacro = macro.value();
-        Logger::instance().sInfo("(MainWindow) Active macro set to: " + activeMacroName + " (ID: " + QString::number(id) + ")");
+        sinfo() << "(MainWindow) Active macro set to: " << activeMacroName << " (ID: " << id << ")";
     } else {
-        Logger::instance().sError("(MainWindow) Active macro not found with ID: " + QString::number(id));
+        serr() << "(MainWindow) Active macro not found with ID: " << id;
         // Fallback to first macro or default
         if (!m_macros.isEmpty()) {
             ui->actionActiveMacro->setText(tr("active macro label").replace("#MCR", m_macros.first().name));
@@ -66,7 +119,7 @@ void MainWindow::setActiveMacro(int id) {
     }
 
     ui->actionsTable->setRowCount(0);
-    static QVector<MacroAction> acts = MacroManager::instance().getActions(id);
+    QVector<MacroAction> acts = MacroManager::instance().getActions(id);
     for (const MacroAction& act : acts) {
         addActionToTable(act);
     }
@@ -110,13 +163,13 @@ void MainWindow::setupDynamicIcons() {
             );
     }
 
-    Logger::instance().sInfo("Dynamic icons setup completed");
+    thinfo() << "Dynamic icons setup completed";
 }
 
 void MainWindow::onThemeChanged() {
     // This slot is called when theme changes
     // Icons are automatically updated by ThemeManager
-    Logger::instance().sInfo("Theme changed, icons updated automatically");
+    thinfo() << "Theme changed, icons updated automatically";
 
     // You can add additional theme-related updates here if needed
     refreshIcons();
@@ -140,7 +193,7 @@ void MainWindow::setSetting(const QString& key, const QJsonValue& value)
 void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
     QString err;
     if (!MacroManager::instance().setActionsForMacro(macroId, actions, &err)) {
-        Logger::instance().mError(err);
+        merr() << err;
         QMessageBox::critical(this, tr("error"), err);
     }
 }
@@ -251,11 +304,11 @@ void MainWindow::adjustTableColumns()
     int tableWidth = ui->actionsTable->viewport()->width();
 
     float noPerc = 0.05f;
-    float actionTypePerc = 0.15f;
-    float clickTypePerc = 0.15f;
-    float msbtnPerc = 0.15f;
-    float repeatPerc = 0.08f;
-    float intervalPerc = 0.08f;
+    float actionTypePerc = 0.20f;
+    float clickTypePerc = 0.20f;
+    float msbtnPerc = 0.20f;
+    float repeatPerc = 0.13f;
+    float intervalPerc = 0.13f;
     float additionalPerc = 1.0f - (noPerc + actionTypePerc + clickTypePerc + repeatPerc + msbtnPerc + intervalPerc);
 
     ui->actionsTable->setColumnWidth(0, tableWidth * noPerc); // Order
@@ -277,12 +330,12 @@ MainWindow::~MainWindow()
 {
     QString settingsPath = AppDataManager::instance().settingsFilePath();
     if (SettingsManager::instance().saveSettings(settingsPath, m_settings)) {
-        Logger::instance().fsInfo("The settings file has been synchronized with the UI.");
+        sinfo() << "The settings file has been synchronized with the UI.";
     } else {
-        Logger::instance().fsError("Failed to synchronize the settings file with the UI.”");
+        serr() << "Failed to synchronize the settings file with the UI.”";
     }
 
-    Logger::instance().logInfo("Closing the app...");
+    info() << "Closing the app...";
     delete ui;
 }
 
@@ -300,8 +353,6 @@ void MainWindow::on_actionSettings_triggered()
 
         SettingsManager::instance().saveSettings(AppDataManager::instance().settingsFilePath(), updatedSettings);
 
-        qDebug() << m_settings["DefaultHotkey"].toString();
-
         // UI güncellemeleri
         // aktif makro
         std::optional<Macro> query = MacroManager::instance().getMacroById(m_settings["ActiveMacro"].toInt(1));
@@ -310,11 +361,18 @@ void MainWindow::on_actionSettings_triggered()
             activeMacro = query.value();
         }
         setActiveMacro(activeMacro.id);
+
         // hotkey
         bool isDefaultHotkey = activeMacro.hotkey == "DEF";
+        QString htkstr = isDefaultHotkey ? m_settings["DefaultHotkey"].toString() : activeMacro.hotkey;
         QString startText = tr("start");
         QString stopText = tr("stop");
-        QString appendedStr = " (" + (isDefaultHotkey ? m_settings["DefaultHotkey"].toString() : activeMacro.hotkey) + ")";
+        QString appendedStr = " (" + htkstr + ")";
+
+        if (!hotkeyService->changeHotkey(activeMacro.id, htkstr)) {
+            hserr() << "Hotkey change failed after settings tab!";
+            return;
+        }
 
         startText += appendedStr;
         stopText += appendedStr;
@@ -333,20 +391,32 @@ void MainWindow::on_actionActiveMacro_triggered()
 {
     refreshMacros();
 
-    MacroSelectionWin selectionDialog(m_macros, this);
+    MacroSelectionWin selectionDialog(m_macros, getSetting("ActiveMacro").toInt(1), this);
     int res = selectionDialog.exec();
 
     if (res == QDialog::Accepted) {
         // selectionDialog.activeMacroId artık gerçek SQL ID'si
         int newActiveMacroId = selectionDialog.activeMacroId;
+        int oldMacroId = activeMacro.id;
 
         // Aktif makroyu ayarla
         setActiveMacro(newActiveMacroId);
         setSetting("ActiveMacro", newActiveMacroId);
 
-        QString htkStr = " (" + (activeMacro.hotkey == "DEF" ? getSetting("DefaultHotkey").toString() : activeMacro.hotkey) + ")";
-        ui->btnStart->setText(tr("start") + htkStr);
-        ui->btnStop->setText(tr("stop") + htkStr);
+        QString htkStr = activeMacro.hotkey == "DEF" ? getSetting("DefaultHotkey").toString() : activeMacro.hotkey;
+        ui->btnStart->setText(tr("start") + " (" + htkStr + ")");
+        ui->btnStop->setText(tr("stop") + " (" + htkStr + ")");
+
+        // eski makronun hotkeyini unregister et
+        if (!hotkeyService->unregisterHotkey(oldMacroId)) {
+            Logger::instance().hsError("Old macro's hotkey unregisteration failed after macro changing!");
+            return;
+        }
+        // yeni makronun hotkeyini register et
+        if (!hotkeyService->registerHotkey(htkStr, newActiveMacroId)) {
+            Logger::instance().hsError("New macro's hotkey registeration failed after macro changing!");
+            return;
+        }
 
         Logger::instance().mInfo("Active macro set to ID: " + QString::number(newActiveMacroId));
     }

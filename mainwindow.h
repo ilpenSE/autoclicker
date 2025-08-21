@@ -4,6 +4,8 @@
 #include "macromanager.h"
 #include <QMainWindow>
 #include <QJsonObject>
+#include "clickengine.h"
+#include "hotkeyservice.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,6 +32,10 @@ private slots:
     void loadLanguage();
     void onThemeChanged();
 
+    void onMacroStarted(int macroId);
+    void onMacroStopped(int macroId);
+    void onMacroError(int macroId, const QString& error);
+
 
     void on_actionActiveMacro_triggered();
 
@@ -39,6 +45,9 @@ protected:
 private:
     QJsonObject m_settings;
     QVector<Macro> m_macros;
+    ClickEngine* clickEngine;
+    HotkeyService* hotkeyService;
+
     Macro activeMacro;
     Ui::MainWindow *ui;
 

@@ -7,6 +7,8 @@
 #include "consts.h"
 #include "thememanager.h"
 #include "macromanager.h"
+#include "clickengine.h"
+#include "LoggerStream.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -26,7 +28,7 @@ int main(int argc, char *argv[])
 
     // AppData verilerini kontrol et
     if (!AppDataManager::instance().ensureAppDataFolderExists()) {
-        Logger::instance().langError("(From main) AppData cannot be created or found.");
+        lnerr() << "(From main) AppData cannot be created or found.";
         QMessageBox::critical(NULL, "Error", "AppData cannot be created or found.");
         return -1;
     }
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
         }
 
         SettingsManager::instance().saveSettings(settingsPath, settings);
-        Logger::instance().fsWarning("Settings file was deleted or corrupted, created one.");
+        fswrn() << "Settings file was deleted or corrupted, created one.";
     } else {
         // ÖNEMLİ: Dosya mevcutsa SADECE eksik ayarları ekle, mevcut ayarları değiştirme!
         bool needsUpdate = false;
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
             if (!settings.contains(it.key())) {
                 settings[it.key()] = it.value();
                 needsUpdate = true;
-                Logger::instance().sWarning("Missing key added: " + it.key());
+                swrn() << "Missing key added: " << it.key();
             }
         }
 
@@ -79,10 +81,11 @@ int main(int argc, char *argv[])
 
     // ÖNEMLİ: Burada dili yüklerken dosyadan okunan değeri kullan
     QString savedLanguage = settings["Language"].toString("en_US");
-    Logger::instance().langInfo("(From main) Loading language from settings: " + savedLanguage);
+
+    lninfo() << "(From main) Loading language from settings: " << savedLanguage;
 
     if (!LanguageManager::instance().loadLanguage(savedLanguage)) {
-        Logger::instance().langError("(From main) Language cannot be loaded: " + savedLanguage);
+        lnerr() << "(From main) Language cannot be loaded: " << savedLanguage;
         // Fallback olarak English'i dene
         if (!LanguageManager::instance().loadLanguage("en_US")) {
             QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
@@ -93,7 +96,7 @@ int main(int argc, char *argv[])
     // temayı yükle
     QString theme = settings["Theme"].toString("dark");
     if (!ThemeManager::instance().applyTheme(ThemeManager::instance().getVisibleName(theme))) {
-        Logger::instance().thError("(From main) Theme cannot be loaded, file name: " + theme + " visible name: " + ThemeManager::instance().getVisibleName(theme));
+        therr() << "(From main) Theme cannot be loaded, file name: " << theme << " visible name: " << ThemeManager::instance().getVisibleName(theme);
         QMessageBox::critical(NULL, "Error", "Theme cannot be loaded.");
         return -1;
     }

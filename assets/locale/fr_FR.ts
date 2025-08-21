@@ -215,6 +215,46 @@
         <source>stop tooltip</source>
         <translation>Arrête le clicker</translation>
     </message>
+    <message>
+        <source>new macro name</source>
+        <translation>Nouveau nom de macro</translation>
+    </message>
+    <message>
+        <source>enter new macro name</source>
+        <translation>Entrez le nouveau nom de la macro :</translation>
+    </message>
+    <message>
+        <source>Name length can be between 1-20 and only contains A-Z a-z 0-9 _ - and space!</source>
+        <translation>La longueur du nom doit être comprise entre 1 et 20 caractères et ne peut contenir que A-Z a-z 0-9 _ - et espace !</translation>
+    </message>
+    <message>
+        <source>Description can be between 1-100 and only contains A-Z a-z 0-9 _ - and space!</source>
+        <translation>La description doit comporter entre 1 et 100 caractères et ne peut contenir que A-Z a-z 0-9 _ - et espace !</translation>
+    </message>
+    <message>
+        <source>Invalid hotkey!</source>
+        <translation>Touche de raccourci invalide !</translation>
+    </message>
+    <message>
+        <source>A macro with this name exists!</source>
+        <translation>Une macro portant ce nom existe déjà !</translation>
+    </message>
+    <message>
+        <source>No Description</source>
+        <translation>Aucune description</translation>
+    </message>
+    <message>
+        <source>Please select a macro.</source>
+        <translation>Veuillez sélectionner une macro.</translation>
+    </message>
+    <message>
+        <source>Invalid selection.</source>
+        <translation>Sélection invalide.</translation>
+    </message>
+    <message>
+        <source>DEFAULT cannot be deleted.</source>
+        <translation>DEFAULT ne peut pas être supprimé.</translation>
+    </message>
 
 </context>
 </TS>

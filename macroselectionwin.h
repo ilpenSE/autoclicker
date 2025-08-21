@@ -16,11 +16,11 @@ public:
     QVector<Macro>& m_macros;
     int activeMacroId;
 
-    explicit MacroSelectionWin(QVector<Macro>& macros, QWidget *parent = nullptr);
+    explicit MacroSelectionWin(QVector<Macro>& macros, int activeMacroId, QWidget *parent = nullptr);
     ~MacroSelectionWin();
 
 private slots:
-    void addMacro(const QString& name, const QString& desc, const QString& htk);
+    void addMacro(Macro macro, bool isSelected = false);
     void adjustTableColumns();
     void retranslateUi();
     void setupDynamicIcons();

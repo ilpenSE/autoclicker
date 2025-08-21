@@ -3,15 +3,18 @@
 
 #include <QMessageBox>
 #include <QTimer>
+#include <QInputDialog>
+#include <QLineEdit>
 
 #include "logger.h"
 #include "macromanager.h"
 #include "thememanager.h"
 #include "languagemanager.h"
 
-MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, QWidget *parent)
+MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, int activeMacroId, QWidget *parent)
     : QDialog(parent)
     , m_macros(macros)
+    , activeMacroId(activeMacroId)
     , ui(new Ui::MacroSelectionWin)
 {
     ui->setupUi(this);
@@ -28,11 +31,11 @@ MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, QWidget *parent)
     QTimer::singleShot(0, this, &MacroSelectionWin::adjustTableColumns);
     ui->macrosTable->verticalHeader()->setVisible(false);
 
-    for (const Macro& m : macros) {
-        addMacro(m.name, m.description, m.hotkey);
-    }
-
     loadLang();
+
+    for (const Macro& m : macros) {
+        addMacro(m, activeMacroId == m.id);
+    }
 }
 
 void MacroSelectionWin::adjustTableColumns()
@@ -106,14 +109,19 @@ void MacroSelectionWin::refreshIcons() {
     ThemeManager::instance().refreshAllIcons();
 }
 
-void MacroSelectionWin::addMacro(const QString& name, const QString& desc, const QString& htk) {
+void MacroSelectionWin::addMacro(Macro macro, bool isSelected) {
     int row = ui->macrosTable->rowCount();
     ui->macrosTable->insertRow(row);
 
-    ui->macrosTable->setItem(row, 0, new QTableWidgetItem(QString::number(row + 1)));
-    ui->macrosTable->setItem(row, 1, new QTableWidgetItem(name));
-    ui->macrosTable->setItem(row, 2, new QTableWidgetItem(desc));
-    ui->macrosTable->setItem(row, 3, new QTableWidgetItem(htk));
+    ui->macrosTable->setItem(row, 0, new QTableWidgetItem(QString::number(macro.id)));
+    ui->macrosTable->setItem(row, 1, new QTableWidgetItem(macro.name));
+    ui->macrosTable->setItem(row, 2, new QTableWidgetItem(macro.description));
+    ui->macrosTable->setItem(row, 3, new QTableWidgetItem(macro.hotkey));
+
+    if (isSelected) {
+        ui->macrosTable->setCurrentCell(row, 0);
+        ui->macrosTable->selectRow(row);
+    }
 }
 
 QString MacroSelectionWin::trans(const QString& key) {
@@ -147,7 +155,7 @@ MacroSelectionWin::~MacroSelectionWin()
 void MacroSelectionWin::on_btnSelect_clicked()
 {
     if (ui->macrosTable->selectedItems().count() <= 0) {
-        QMessageBox::critical(this, "Error", "Please select a macro.");
+        QMessageBox::critical(this, trans("error"), trans("Please select a macro."));
         return;
     }
 
@@ -158,7 +166,7 @@ void MacroSelectionWin::on_btnSelect_clicked()
         Logger::instance().mInfo("(From Macro Selection Window) New active macro ID: " + QString::number(activeMacroId));
         accept();
     } else {
-        QMessageBox::critical(this, "Error", "Invalid selection.");
+        QMessageBox::critical(this, trans("error"), trans("Invalid selection."));
     }
 
     accept();
@@ -174,14 +182,14 @@ void MacroSelectionWin::on_btnCancel_clicked()
 void MacroSelectionWin::on_btnDelete_clicked()
 {
     if (ui->macrosTable->selectedItems().count() <= 0) {
-        QMessageBox::critical(this, "Error", "Please select a macro.");
+        QMessageBox::critical(this, trans("error"), trans("Please select a macro."));
         return;
     }
 
     int selectedRow = ui->macrosTable->currentRow();
 
     if (selectedRow < 0 || selectedRow >= m_macros.size()) {
-        QMessageBox::critical(this, "Error", "Invalid selection.");
+        QMessageBox::critical(this, trans("error"), trans("Invalid selection."));
         return;
     }
 
@@ -192,7 +200,7 @@ void MacroSelectionWin::on_btnDelete_clicked()
     // SQL'dan sil
     if (!MacroManager::instance().deleteMacro(macroToDelete.id, &err)) {
         Logger::instance().mError(err);
-        QMessageBox::critical(this, "Error", "Failed to delete macro: " + err);
+        QMessageBox::critical(this, trans("error"), trans(err));
         return;
     }
 
@@ -202,11 +210,6 @@ void MacroSelectionWin::on_btnDelete_clicked()
     // UI'dan sil
     ui->macrosTable->removeRow(selectedRow);
 
-    // ID sütunlarını yeniden numaralandır (görsel için)
-    for (int i = 0; i < ui->macrosTable->rowCount(); ++i) {
-        ui->macrosTable->item(i, 0)->setText(QString::number(i + 1));
-    }
-
     Logger::instance().mInfo("Macro deleted successfully. ID: " + QString::number(macroToDelete.id));
 }
 
@@ -214,12 +217,23 @@ void MacroSelectionWin::on_btnCreate_clicked()
 {
     QString err;
 
-    int no = m_macros.count();
-    QString name = "New Macro " + QString::number(no);
-    int id = MacroManager::instance().createMacro(name, "No Description", "DEF", &err);
+    bool ok;
+    QString name = QInputDialog::getText(
+        this,                      // parent
+        trans("new macro name"),      // dialog başlığı
+        trans("enter new macro name"),   // label
+        QLineEdit::Normal,         // input type (Normal / Password / NoEcho)
+        "",                        // default text
+        &ok                    // okPressed flag
+    );
 
-    if (err == "A macro with this name exists!") {
-        QMessageBox::critical(this, "Error", err + ": " + name);
+    if (!ok)
+        return;
+
+    int id = MacroManager::instance().createMacro(name, trans("No Description"), "DEF", &err);
+
+    if (!err.isEmpty()) {
+        QMessageBox::critical(this, trans("error"), trans(err));
     }
 
     if (id > 0) {
@@ -234,7 +248,7 @@ void MacroSelectionWin::on_btnCreate_clicked()
         m_macros.append(macro);
 
         // UI güncelle
-        addMacro(macro.name, macro.description, macro.hotkey);
+        addMacro(macro);
 
         Logger::instance().mInfo("Macro created successfully: " + name);
     } else {

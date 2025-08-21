@@ -1,7 +1,7 @@
 QT       += core gui
 QT += sql
 QT += svg
-
+LIBS += -luser32
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -14,7 +14,9 @@ RC_FILE = appicon.rc
 
 SOURCES += \
     appdatamanager.cpp \
+    clickengine.cpp \
     hotkeylineedit.cpp \
+    hotkeyservice.cpp \
     iconutils.cpp \
     languagemanager.cpp \
     logger.cpp \
@@ -28,9 +30,12 @@ SOURCES += \
 
 HEADERS += \
     Enums.h \
+    LoggerStream.h \
     appdatamanager.h \
+    clickengine.h \
     consts.h \
     hotkeylineedit.h \
+    hotkeyservice.h \
     iconutils.h \
     languagemanager.h \
     logger.h \

@@ -215,5 +215,45 @@
         <source>stop tooltip</source>
         <translation>Tıklayıcıyı kapatır</translation>
     </message>
+    <message>
+        <source>new macro name</source>
+        <translation>Yeni Makro İsmi</translation>
+    </message>
+    <message>
+        <source>enter new macro name</source>
+        <translation>Yeni makro ismi girin:</translation>
+    </message>
+    <message>
+        <source>Name length can be between 1-20 and only contains A-Z a-z 0-9 _ - and space!</source>
+        <translation>İsim uzunluğ 1 ile 20 arasında olmalı ve sadece a-Z, A-Z, 0-9, _, - ve boşluk içerebilir!</translation>
+    </message>
+    <message>
+        <source>Description can be between 1-100 and only contains A-Z a-z 0-9 _ - and space!</source>
+        <translation>Açıklama uzunluğ 1 ile 100 arasında olmalı ve sadece a-Z, A-Z, 0-9, _, - ve boşluk içerebilir!</translation>
+    </message>
+    <message>
+        <source>Invalid hotkey!</source>
+        <translation>Geçersiz Kısayol Tuşu!</translation>
+    </message>
+    <message>
+        <source>A macro with this name exists!</source>
+        <translation>Bu isimde bir makro zaten var!</translation>
+    </message>
+    <message>
+        <source>No Description</source>
+        <translation>Açıklama Yok</translation>
+    </message>
+    <message>
+        <source>Please select a macro.</source>
+        <translation>Lütfen bir makro seçin.</translation>
+    </message>
+    <message>
+        <source>Invalid selection.</source>
+        <translation>Geçersiz seçim.</translation>
+    </message>
+    <message>
+        <source>DEFAULT cannot be deleted.</source>
+        <translation>DEFAULT makrosu silinemez.</translation>
+    </message>
 </context>
 </TS>

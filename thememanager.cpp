@@ -10,7 +10,7 @@
 #include <QImage>
 #include <QRegularExpression>
 #include <QPointer>
-
+#include "LoggerStream.h"
 // Existing global variables
 QMap<QString, QString> themeMap;
 QMap<QString, QString> reversedThemeMap;
@@ -27,7 +27,7 @@ QString ThemeManager::themesDirPath() const {
     QDir dir(path + "/themes");
     if (!dir.exists()) {
         dir.mkpath(".");
-        Logger::instance().fsWarning("Themes folder not found, creating one...");
+        fswrn() << "Themes folder not found, creating one...";
     }
     return dir.absolutePath();
 }
@@ -40,7 +40,7 @@ QString ThemeManager::themesJsonPath() const {
 QString ThemeManager::readQssFile(const QString& filePath) const {
     QFile file(filePath);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        Logger::instance().fsError("Theme file cannot be opened: " + filePath);
+        fserr() << "Theme file cannot be opened: " + filePath;
         return QString();
     }
     return QString::fromUtf8(file.readAll());
@@ -51,18 +51,18 @@ void ThemeManager::loadThemesFromJson() {
 
     QFile file(themesJsonPath());
     if (!file.exists()) {
-        Logger::instance().fsError("themes.json not found: " + themesJsonPath());
+        fserr() << "themes.json not found: " + themesJsonPath();
         return;
     }
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        Logger::instance().fsError("Cannot open themes.json: " + themesJsonPath());
+        fserr() << "Cannot open themes.json: " + themesJsonPath();
         return;
     }
 
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject()) {
-        Logger::instance().fsError("themes.json is not a valid JSON object.");
+        fserr() << "themes.json is not a valid JSON object.";
         return;
     }
 
@@ -71,10 +71,10 @@ void ThemeManager::loadThemesFromJson() {
         QString qssFile = it.key();
         QString visibleName = it.value().toString();
         themeMap[visibleName] = qssFile;
-        Logger::instance().thInfo("Theme loaded, visible name: " + visibleName + " / file name: " + qssFile);
+        thinfo() << "Theme loaded, visible name: " + visibleName + " / file name: " + qssFile;
     }
 
-    Logger::instance().thInfo("Loaded themes from themes.json");
+    thinfo() << "Loaded themes from themes.json";
 }
 
 QPixmap ThemeManager::coloredPixmap(const QString &svgPath,
@@ -82,13 +82,13 @@ QPixmap ThemeManager::coloredPixmap(const QString &svgPath,
                                     const QSize &size)
 {
     if (!QFile::exists(svgPath) || size.isEmpty()) {
-        Logger::instance().thWarning("Pixmap is empty!");
+        thwrn() <<"Pixmap is empty!";
         return QPixmap(); // boş pixmap
     }
 
     QSvgRenderer renderer(svgPath);
     if (!renderer.isValid()) {
-        Logger::instance().fsError("Invalid SVG: " + svgPath);
+        fserr() << "Invalid SVG: " + svgPath;
         return QPixmap();
     }
 
@@ -142,7 +142,7 @@ void ThemeManager::setupDynamicAction(QAction* action, const QString& svgPath, c
     // Set initial icon
     action->setIcon(createDynamicIcon(svgPath, size));
 
-    Logger::instance().thInfo("Dynamic icon setup for QAction: " + svgPath);
+    thinfo() << ("Dynamic icon setup for QAction: " + svgPath);
 }
 
 void ThemeManager::setupDynamicButton(QPushButton* button, const QString& svgPath, const QSize& size) {
@@ -159,7 +159,7 @@ void ThemeManager::setupDynamicButton(QPushButton* button, const QString& svgPat
     button->setIcon(createDynamicIcon(svgPath, size));
     button->setIconSize(size);
 
-    Logger::instance().thInfo("Dynamic icon setup for QPushButton: " + svgPath);
+    thinfo() << ("Dynamic icon setup for QPushButton: " + svgPath);
 }
 
 void ThemeManager::setupDynamicButton(QToolButton* button, const QString& svgPath, const QSize& size) {
@@ -176,7 +176,7 @@ void ThemeManager::setupDynamicButton(QToolButton* button, const QString& svgPat
     button->setIcon(createDynamicIcon(svgPath, size));
     button->setIconSize(size);
 
-    Logger::instance().thInfo("Dynamic icon setup for QToolButton: " + svgPath);
+    thinfo() << ("Dynamic icon setup for QToolButton: " + svgPath);
 }
 
 void ThemeManager::setIconColors(const QColor& normal, const QColor& hover,
@@ -189,7 +189,7 @@ void ThemeManager::setIconColors(const QColor& normal, const QColor& hover,
     // Mevcut iconları güncelle
     updateIconColors();
 
-    Logger::instance().thInfo("Icon colors updated programmatically");
+    thinfo() << ("Icon colors updated programmatically");
 }
 
 void ThemeManager::parseThemeColors(const QString& qssContent) {
@@ -226,7 +226,7 @@ void ThemeManager::parseThemeColors(const QString& qssContent) {
         m_disabledColor = QColor(disabledMatch.captured(1).trimmed());
     }
 
-    Logger::instance().thInfo("Theme colors parsed - Icon: " + m_iconColor.name() +
+    thinfo() << ("Theme colors parsed - Icon: " + m_iconColor.name() +
                               ", Hover: " + m_hoverColor.name() +
                               ", Pressed: " + m_pressedColor.name() +
                               ", Disabled: " + m_disabledColor.name());
@@ -234,20 +234,20 @@ void ThemeManager::parseThemeColors(const QString& qssContent) {
 
 bool ThemeManager::applyTheme(const QString& visibleName) {
     if (!themeMap.contains(visibleName)) {
-        Logger::instance().thError("Theme not found: " + visibleName);
+        therr() << "Theme not found: " + visibleName;
         return false;
     }
 
     QString qssFileName = themeMap[visibleName];
     QString filePath = themesDirPath() + "/" + qssFileName + ".qss";
     if (!QFile::exists(filePath)) {
-        Logger::instance().fsError("Theme file cannot be found: " + filePath);
+        fserr() << ("Theme file cannot be found: " + filePath);
         return false;
     }
 
     QString qss = readQssFile(filePath);
     if (qss.isEmpty()) {
-        Logger::instance().thError("QSS file is empty.");
+        therr() << "QSS file is empty.";
         return false;
     }
 
@@ -255,7 +255,7 @@ bool ThemeManager::applyTheme(const QString& visibleName) {
     parseThemeColors(qss);
 
     qApp->setStyleSheet(qss);
-    Logger::instance().thInfo("Theme applied: " + visibleName); // PROGRAM EN SON BURDA LOG VERDİ
+    thinfo() << ("Theme applied: " + visibleName); // PROGRAM EN SON BURDA LOG VERDİ
 
     // Update all registered icons
     updateIconColors();
@@ -288,7 +288,7 @@ void ThemeManager::updateIconColors() {
         ++it;
     }
 
-    Logger::instance().thInfo("Updated " + QString::number(m_registeredIcons.size()) + " dynamic icons safely");
+    thinfo() << "Updated " << m_registeredIcons.size() << " dynamic icons safely";
 }
 
 void ThemeManager::refreshAllIcons() {

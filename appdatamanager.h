@@ -25,7 +25,6 @@ public:
         return _instance;
     }
 
-
     // fonksiyonlar
     bool ensureAppDataFolderExists();
     QString appFolderPath();

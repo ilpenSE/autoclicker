@@ -1,6 +1,7 @@
 #include "settingsmanager.h"
 #include "logger.h"
 #include "consts.h"
+#include "LoggerStream.h"
 
 #include <QFile>
 #include <QJsonDocument>
@@ -14,7 +15,7 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
     // Tanınmayan key'leri sil
     for (auto it = settingsObj.begin(); it != settingsObj.end();) {
         if (!defaults.contains(it.key())) {
-            Logger::instance().sWarning("Undefined key found: " + it.key() + ", deleting it.");
+            swrn() << "Undefined key found: " + it.key() + ", deleting it.";
             it = settingsObj.erase(it);
         } else {
             ++it;
@@ -25,7 +26,7 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
     for (auto it = defaults.begin(); it != defaults.end(); ++it) {
         if (!settingsObj.contains(it.key())) {
             settingsObj[it.key()] = it.value();
-            Logger::instance().sWarning("The key " + it.key() + " cannot be found, adding it");
+            swrn() << "The key " + it.key() + " cannot be found, adding it";
         }
     }
 
@@ -34,14 +35,14 @@ void SettingsManager::validateAndFixSettings(QJsonObject &settingsObj) {
         QString verinfile = settingsObj["Version"].toString();
         if (verinfile != APP_VERSION) {
             settingsObj["Version"] = APP_VERSION;
-            Logger::instance().sWarning("Updating settings file version from " + verinfile + " to " + APP_VERSION);
+            swrn() << "Updating settings file version from " + verinfile + " to " + APP_VERSION;
         }
     } else {
         settingsObj["Version"] = APP_VERSION;
-        Logger::instance().sWarning("Settings file version cannot be found, setting it to " + APP_VERSION);
+        swrn() << "Settings file version cannot be found, setting it to " + APP_VERSION;
     }
 
-    Logger::instance().sInfo("Settings validated. Only missing keys added and version updated.");
+    sinfo() << "Settings validated. Only missing keys added and version updated.";
 }
 
 // Dosyadan ayarları okur, parse eder ve döner
@@ -51,7 +52,7 @@ QJsonObject SettingsManager::loadSettings(const QString& path, bool& ok)
     ok = false;
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        Logger::instance().fsError("Settings file cannot be opened: " + path);
+        fserr() << "Settings file cannot be opened: " + path;
         return QJsonObject();
     }
 
@@ -61,7 +62,7 @@ QJsonObject SettingsManager::loadSettings(const QString& path, bool& ok)
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        Logger::instance().fsError("Settings file parse error: " + parseError.errorString());
+        fserr() << "Settings file parse error: " + parseError.errorString();
         return QJsonObject();
     }
 
@@ -74,7 +75,7 @@ bool SettingsManager::saveSettings(const QString& path, const QJsonObject& setti
 {
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        Logger::instance().fsError("Settings file cannot be written: " + path);
+        fserr() << "Settings file cannot be written: " + path;
         return false;
     }
 
@@ -82,6 +83,6 @@ bool SettingsManager::saveSettings(const QString& path, const QJsonObject& setti
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
 
-    Logger::instance().fsInfo("Settings saved to: " + path);
+    fsinfo() << "Settings saved to: " + path;
     return true;
 }

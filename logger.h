@@ -4,6 +4,42 @@
 #include <QObject>
 #include <QFile>
 
+// stream için makrolar
+// normal log
+#define info()     LoggerStream(&Logger::logInfo)
+#define warn()     LoggerStream(&Logger::logWarning)
+#define err()    LoggerStream(&Logger::logError)
+
+// settings
+#define sinfo()    LoggerStream(&Logger::sInfo)
+#define swrn()    LoggerStream(&Logger::sWarning)
+#define serr()   LoggerStream(&Logger::sError)
+
+// file system
+#define fsinfo()    LoggerStream(&Logger::fsInfo)
+#define fswrn()    LoggerStream(&Logger::fsWarning)
+#define fserr()   LoggerStream(&Logger::fsError)
+
+// macros
+#define minfo()    LoggerStream(&Logger::mInfo)
+#define mwrn()    LoggerStream(&Logger::mWarning)
+#define merr()   LoggerStream(&Logger::mError)
+
+// themes
+#define thinfo()    LoggerStream(&Logger::thInfo)
+#define thwrn()    LoggerStream(&Logger::thWarning)
+#define therr()   LoggerStream(&Logger::thError)
+
+// language
+#define lninfo()    LoggerStream(&Logger::langInfo)
+#define lnwrn()    LoggerStream(&Logger::langWarning)
+#define lnerr()   LoggerStream(&Logger::langError)
+
+// hotkey service
+#define hsinfo()   LoggerStream(&Logger::hsInfo)
+#define hswrn()   LoggerStream(&Logger::hsWarning)
+#define hserr()  LoggerStream(&Logger::hsError)
+
 class Logger : public QObject
 {
     Q_OBJECT
@@ -39,6 +75,11 @@ public:
     void mInfo(const QString& message);
     void mWarning(const QString& message);
     void mError(const QString& message);
+
+    // hotkey service log
+    void hsInfo(const QString& message);
+    void hsWarning(const QString& message);
+    void hsError(const QString& message);
 
 private:
     explicit Logger(QObject* parent = nullptr);

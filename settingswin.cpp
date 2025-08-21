@@ -3,7 +3,7 @@
 #include "languagemanager.h"
 #include "thememanager.h"
 #include "logger.h"
-#include "settingsmanager.h"
+#include "LoggerStream.h"
 #include "macromanager.h"
 #include <QMessageBox>
 #include <QTimer>
@@ -58,7 +58,7 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget *parent)
     if (themeIndex >= 0) {
         ui->themeBox->setCurrentIndex(themeIndex);
     } else {
-        Logger::instance().thWarning("Theme not found in list: " + visibleThemeName);
+        thwrn() << "Theme not found in list: " + visibleThemeName;
         ui->themeBox->setCurrentIndex(0);
     }
 
@@ -107,13 +107,13 @@ void SettingsWin::setupDynamicIcons() {
             );
     }
 
-    Logger::instance().sInfo("Dynamic icons setup completed");
+    thinfo() << "Dynamic icons setup completed";
 }
 
 void SettingsWin::onThemeChanged() {
     // This slot is called when theme changes
     // Icons are automatically updated by ThemeManager
-    Logger::instance().sInfo("Theme changed, icons updated automatically");
+    thinfo() << "Theme changed, icons updated automatically";
 
     // You can add additional theme-related updates here if needed
     refreshIcons();
@@ -125,23 +125,22 @@ void SettingsWin::refreshIcons() {
 }
 
 void SettingsWin::onHotkeyReady(const QString& hotkey) {
-    Logger::instance().sInfo("Hotkey ready: " + hotkey);
-    // Hotkey hazır, otomatik olarak LineEdit'te görünecek
+    hsinfo() << "Hotkey ready: " + hotkey;
 }
 
 void SettingsWin::onHotkeyChanged() {
-    Logger::instance().sInfo("Hotkey changed to: " + ui->lineHotkey->getHotkey());
+    hsinfo() << "Hotkey changed to: " + ui->lineHotkey->getHotkey();
 }
 
 void SettingsWin::on_btnSelectHotkey_clicked() {
     if (ui->lineHotkey->isCapturing()) {
         // Capture modundaysa, hotkey'i tamamla
         ui->lineHotkey->stopCapture();
-        Logger::instance().sInfo("Hotkey capture completed: " + ui->lineHotkey->getHotkey());
+        hsinfo() << "Hotkey capture completed: " + ui->lineHotkey->getHotkey();
     } else {
         // Capture modunda değilse, başlat
         ui->lineHotkey->startCapture();
-        Logger::instance().sInfo("Hotkey capture started");
+        hsinfo() << "Hotkey capture started";
     }
 }
 
@@ -199,10 +198,10 @@ void SettingsWin::on_btnSave_clicked()
     QString themeFileName = ThemeManager::instance().getFileName(themeVisibleName);
     if (ThemeManager::instance().applyTheme(themeVisibleName)) {
         m_settings["Theme"] = themeFileName;
-        Logger::instance().thInfo("Theme changed to " + themeVisibleName + " (" + themeFileName + ".qss)");
+        thinfo() << "Theme changed to " << themeVisibleName << " (" << themeFileName << ".qss)";
     }
     else {
-        Logger::instance().thError("Theme cannot be changed to " + themeVisibleName + ", file name: " + themeFileName);
+        therr() << "Theme cannot be changed to " + themeVisibleName + ", file name: " + themeFileName;
     }
 
     // Hotkey değerini kaydet
@@ -210,13 +209,13 @@ void SettingsWin::on_btnSave_clicked()
     if (!newHotkey.isEmpty()) {
         QString error;
         if (!MacroManager::instance().validateHotkey(newHotkey, &error)) {
-            Logger::instance().sError(error);
+            serr() << error;
             QMessageBox::critical(this, trans("error"), "No valid hotkey: " + newHotkey);
             return;
         }
 
         m_settings["DefaultHotkey"] = newHotkey;
-        Logger::instance().sInfo("Default hotkey changed to: " + newHotkey);
+        sinfo() << "Default hotkey changed to: " + newHotkey;
     }
 
     // ActiveMacro'yu geri yükle

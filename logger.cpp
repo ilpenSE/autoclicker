@@ -118,6 +118,19 @@ void Logger::mError(const QString& message) {
     log("[MACROS/ERROR]", message);
 }
 
+// hotkey service logs
+void Logger::hsInfo(const QString& message) {
+    log("[HOTKEYS/INFO]", message);
+}
+
+void Logger::hsWarning(const QString &message) {
+    log("[HOTKEYS/WARNING]", message);
+}
+
+void Logger::hsError(const QString& message) {
+    log("[HOTKEYS/ERROR]", message);
+}
+
 void Logger::log(const QString& level, const QString& message) {
     QString timeStamp = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
     QString logLine = QString("%1 %2 %3").arg(timeStamp, level, message);
