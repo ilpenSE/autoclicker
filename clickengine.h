@@ -110,6 +110,9 @@ private:
     QString mouseButtonToString(MouseButton button) const;
     MouseButton stringToMouseButton(const QString& buttonStr) const;
 
+    // Stop request
+    bool m_stopRequested = false;
+
 #ifdef Q_OS_WIN
     // Windows specific
     DWORD mouseButtonToWin32(MouseButton button, bool isPress) const;

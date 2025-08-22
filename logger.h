@@ -40,11 +40,17 @@
 #define hswrn()   LoggerStream(&Logger::hsWarning)
 #define hserr()  LoggerStream(&Logger::hsError)
 
+// clicker engine
+#define cinfo() LoggerStream(&Logger::cInfo)
+#define cwrn() LoggerStream(&Logger::cWarning)
+#define cerr() LoggerStream(&Logger::cError)
+
 class Logger : public QObject
 {
     Q_OBJECT
 public:
     static Logger& instance();
+    static bool isAlive();
 
     // default log
     void logInfo(const QString& message);
@@ -81,11 +87,18 @@ public:
     void hsWarning(const QString& message);
     void hsError(const QString& message);
 
+    // clicker engine log
+    void cInfo(const QString& message);
+    void cWarning(const QString& message);
+    void cError(const QString& message);
+
 private:
     explicit Logger(QObject* parent = nullptr);
     ~Logger() override;
 
     void log(const QString& level, const QString& message);
+
+    static bool s_alive;
 
     QFile m_logFile;
 

@@ -5,6 +5,8 @@
 #include <QDir>
 #include "appdatamanager.h"
 
+bool Logger::s_alive = false;
+
 Logger& Logger::instance() {
     static Logger _instance;
     return _instance;
@@ -13,6 +15,8 @@ Logger& Logger::instance() {
 Logger::Logger(QObject* parent)
     : QObject(parent)
 {
+    s_alive = true;
+
     // AppData/logs klasörü yolu
     QString logsDirPath = AppDataManager::instance().appFolderPath() + "/logs";
 
@@ -36,8 +40,13 @@ Logger::Logger(QObject* parent)
 }
 
 Logger::~Logger() {
+    s_alive = false;
     if (m_logFile.isOpen())
         m_logFile.close();
+}
+
+bool Logger::isAlive() {
+    return s_alive;
 }
 
 // theme logs
@@ -129,6 +138,19 @@ void Logger::hsWarning(const QString &message) {
 
 void Logger::hsError(const QString& message) {
     log("[HOTKEYS/ERROR]", message);
+}
+
+// clicker engine logs
+void Logger::cInfo(const QString& message) {
+    log("[CLICKER/INFO]", message);
+}
+
+void Logger::cWarning(const QString &message) {
+    log("[CLICKER/WARNING]", message);
+}
+
+void Logger::cError(const QString& message) {
+    log("[CLICKER/ERROR]", message);
 }
 
 void Logger::log(const QString& level, const QString& message) {

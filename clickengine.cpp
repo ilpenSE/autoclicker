@@ -1,6 +1,7 @@
 #include "clickengine.h"
 #include "macromanager.h"
 #include "logger.h"
+#include "LoggerStream.h"
 
 #include <QApplication>
 #include <QThread>
@@ -42,22 +43,24 @@ ClickEngine::ClickEngine(QObject* parent)
     m_executionTimer->setSingleShot(true);
     connect(m_executionTimer, &QTimer::timeout, this, &ClickEngine::onExecutionTimer);
 
-    qDebug() << "ClickEngine initialized";
+    cinfo() << "ClickEngine initialized";
 }
 
 ClickEngine::~ClickEngine()
 {
     cleanup();
-    qDebug() << "ClickEngine destroyed";
+    cinfo() << "ClickEngine destroyed";
 }
 
 bool ClickEngine::startMacro(int macroId)
 {
     // Stop current macro if any is running
     if (isMacroRunning()) {
-        qDebug() << "Stopping current macro" << m_currentMacroId << "to start macro" << macroId;
+        cinfo() << "Stopping current macro" << m_currentMacroId << "to start macro" << macroId;
         stopCurrentMacro();
     }
+
+    m_stopRequested = false;
 
     // Load macro actions from database
     QList<MacroAction> actions = loadMacroActions(macroId);
@@ -76,7 +79,7 @@ bool ClickEngine::startMacro(int macroId)
     executeMacroStep();
     emit macroStarted(macroId);
 
-    qDebug() << "Macro" << macroId << "started with" << actions.size() << "actions";
+    cinfo() << "Macro " << macroId << " started with " << actions.size() << " actions";
     return true;
 }
 
@@ -86,18 +89,17 @@ bool ClickEngine::stopCurrentMacro()
         return false;
     }
 
+    m_stopRequested = true;
+
     int stoppedMacroId = m_currentMacroId;
 
-    // Stop timer
     m_executionTimer->stop();
-
-    // Reset state
     m_currentMacroId = -1;
     m_executionState = ExecutionState();
     m_currentActions.clear();
 
     emit macroStopped(stoppedMacroId);
-    qDebug() << "Macro" << stoppedMacroId << "stopped";
+    cinfo() << "Macro " << stoppedMacroId << " stopped";
     return true;
 }
 
@@ -111,7 +113,7 @@ bool ClickEngine::pauseCurrentMacro()
     m_executionState.isRunning = false;
 
     emit macroPaused(m_currentMacroId);
-    qDebug() << "Macro" << m_currentMacroId << "paused";
+    cinfo() << "Macro " << m_currentMacroId << " paused";
     return true;
 }
 
@@ -125,7 +127,7 @@ bool ClickEngine::resumeCurrentMacro()
     scheduleNextAction();
 
     emit macroResumed(m_currentMacroId);
-    qDebug() << "Macro" << m_currentMacroId << "resumed";
+    cinfo() << "Macro" << m_currentMacroId << "resumed";
     return true;
 }
 
@@ -146,7 +148,7 @@ ClickEngine::ExecutionState ClickEngine::getCurrentMacroState() const
 
 void ClickEngine::executeMacroStep()
 {
-    if (!isMacroRunning() || m_currentActions.isEmpty()) {
+    if (m_stopRequested || !isMacroRunning() || m_currentActions.isEmpty()) {
         return;
     }
 
@@ -177,7 +179,7 @@ void ClickEngine::executeMacroStep()
 
 void ClickEngine::executeCurrentAction()
 {
-    if (!isMacroRunning() || m_currentActions.isEmpty()) {
+    if (m_stopRequested || !isMacroRunning() || m_currentActions.isEmpty()) {
         return;
     }
 
@@ -190,8 +192,8 @@ void ClickEngine::executeCurrentAction()
         emit actionExecuted(m_currentMacroId, m_executionState.currentActionIndex,
                             m_executionState.totalActionsExecuted);
 
-        qDebug() << "Executed action" << m_executionState.currentActionIndex
-                 << "of macro" << m_currentMacroId << "(total:" << m_executionState.totalActionsExecuted << ")";
+        cinfo() << "Executed action " << m_executionState.currentActionIndex
+                 << " of macro " << m_currentMacroId << " (total:" << m_executionState.totalActionsExecuted << ")";
     } catch (...) {
         emit macroError(m_currentMacroId, QString("Error executing action %1").arg(m_executionState.currentActionIndex));
     }
@@ -230,7 +232,7 @@ void ClickEngine::completeCurrentCycle()
     m_executionState.currentCycleCount++;
 
     emit cycleCompleted(m_currentMacroId, m_executionState.currentCycleCount);
-    qDebug() << "Macro" << m_currentMacroId << "completed cycle" << m_executionState.currentCycleCount;
+    cinfo() << "Macro " << m_currentMacroId << " completed cycle " << m_executionState.currentCycleCount;
 
     // Continue with next cycle
     executeMacroStep();
@@ -342,13 +344,18 @@ void ClickEngine::onExecutionTimer()
 
 void ClickEngine::nativeMouseClick(const QPoint& pos, MouseButton button, int count)
 {
-    for (int i = 0; i < count; ++i) {
-        nativeMousePress(pos, button);
-        QThread::msleep(10);
-        nativeMouseRelease(pos, button);
-        if (i < count - 1) {
-            QThread::msleep(10);
-        }
+    if (m_stopRequested) return;
+
+    if (count <= 0) return;
+
+    nativeMousePress(pos, button);
+    nativeMouseRelease(pos, button);
+
+    if (count > 1) {
+        // Geri kalan clickleri schedule et
+        QTimer::singleShot(10, this, [=]() {
+            nativeMouseClick(pos, button, count - 1);
+        });
     }
 }
 
@@ -383,16 +390,36 @@ void ClickEngine::nativeMouseMove(const QPoint& pos)
 
 void ClickEngine::nativeMouseHover(const QPoint& pos, int duration)
 {
+    if (m_stopRequested) return;
+
     nativeMouseMove(pos);
-    QThread::msleep(duration);
+
+    QTimer::singleShot(duration, this, [=]() {
+        if (!m_stopRequested) {
+            // hover sadece bekleme demek, ekstra işlem gerekmez
+        }
+    });
 }
 
 void ClickEngine::nativeMouseHold(const QPoint& pos, MouseButton button, int duration)
 {
+    if (m_stopRequested) return;
+
+    // 1. Press yap
     nativeMousePress(pos, button);
-    QThread::msleep(duration);
-    nativeMouseRelease(pos, button);
+
+    // 2. duration kadar bekle
+    QTimer::singleShot(duration, this, [=]() {
+        if (!m_stopRequested) {
+            // 3. Release yap
+            nativeMouseRelease(pos, button);
+
+            // 4. Hold bittikten sonra bir sonraki action'a geç
+            moveToNextAction();
+        }
+    });
 }
+
 
 void ClickEngine::nativeKeyPress(const QString& key)
 {
@@ -422,21 +449,31 @@ void ClickEngine::nativeKeyRelease(const QString& key)
 
 void ClickEngine::nativeKeyClick(const QString& key, int count)
 {
-    for (int i = 0; i < count; ++i) {
-        nativeKeyPress(key);
-        QThread::msleep(10);
-        nativeKeyRelease(key);
-        if (i < count - 1) {
-            QThread::msleep(10);
-        }
+    if (m_stopRequested) return;
+
+    if (count <= 0) return;
+
+    nativeKeyPress(key);
+    nativeKeyRelease(key);
+
+    if (count > 1) {
+        QTimer::singleShot(10, this, [=]() {
+            nativeKeyClick(key, count - 1);
+        });
     }
 }
-
 void ClickEngine::nativeKeyHold(const QString& key, int duration)
 {
+    if (m_stopRequested) return;
+
     nativeKeyPress(key);
-    QThread::msleep(duration);
-    nativeKeyRelease(key);
+
+    QTimer::singleShot(duration, this, [=]() {
+        if (!m_stopRequested) {
+            nativeKeyRelease(key);
+            moveToNextAction();
+        }
+    });
 }
 
 DWORD ClickEngine::mouseButtonToWin32(MouseButton button, bool isPress) const
