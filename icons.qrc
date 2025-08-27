@@ -8,6 +8,5 @@
         <file>assets/icons/settings.svg</file>
         <file>assets/icons/info.svg</file>
         <file>assets/icons/icon.ico</file>
-        <file>assets/icons/icon64.ico</file>
     </qresource>
 </RCC>
