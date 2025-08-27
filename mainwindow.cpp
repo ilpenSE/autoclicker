@@ -97,13 +97,17 @@ void MainWindow::onMacroError(int id, const QString& error) {
   merr() << "Macro error in " << id << ": " << error;
 }
 
+QString MainWindow::getHotkeyString(QString htkstr) {
+  return htkstr == "DEF" ? m_settings["DefaultHotkey"].toString() : htkstr;
+}
+
 void MainWindow::setActiveMacro(int id) {
   auto macro = MacroManager::instance().getMacroById(id);
   if (macro.has_value()) {
     QString activeMacroName = macro->name;
     ui->actionActiveMacro->setText(
         tr("active macro label").replace("#MCR", activeMacroName) + " (" +
-        macro->hotkey + ")");
+        getHotkeyString(macro->hotkey) + ")");
     activeMacro = macro.value();
     sinfo() << "(MainWindow) Active macro set to: " << activeMacroName
             << " (ID: " << id << ")";
@@ -114,7 +118,7 @@ void MainWindow::setActiveMacro(int id) {
       Macro firstMacro = m_macros.first();
       ui->actionActiveMacro->setText(
           tr("active macro label").replace("#MCR", firstMacro.name) + " (" +
-          firstMacro.hotkey + ")");
+          getHotkeyString(firstMacro.hotkey) + ")");
       id = m_macros.first().id;
       activeMacro = MacroManager::instance().getMacroById(1).value();
     }
