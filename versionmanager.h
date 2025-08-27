@@ -10,75 +10,68 @@
  * (release'lerde beta olmaz)
  */
 class VersionManager : public QObject {
-    Q_OBJECT
-public:
-    static VersionManager& instance()
-    {
-        static VersionManager _instance;
-        return _instance;
+  Q_OBJECT
+ public:
+  static VersionManager& instance() {
+    static VersionManager _instance;
+    return _instance;
+  }
+
+  QString normalize(const QString& ver) {
+    QString versionPart = ver;
+    QString betaPart;
+
+    // Beta kısmı varsa ayır
+    int betaIndex = ver.indexOf("-beta");
+    if (betaIndex != -1) {
+      versionPart = ver.left(betaIndex);  // "2.0"
+      betaPart = ver.mid(betaIndex);      // "-beta1"
+    } else {
+      betaPart = "";
     }
 
-    QString normalize(const QString& ver) {
-        QString versionPart = ver;
-        QString betaPart;
+    QStringList numbers = versionPart.split(".");
+    // Eksik olan parçaları tamamla
+    while (numbers.size() < 3) numbers.append("0");
 
-        // Beta kısmı varsa ayır
-        int betaIndex = ver.indexOf("-beta");
-        if (betaIndex != -1) {
-            versionPart = ver.left(betaIndex);        // "2.0"
-            betaPart = ver.mid(betaIndex);            // "-beta1"
-        } else {
-            betaPart = "";
-        }
+    QString normalizedVersion = numbers.join(".") + betaPart;
+    return normalizedVersion;
+  }
 
-        QStringList numbers = versionPart.split(".");
-        // Eksik olan parçaları tamamla
-        while (numbers.size() < 3)
-            numbers.append("0");
+  void initVer(const QString& verstr) { m_versionString = normalize(verstr); }
 
-        QString normalizedVersion = numbers.join(".") + betaPart;
-        return normalizedVersion;
-    }
+  QString version() const { return m_versionString; }
 
+  bool isRelease() const { return !m_versionString.contains("beta"); }
 
-    void initVer(const QString& verstr) {
-        m_versionString = normalize(verstr);
-    }
+  int major() const {
+    return m_versionString.split("-")[0].split(".")[0].toInt();
+  }
 
-    QString version() const {
-        return m_versionString;
-    }
+  int minor() const {
+    return m_versionString.split("-")[0].split(".")[1].toInt();
+  }
 
-    bool isRelease() const {
-        return !m_versionString.contains("beta");
-    }
+  int patch() const {
+    return m_versionString.split("-")[0].split(".")[2].toInt();
+  }
 
-    int major() const {
-        return m_versionString.split("-")[0].split(".")[0].toInt();
-    }
+  int beta() const {
+    return (m_versionString.contains("beta")
+                ? m_versionString.split("-")[1].remove(0, 4)
+                : "0")
+        .toInt();
+  }
 
-    int minor() const {
-        return m_versionString.split("-")[0].split(".")[1].toInt();
-    }
+ private:
+  explicit VersionManager(QObject* parent = nullptr) : QObject(parent) {}
 
-    int patch() const {
-        return m_versionString.split("-")[0].split(".")[2].toInt();
-    }
+  VersionManager(const VersionManager&) = delete;
+  VersionManager& operator=(const VersionManager&) = delete;
 
-    int beta() const {
-        return (m_versionString.contains("beta") ? m_versionString.split("-")[1].remove(0, 4) : "0").toInt();
-    }
+  ~VersionManager() override = default;
 
-private:
-    explicit VersionManager(QObject *parent = nullptr) : QObject(parent) {}
-
-    VersionManager(const VersionManager&) = delete;
-    VersionManager& operator=(const VersionManager&) = delete;
-
-    ~VersionManager() override = default;
-
-    QString m_versionString;
+  QString m_versionString;
 };
 
-
-#endif // VERSIONMANAGER_H
+#endif  // VERSIONMANAGER_H

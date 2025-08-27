@@ -58,8 +58,8 @@ TRANSLATIONS += \
     assets/locale/de_DE.ts \
     assets/locale/fr_FR.ts \
     assets/locale/it_IT.ts
+
 CONFIG += lrelease
-CONFIG += embed_translations
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
