@@ -13,6 +13,7 @@ CONFIG += c++17
 RC_FILE = appicon.rc
 
 SOURCES += \
+    aboutdialog.cpp \
     appdatamanager.cpp \
     clickengine.cpp \
     hotkeylineedit.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 HEADERS += \
     Enums.h \
     LoggerStream.h \
+    aboutdialog.h \
     appdatamanager.h \
     clickengine.h \
     consts.h \
@@ -48,6 +50,7 @@ HEADERS += \
     versionmanager.h
 
 FORMS += \
+    aboutdialog.ui \
     macroselectionwin.ui \
     mainwindow.ui \
     settingswin.ui

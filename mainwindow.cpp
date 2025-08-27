@@ -420,3 +420,12 @@ void MainWindow::on_actionActiveMacro_triggered() {
                              QString::number(newActiveMacroId));
   }
 }
+
+#include "aboutdialog.h"
+
+void MainWindow::on_actionAbout_triggered()
+{
+  AboutDialog dlg(this);
+  dlg.exec();
+}
+

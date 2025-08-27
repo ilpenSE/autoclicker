@@ -255,5 +255,13 @@
         <source>DEFAULT cannot be deleted.</source>
         <translation>DEFAULT cannot be deleted.</translation>
     </message>
+    <message>
+        <source>about text author</source>
+        <translation>Author</translation>
+    </message>
+    <message>
+        <source>about text version</source>
+        <translation>Version</translation>
+    </message>
 </context>
 </TS>

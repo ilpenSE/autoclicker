@@ -40,6 +40,8 @@ class MainWindow : public QMainWindow {
   void on_actionActiveMacro_triggered();
   QString getHotkeyString(QString htkstr);
 
+  void on_actionAbout_triggered();
+
  protected:
   void resizeEvent(QResizeEvent* event) override;
 

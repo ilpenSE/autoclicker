@@ -255,5 +255,13 @@
         <source>DEFAULT cannot be deleted.</source>
         <translation>DEFAULT makrosu silinemez.</translation>
     </message>
+    <message>
+        <source>about text author</source>
+        <translation>Geliştirici</translation>
+    </message>
+    <message>
+        <source>about text version</source>
+        <translation>Sürüm</translation>
+    </message>
 </context>
 </TS>

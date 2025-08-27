@@ -255,6 +255,14 @@
         <source>DEFAULT cannot be deleted.</source>
         <translation>DEFAULT ne peut pas être supprimé.</translation>
     </message>
+    <message>
+        <source>about text author</source>
+        <translation>Développeur</translation>
+    </message>
+    <message>
+        <source>about text version</source>
+        <translation>Version</translation>
+    </message>
 
 </context>
 </TS>
