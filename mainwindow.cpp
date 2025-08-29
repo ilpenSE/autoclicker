@@ -4,11 +4,11 @@
 
 #include <QJsonObject>
 #include <QMessageBox>
+#include <QOverload>
 #include <QPainter>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QtSvg/QSvgRenderer>
-#include <QOverload>
 
 #include "LoggerStream.h"
 #include "appdatamanager.h"
@@ -108,30 +108,32 @@ MainWindow::MainWindow(const QJsonObject& settings,
                                     QAbstractItemView::EditKeyPressed);
 
   // action table change event listeners
-  connect(ui->actionsTable, &QTableWidget::itemChanged, this,
-          [this](QTableWidgetItem* item) {
-            if (item) {
-              int row = item->row();
-              int col = item->column();
+  connect(
+      ui->actionsTable, &QTableWidget::itemChanged, this,
+      [this](QTableWidgetItem* item) {
+        if (item) {
+          int row = item->row();
+          int col = item->column();
 
-              qDebug() << "Item changed at row:" << row << "col:" << col; // Debug için
+          qDebug() << "Item changed at row:" << row
+                   << "col:" << col;  // Debug için
 
-              // Tüm sütunlar için değişikliği kabul et
-              m_modifiedRows.insert(row);
-              if (!m_hasUnsavedChanges) {
-                m_hasUnsavedChanges = true;
-                MarkAsUnsaved();
-                qDebug() << "MarkAsUnsaved called from itemChanged"; // Debug için
-              }
-            }
-          });
+          // Tüm sütunlar için değişikliği kabul et
+          m_modifiedRows.insert(row);
+          if (!m_hasUnsavedChanges) {
+            m_hasUnsavedChanges = true;
+            MarkAsUnsaved();
+            qDebug() << "MarkAsUnsaved called from itemChanged";  // Debug için
+          }
+        }
+      });
 
   connect(ui->actionsTable, &QTableWidget::cellChanged, this,
           [this](int row, int column) {
-            qDebug() << "Cell changed at row:" << row << "column:" << column; // Debug için
+            qDebug() << "Cell changed at row:" << row
+                     << "column:" << column;  // Debug için
             markRowAsModified(row);
           });
-
 
   ui->labelErrors->setVisible(false);
 }
@@ -242,7 +244,7 @@ void MainWindow::addActionToTable(MacroAction a) {
   noItem->setTextAlignment(Qt::AlignCenter);
   ui->actionsTable->setItem(row, 0, noItem);
 
-          // Action Type ComboBox
+  // Action Type ComboBox
   QWidget* actionTypeContainer = new QWidget();
   QHBoxLayout* actionTypeLayout = new QHBoxLayout(actionTypeContainer);
   actionTypeLayout->setContentsMargins(2, 2, 2, 2);
@@ -254,7 +256,7 @@ void MainWindow::addActionToTable(MacroAction a) {
 
   ui->actionsTable->setCellWidget(row, 1, actionTypeContainer);
 
-          // Click Type ComboBox
+  // Click Type ComboBox
   QWidget* clickTypeContainer = new QWidget();
   QHBoxLayout* clickTypeLayout = new QHBoxLayout(clickTypeContainer);
   clickTypeLayout->setContentsMargins(2, 2, 2, 2);
@@ -266,7 +268,7 @@ void MainWindow::addActionToTable(MacroAction a) {
 
   ui->actionsTable->setCellWidget(row, 2, clickTypeContainer);
 
-          // Mouse Button ComboBox
+  // Mouse Button ComboBox
   QWidget* mouseButtonContainer = new QWidget();
   QHBoxLayout* mouseButtonLayout = new QHBoxLayout(mouseButtonContainer);
   mouseButtonLayout->setContentsMargins(2, 2, 2, 2);
@@ -281,18 +283,20 @@ void MainWindow::addActionToTable(MacroAction a) {
 
   ui->actionsTable->setCellWidget(row, 3, mouseButtonContainer);
 
-          // applyActionTypeConstraints'i en son çağır
+  // applyActionTypeConstraints'i en son çağır
   applyActionTypeConstraints(row, a.action_type);
 
-  QTableWidgetItem* repeatItem = new QTableWidgetItem(QString::number(a.repeat));
+  QTableWidgetItem* repeatItem =
+      new QTableWidgetItem(QString::number(a.repeat));
   repeatItem->setTextAlignment(Qt::AlignCenter);
   ui->actionsTable->setItem(row, 4, repeatItem);
 
-  QTableWidgetItem* intervalItem = new QTableWidgetItem(QString::number(a.interval));
+  QTableWidgetItem* intervalItem =
+      new QTableWidgetItem(QString::number(a.interval));
   intervalItem->setTextAlignment(Qt::AlignCenter);
   ui->actionsTable->setItem(row, 5, intervalItem);
 
-          // Additional Settings button
+  // Additional Settings button
   QWidget* settingsContainer = new QWidget();
   QHBoxLayout* settingsLayout = new QHBoxLayout(settingsContainer);
   settingsLayout->setContentsMargins(1, 1, 1, 1);
@@ -329,7 +333,8 @@ QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
   comboBox->setMinimumHeight(24);
   comboBox->setMaximumHeight(28);
 
-  comboBox->addItem(tr("atype keyboard"), QVariant::fromValue(ActionType::KEYBOARD));
+  comboBox->addItem(tr("atype keyboard"),
+                    QVariant::fromValue(ActionType::KEYBOARD));
   comboBox->addItem(tr("atype mouse"), QVariant::fromValue(ActionType::MOUSE));
 
   int index = comboBox->findData(QVariant::fromValue(currentValue));
@@ -340,7 +345,7 @@ QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
   connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this, comboBox](int index) {
             Q_UNUSED(index)
-            qDebug() << "Action type combo changed"; // Debug için
+            qDebug() << "Action type combo changed";  // Debug için
 
             int targetRow = -1;
             for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
@@ -352,10 +357,12 @@ QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
             }
 
             if (targetRow >= 0) {
-              ActionType selectedType = comboBox->currentData().value<ActionType>();
+              ActionType selectedType =
+                  comboBox->currentData().value<ActionType>();
               applyActionTypeConstraints(targetRow, selectedType);
               markRowAsModified(targetRow);
-              qDebug() << "Row " << targetRow << " marked as modified"; // Debug için
+              qDebug() << "Row " << targetRow
+                       << " marked as modified";  // Debug için
             }
           });
 
@@ -383,18 +390,22 @@ void MainWindow::applyActionTypeConstraints(int row, ActionType actionType) {
     }
 
     if (clickTypeCombo) {
-      ClickType currentClickType = clickTypeCombo->currentData().value<ClickType>();
+      ClickType currentClickType =
+          clickTypeCombo->currentData().value<ClickType>();
 
       clickTypeCombo->blockSignals(true);
       clickTypeCombo->clear();
 
-      clickTypeCombo->addItem(tr("ctype click"), QVariant::fromValue(ClickType::CLICK));
-      clickTypeCombo->addItem(tr("ctype hold"), QVariant::fromValue(ClickType::HOLD));
+      clickTypeCombo->addItem(tr("ctype click"),
+                              QVariant::fromValue(ClickType::CLICK));
+      clickTypeCombo->addItem(tr("ctype hold"),
+                              QVariant::fromValue(ClickType::HOLD));
 
       if (currentClickType == ClickType::HOVER) {
         clickTypeCombo->setCurrentIndex(0);
       } else {
-        int index = clickTypeCombo->findData(QVariant::fromValue(currentClickType));
+        int index =
+            clickTypeCombo->findData(QVariant::fromValue(currentClickType));
         clickTypeCombo->setCurrentIndex(index != -1 ? index : 0);
       }
 
@@ -414,12 +425,16 @@ void MainWindow::applyActionTypeConstraints(int row, ActionType actionType) {
       mouseButtonCombo->blockSignals(true);
       mouseButtonCombo->clear();
 
-      mouseButtonCombo->addItem(tr("msbtn left"), QVariant::fromValue(MouseButton::LEFT));
-      mouseButtonCombo->addItem(tr("msbtn right"), QVariant::fromValue(MouseButton::RIGHT));
-      mouseButtonCombo->addItem(tr("msbtn mid"), QVariant::fromValue(MouseButton::MID));
+      mouseButtonCombo->addItem(tr("msbtn left"),
+                                QVariant::fromValue(MouseButton::LEFT));
+      mouseButtonCombo->addItem(tr("msbtn right"),
+                                QVariant::fromValue(MouseButton::RIGHT));
+      mouseButtonCombo->addItem(tr("msbtn mid"),
+                                QVariant::fromValue(MouseButton::MID));
 
       if (currentValue.has_value()) {
-        int index = mouseButtonCombo->findData(QVariant::fromValue(currentValue.value()));
+        int index = mouseButtonCombo->findData(
+            QVariant::fromValue(currentValue.value()));
         mouseButtonCombo->setCurrentIndex(index != -1 ? index : 0);
       } else {
         mouseButtonCombo->setCurrentIndex(0);
@@ -429,16 +444,21 @@ void MainWindow::applyActionTypeConstraints(int row, ActionType actionType) {
     }
 
     if (clickTypeCombo) {
-      ClickType currentClickType = clickTypeCombo->currentData().value<ClickType>();
+      ClickType currentClickType =
+          clickTypeCombo->currentData().value<ClickType>();
 
       clickTypeCombo->blockSignals(true);
       clickTypeCombo->clear();
 
-      clickTypeCombo->addItem(tr("ctype click"), QVariant::fromValue(ClickType::CLICK));
-      clickTypeCombo->addItem(tr("ctype hover"), QVariant::fromValue(ClickType::HOVER));
-      clickTypeCombo->addItem(tr("ctype hold"), QVariant::fromValue(ClickType::HOLD));
+      clickTypeCombo->addItem(tr("ctype click"),
+                              QVariant::fromValue(ClickType::CLICK));
+      clickTypeCombo->addItem(tr("ctype hover"),
+                              QVariant::fromValue(ClickType::HOVER));
+      clickTypeCombo->addItem(tr("ctype hold"),
+                              QVariant::fromValue(ClickType::HOLD));
 
-      int index = clickTypeCombo->findData(QVariant::fromValue(currentClickType));
+      int index =
+          clickTypeCombo->findData(QVariant::fromValue(currentClickType));
       clickTypeCombo->setCurrentIndex(index != -1 ? index : 0);
 
       clickTypeCombo->blockSignals(false);
@@ -461,24 +481,26 @@ QComboBox* MainWindow::createClickTypeComboBox(ClickType currentValue) {
     comboBox->setCurrentIndex(index);
   }
 
-  connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          [this, comboBox](int index) {
-            Q_UNUSED(index)
-            qDebug() << "Click type combo changed"; // Debug için
+  connect(
+      comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+      [this, comboBox](int index) {
+        Q_UNUSED(index)
+        qDebug() << "Click type combo changed";  // Debug için
 
-            for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
-              QWidget* container = ui->actionsTable->cellWidget(row, 2);
-              if (container && container->findChild<QComboBox*>() == comboBox) {
-                markRowAsModified(row);
-                break;
-              }
-            }
-          }, Qt::QueuedConnection); // QueuedConnection ekleyin
-
+        for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
+          QWidget* container = ui->actionsTable->cellWidget(row, 2);
+          if (container && container->findChild<QComboBox*>() == comboBox) {
+            markRowAsModified(row);
+            break;
+          }
+        }
+      },
+      Qt::QueuedConnection);  // QueuedConnection ekleyin
 
   return comboBox;
 }
-QComboBox* MainWindow::createMouseButtonComboBox(std::optional<MouseButton> currentValue) {
+QComboBox* MainWindow::createMouseButtonComboBox(
+    std::optional<MouseButton> currentValue) {
   QComboBox* comboBox = new QComboBox();
 
   comboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -499,20 +521,22 @@ QComboBox* MainWindow::createMouseButtonComboBox(std::optional<MouseButton> curr
     comboBox->setCurrentIndex(0);
   }
 
-          // DÜZELTME: Qt::QueuedConnection kullanın
-  connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          [this, comboBox](int index) {
-            Q_UNUSED(index)
-            qDebug() << "Mouse button combo changed"; // Debug için
+  // DÜZELTME: Qt::QueuedConnection kullanın
+  connect(
+      comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+      [this, comboBox](int index) {
+        Q_UNUSED(index)
+        qDebug() << "Mouse button combo changed";  // Debug için
 
-            for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
-              QWidget* container = ui->actionsTable->cellWidget(row, 3);
-              if (container && container->findChild<QComboBox*>() == comboBox) {
-                markRowAsModified(row);
-                break;
-              }
-            }
-          }, Qt::QueuedConnection); // QueuedConnection ekleyin
+        for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
+          QWidget* container = ui->actionsTable->cellWidget(row, 3);
+          if (container && container->findChild<QComboBox*>() == comboBox) {
+            markRowAsModified(row);
+            break;
+          }
+        }
+      },
+      Qt::QueuedConnection);  // QueuedConnection ekleyin
 
   return comboBox;
 }
@@ -523,17 +547,18 @@ MacroAction MainWindow::getActionFromRow(int row) {
   QTableWidgetItem* noItem = ui->actionsTable->item(row, 0);
   a.order = noItem ? noItem->text().toInt() : 0;
 
-          // Action Type
+  // Action Type
   QWidget* actionTypeContainer = ui->actionsTable->cellWidget(row, 1);
   if (actionTypeContainer) {
     QComboBox* actionCombo = actionTypeContainer->findChild<QComboBox*>();
     if (actionCombo) {
       a.action_type = actionCombo->currentData().value<ActionType>();
-      minfo() << "Row" << row << "action_type:" << actionTypeToStr(a.action_type);
+      minfo() << "Row" << row
+              << "action_type:" << actionTypeToStr(a.action_type);
     }
   }
 
-          // Click Type
+  // Click Type
   QWidget* clickTypeContainer = ui->actionsTable->cellWidget(row, 2);
   if (clickTypeContainer) {
     QComboBox* clickCombo = clickTypeContainer->findChild<QComboBox*>();
@@ -543,7 +568,7 @@ MacroAction MainWindow::getActionFromRow(int row) {
     }
   }
 
-          // Mouse Button
+  // Mouse Button
   QWidget* mouseButtonContainer = ui->actionsTable->cellWidget(row, 3);
   if (mouseButtonContainer) {
     QComboBox* mouseButtonCombo = mouseButtonContainer->findChild<QComboBox*>();
@@ -553,7 +578,8 @@ MacroAction MainWindow::getActionFromRow(int row) {
       } else {
         if (mouseButtonCombo->currentData().isValid()) {
           a.mouse_button = mouseButtonCombo->currentData().value<MouseButton>();
-          minfo() << "Row" << row << "mouse_button:" << mouseButtonToStr(a.mouse_button.value());
+          minfo() << "Row" << row << "mouse_button:"
+                  << mouseButtonToStr(a.mouse_button.value());
         } else {
           a.mouse_button = std::nullopt;
           minfo() << "Row" << row << "mouse_button: NULL";
@@ -568,7 +594,7 @@ MacroAction MainWindow::getActionFromRow(int row) {
   QTableWidgetItem* intervalItem = ui->actionsTable->item(row, 5);
   a.interval = intervalItem ? intervalItem->text().toInt() : 0;
 
-          // Diğer alanlar için default değerler
+  // Diğer alanlar için default değerler
   a.position = "0, 0";
   a.current_pos = true;
   a.hold_duration = 1000;
@@ -596,13 +622,13 @@ void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
 }
 
 void MainWindow::markRowAsModified(int row) {
-  qDebug() << "markRowAsModified called for row:" << row; // Debug için
+  qDebug() << "markRowAsModified called for row:" << row;  // Debug için
 
   m_modifiedRows.insert(row);
   if (!m_hasUnsavedChanges) {
     m_hasUnsavedChanges = true;
     MarkAsUnsaved();
-    qDebug() << "MarkAsUnsaved called from markRowAsModified"; // Debug için
+    qDebug() << "MarkAsUnsaved called from markRowAsModified";  // Debug için
   }
 }
 
@@ -620,17 +646,17 @@ void MainWindow::showAdditionalSettings(int row) {
   if (dialog.exec() == QDialog::Accepted) {
     MacroAction updated = dialog.getUpdatedAction();
 
-    if (updated != original) { // eşitlik operatörünü kullandık
+    if (updated != original) {  // eşitlik operatörünü kullandık
       m_pendingActions[row] = updated;
       markRowAsModified(row);
-      // burada tabloyu komple refresh etmiyoruz; gerekirse sadece görsel ipucu ver
+      // burada tabloyu komple refresh etmiyoruz; gerekirse sadece görsel ipucu
+      // ver
       qDebug() << "Additional settings changed for row:" << row;
     } else {
       qDebug() << "No changes in additional settings";
     }
   }
 }
-
 
 void MainWindow::loadLanguage() {
   // TOOLBAR ACTION ÇEVİRİLERİ
@@ -860,12 +886,14 @@ void MainWindow::renumberActionsTable() {
 }
 
 void MainWindow::MarkAsUnsaved() {
-  qDebug() << "MarkAsUnsaved called - current hasUnsavedChanges:" << m_hasUnsavedChanges;
+  qDebug() << "MarkAsUnsaved called - current hasUnsavedChanges:"
+           << m_hasUnsavedChanges;
 
   m_hasUnsavedChanges = true;
 
-  QString unsavedText = tr("active macro label").replace("#MCR", activeMacro.name) + "* (" +
-                        getHotkeyString(activeMacro.hotkey) + ")";
+  QString unsavedText =
+      tr("active macro label").replace("#MCR", activeMacro.name) + "* (" +
+      getHotkeyString(activeMacro.hotkey) + ")";
 
   qDebug() << "Setting unsaved text:" << unsavedText;
   ui->actionActiveMacro->setText(unsavedText);
@@ -885,8 +913,9 @@ void MainWindow::MarkAsSaved() {
   m_actionsModified = false;
   m_pendingActions.clear();
 
-  QString savedText = tr("active macro label").replace("#MCR", activeMacro.name) + " (" +
-                      getHotkeyString(activeMacro.hotkey) + ")";
+  QString savedText =
+      tr("active macro label").replace("#MCR", activeMacro.name) + " (" +
+      getHotkeyString(activeMacro.hotkey) + ")";
 
   qDebug() << "Setting saved text:" << savedText;
   ui->actionActiveMacro->setText(savedText);
@@ -944,9 +973,8 @@ void MainWindow::on_actionSave_triggered() {
 
   QString err;
   QVector<MacroAction> base =
-      m_actionsModified
-          ? m_pendingActions
-          : MacroManager::instance().getActions(activeMacro.id);
+      m_actionsModified ? m_pendingActions
+                        : MacroManager::instance().getActions(activeMacro.id);
 
   QVector<MacroAction> actionsToSave;
   actionsToSave.reserve(ui->actionsTable->rowCount());
@@ -954,47 +982,50 @@ void MainWindow::on_actionSave_triggered() {
   for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
     MacroAction a = (row >= 0 && row < base.size()) ? base[row] : MacroAction{};
 
-            // görünür sütunları tablodan oku
+    // görünür sütunları tablodan oku
     QTableWidgetItem* noItem = ui->actionsTable->item(row, 0);
     a.order = noItem ? noItem->text().toInt() : row;
 
-            // action type
+    // action type
     if (QWidget* w = ui->actionsTable->cellWidget(row, 1)) {
       if (auto combo = w->findChild<QComboBox*>())
         a.action_type = combo->currentData().value<ActionType>();
     }
 
-            // click type
+    // click type
     if (QWidget* w = ui->actionsTable->cellWidget(row, 2)) {
       if (auto combo = w->findChild<QComboBox*>())
         a.click_type = combo->currentData().value<ClickType>();
     }
 
-            // mouse button (action_type KEYBOARD ise nullopt)
+    // mouse button (action_type KEYBOARD ise nullopt)
     if (a.action_type == ActionType::KEYBOARD) {
       a.mouse_button = std::nullopt;
     } else {
       if (QWidget* w = ui->actionsTable->cellWidget(row, 3)) {
         if (auto combo = w->findChild<QComboBox*>()) {
           a.mouse_button = combo->currentData().isValid()
-          ? std::optional<MouseButton>(combo->currentData().value<MouseButton>())
-          : std::nullopt;
+                               ? std::optional<MouseButton>(
+                                     combo->currentData().value<MouseButton>())
+                               : std::nullopt;
         }
       }
     }
 
-            // repeat / interval
+    // repeat / interval
     if (auto it = ui->actionsTable->item(row, 4)) a.repeat = it->text().toInt();
-    if (auto it = ui->actionsTable->item(row, 5)) a.interval = it->text().toInt();
+    if (auto it = ui->actionsTable->item(row, 5))
+      a.interval = it->text().toInt();
 
-            // temel id/order
+    // temel id/order
     a.macro_id = activeMacro.id;
     a.order = row;
 
     actionsToSave.append(a);
   }
 
-  if (!MacroManager::instance().setActionsForMacro(activeMacro.id, actionsToSave, &err)) {
+  if (!MacroManager::instance().setActionsForMacro(activeMacro.id,
+                                                   actionsToSave, &err)) {
     merr() << "Failed to save actions: " << err;
     ui->labelErrors->setVisible(true);
     ui->labelErrors->setText(QString("Save failed: %1").arg(err));
@@ -1004,7 +1035,7 @@ void MainWindow::on_actionSave_triggered() {
     return;
   }
 
-          // temizle
+  // temizle
   m_hasUnsavedChanges = false;
   m_modifiedRows.clear();
   m_actionsModified = false;

@@ -35,15 +35,14 @@ struct MacroAction {
 };
 
 // helper
-template<typename T>
+template <typename T>
 static inline bool optEq(const std::optional<T>& a, const std::optional<T>& b) {
   if (a.has_value() != b.has_value()) return false;
   return !a.has_value() || a.value() == b.value();
 }
 
 inline bool operator==(const MacroAction& lhs, const MacroAction& rhs) {
-  return lhs.order == rhs.order &&
-         lhs.action_type == rhs.action_type &&
+  return lhs.order == rhs.order && lhs.action_type == rhs.action_type &&
          lhs.click_type == rhs.click_type &&
          optEq(lhs.mouse_button, rhs.mouse_button) &&
          lhs.click_count == rhs.click_count &&
@@ -51,16 +50,13 @@ inline bool operator==(const MacroAction& lhs, const MacroAction& rhs) {
          optEq(lhs.position, rhs.position) &&
          optEq(lhs.hold_duration, rhs.hold_duration) &&
          optEq(lhs.hover_duration, rhs.hover_duration) &&
-         lhs.interval == rhs.interval &&
-         lhs.repeat == rhs.repeat &&
-         optEq(lhs.key_name, rhs.key_name) &&
-         lhs.macro_id == rhs.macro_id;
+         lhs.interval == rhs.interval && lhs.repeat == rhs.repeat &&
+         optEq(lhs.key_name, rhs.key_name) && lhs.macro_id == rhs.macro_id;
 }
 
 inline bool operator!=(const MacroAction& lhs, const MacroAction& rhs) {
   return !(lhs == rhs);
 }
-
 
 class MacroManager final : public QObject {
   Q_OBJECT
