@@ -263,5 +263,13 @@
         <source>about text version</source>
         <translation>Sürüm</translation>
     </message>
+    <message>
+        <source>msbtn -</source>
+        <translation>(Geçersiz)</translation>
+    </message>
+    <message>
+        <source>select an action to del</source>
+        <translation>Silinecek bir aksiyon seçin.</translation>
+    </message>
 </context>
 </TS>

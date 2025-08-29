@@ -263,6 +263,13 @@
         <source>about text version</source>
         <translation>Version</translation>
     </message>
-
+    <message>
+        <source>msbtn -</source>
+        <translation>(Ungültig)</translation>
+    </message>
+    <message>
+        <source>select an action to del</source>
+        <translation>Bitte wählen Sie eine Aktion zum Löschen aus.</translation>
+    </message>
 </context>
 </TS>

@@ -58,6 +58,9 @@
        </property>
        <item>
         <widget class="QTableWidget" name="actionsTable">
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
          <property name="alternatingRowColors">
           <bool>true</bool>
          </property>

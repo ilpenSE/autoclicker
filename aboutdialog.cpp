@@ -11,10 +11,13 @@ AboutDialog::AboutDialog(QWidget *parent)
   ui->labelText->setOpenExternalLinks(true);
 
   // Yazı
-  QString txt = ui->labelText->text()
-                    .replace("ABT", QApplication::translate("MainWindow", "about"))
-                    .replace("VER", QApplication::translate("MainWindow", "about text version"))
-                    .replace("ATHR", QApplication::translate("MainWindow", "about text author"));
+  QString txt =
+      ui->labelText->text()
+          .replace("ABT", QApplication::translate("MainWindow", "about"))
+          .replace("VER",
+                   QApplication::translate("MainWindow", "about text version"))
+          .replace("ATHR",
+                   QApplication::translate("MainWindow", "about text author"));
   ui->labelText->setText(txt);
 
   this->setWindowTitle(QApplication::translate("MainWindow", "about"));

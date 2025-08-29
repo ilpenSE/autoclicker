@@ -1,9 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include <QComboBox>
 #include <QJsonObject>
 #include <QMainWindow>
 #include <QVector>
 
+#include "additionalsettingsdialog.h"
 #include "clickengine.h"
 #include "hotkeyservice.h"
 #include "macromanager.h"
@@ -42,10 +44,32 @@ class MainWindow : public QMainWindow {
 
   void on_actionAbout_triggered();
 
+  void showAdditionalSettings(int row);
+
+  void on_btnAddAction_clicked();
+
+  void on_btnDeleteAction_clicked();
+
+  void MarkAsUnsaved();
+  void MarkAsSaved();
+
+  void renumberActionsTable();
+
+  void on_actionSave_triggered();
+
  protected:
   void resizeEvent(QResizeEvent* event) override;
 
  private:
+  QVector<MacroAction>
+      m_pendingActions;  // Memory'de tutulan geçici action listesi
+  bool m_actionsModified = false;
+
+  bool m_hasUnsavedChanges = false;
+  QSet<int> m_modifiedRows;
+  bool m_isClosing = false;
+  void markRowAsModified(int row);
+
   QJsonObject m_settings;
   QVector<Macro> m_macros;
   ClickEngine* clickEngine;
@@ -59,5 +83,15 @@ class MainWindow : public QMainWindow {
   QJsonValue getSetting(const QString& key) const;
   void setupDynamicIcons();
   void refreshIcons();
+
+  void applyActionTypeConstraints(int row, ActionType actionType);
+
+  void updateActionFromTableRow(int row);
+  QComboBox* createMouseButtonComboBox(std::optional<MouseButton> currentValue);
+  QComboBox* createClickTypeComboBox(ClickType currentValue);
+  QComboBox* createActionTypeComboBox(ActionType currentValue);
+  void setupTableCellWidgets(int row, const MacroAction& action);
+
+  MacroAction getActionFromRow(int row);
 };
 #endif  // MAINWINDOW_H

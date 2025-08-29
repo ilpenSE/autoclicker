@@ -269,7 +269,7 @@ void ClickEngine::performMouseAction(const MacroAction& action) {
 }
 
 void ClickEngine::performKeyboardAction(const MacroAction& action) {
-  QString key = action.key_name;
+  QString key = action.key_name.value();
 
   switch (action.click_type) {
     case ClickType::CLICK:
