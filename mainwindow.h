@@ -78,6 +78,9 @@ class MainWindow : public QMainWindow {
   Macro activeMacro;
   Ui::MainWindow* ui;
 
+  bool isMacroRunning;
+  void lockOrUnlockUI();
+
   void refreshMacros();
   void setActiveMacro(int id);
   QJsonValue getSetting(const QString& key) const;

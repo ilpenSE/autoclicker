@@ -140,32 +140,44 @@ void ClickEngine::executeMacroStep() {
     return;
   }
 
-  // Check if we've reached the end of actions - loop back to start
   if (m_executionState.currentActionIndex >= m_currentActions.size()) {
-    completeCurrentCycle();
+    stopCurrentMacro(); // completeCurrentCycle() yerine direkt durdur
+    return;
+  }
+
+  const MacroAction& currentAction = m_currentActions[m_executionState.currentActionIndex];
+
+  executeCurrentAction();
+  m_executionState.currentRepeatCount++;
+
+          // Repeat kontrolü
+  if (currentAction.repeat == 0 || m_executionState.currentRepeatCount < currentAction.repeat) {
+    // Daha fazla repeat gerekiyor, interval bekle
+    scheduleNextRepeat();
+  } else {
+    // Bu action bitti, sonrakine geç
+    moveToNextAction();
+  }
+}
+
+void ClickEngine::scheduleNextRepeat() {
+  if (!isMacroRunning() || m_currentActions.isEmpty()) {
     return;
   }
 
   const MacroAction& currentAction =
       m_currentActions[m_executionState.currentActionIndex];
+  int delay = currentAction.interval;
 
-  // Check if we need to repeat this action
-  if (currentAction.repeat == 0 ||
-      m_executionState.currentRepeatCount < currentAction.repeat) {
-    executeCurrentAction();
-
-    // Increment repeat count (but not for infinite repeat)
-    if (currentAction.repeat != 0) {
-      m_executionState.currentRepeatCount++;
-    }
-
-    // Schedule next execution
-    scheduleNextAction();
-  } else {
-    // Move to next action
-    moveToNextAction();
+          // Minimum delay to prevent system overload
+  if (delay < 10) {
+    delay = 10;
   }
+
+          // Use timer to wait for interval before next repeat
+  m_executionTimer->start(delay);
 }
+
 
 void ClickEngine::executeCurrentAction() {
   if (m_stopRequested || !isMacroRunning() || m_currentActions.isEmpty()) {
@@ -211,11 +223,9 @@ void ClickEngine::scheduleNextAction() {
 
 void ClickEngine::moveToNextAction() {
   m_executionState.currentActionIndex++;
-  m_executionState.currentRepeatCount = 0;
+  m_executionState.currentRepeatCount = 0; // ÖNEMLİ: reset et
 
-  // Immediately execute next step (no additional delay between different
-  // actions)
-  executeMacroStep();
+  executeMacroStep(); // Direkt devam et
 }
 
 void ClickEngine::completeCurrentCycle() {
@@ -245,7 +255,7 @@ void ClickEngine::performAction(const MacroAction& action) {
 void ClickEngine::performMouseAction(const MacroAction& action) {
   QPoint targetPos;
 
-  if (action.current_pos) {
+  if (action.current_pos.value_or(true)) {
     targetPos = getCurrentMousePosition();
   } else if (action.position.has_value()) {
     targetPos = parsePosition(action.position.value());
@@ -257,30 +267,38 @@ void ClickEngine::performMouseAction(const MacroAction& action) {
 
   switch (action.click_type) {
     case ClickType::CLICK:
+      // Execute all click_count clicks immediately (no interval between them)
       nativeMouseClick(targetPos, button, action.click_count);
       break;
+
     case ClickType::HOLD:
+      // Hold ignores click_count - just press, wait, release
       nativeMouseHold(targetPos, button, action.hold_duration.value_or(1000));
       break;
+
     case ClickType::HOVER:
-      nativeMouseHover(targetPos, action.hover_duration.value_or(1000));
+      // Hover to position and wait
+      nativeMouseHover(targetPos, 10);
       break;
   }
 }
 
 void ClickEngine::performKeyboardAction(const MacroAction& action) {
-  QString key = action.key_name.value();
+  QString key = action.key_name.value_or("A");
 
   switch (action.click_type) {
     case ClickType::CLICK:
+      // Execute all click_count key presses immediately
       nativeKeyClick(key, action.click_count);
       break;
+
     case ClickType::HOLD:
-      nativeKeyHold(key, action.hold_duration.value_or(1000));
+      nativeKeyHold(action.key_name.value(), action.hold_duration.value());
       break;
+
     case ClickType::HOVER:
-      // Hover doesn't make sense for keyboard, treat as click
-      nativeKeyClick(key, action.click_count);
+      // Hover doesn't make sense for keyboard, treat as single click
+      nativeKeyClick(key, 1);
       break;
   }
 }
@@ -321,127 +339,168 @@ QList<MacroAction> ClickEngine::loadMacroActions(int macroId) {
 void ClickEngine::onExecutionTimer() { executeMacroStep(); }
 
 #ifdef Q_OS_WIN
+void ClickEngine::nativeMouseClick(const QPoint& pos, MouseButton button, int clickCount) {
+  if (m_stopRequested || clickCount <= 0) return;
 
-void ClickEngine::nativeMouseClick(const QPoint& pos, MouseButton button,
-                                   int count) {
-  if (m_stopRequested) return;
+  SetCursorPos(pos.x(), pos.y());
 
-  if (count <= 0) return;
+  // Perform clickCount number of clicks with minimal delay between them
+  for (int i = 0; i < clickCount; i++) {
+    if (m_stopRequested) break;
 
-  nativeMousePress(pos, button);
-  nativeMouseRelease(pos, button);
+    // Press
+    INPUT inputDown = {};
+    inputDown.type = INPUT_MOUSE;
+    inputDown.mi.dx = pos.x();
+    inputDown.mi.dy = pos.y();
+    inputDown.mi.dwFlags = mouseButtonToWin32(button, true) | MOUSEEVENTF_ABSOLUTE;
+    SendInput(1, &inputDown, sizeof(INPUT));
 
-  if (count > 1) {
-    // Geri kalan clickleri schedule et
-    QTimer::singleShot(10, this,
-                       [=]() { nativeMouseClick(pos, button, count - 1); });
+    // Small delay between press and release
+    Sleep(1);
+
+    // Release
+    INPUT inputUp = {};
+    inputUp.type = INPUT_MOUSE;
+    inputUp.mi.dx = pos.x();
+    inputUp.mi.dy = pos.y();
+    inputUp.mi.dwFlags = mouseButtonToWin32(button, false) | MOUSEEVENTF_ABSOLUTE;
+    SendInput(1, &inputUp, sizeof(INPUT));
+
+    // Small delay between clicks within the same click group (except for last one)
+    if (i < clickCount - 1) {
+      Sleep(50); // 50ms between clicks in the same group
+    }
   }
 }
 
-void ClickEngine::nativeMousePress(const QPoint& pos, MouseButton button) {
+void ClickEngine::nativeMouseHold(const QPoint& pos, MouseButton button, int duration) {
+  if (m_stopRequested) return;
+
   SetCursorPos(pos.x(), pos.y());
 
-  INPUT input = {};
-  input.type = INPUT_MOUSE;
-  input.mi.dx = pos.x();
-  input.mi.dy = pos.y();
-  input.mi.dwFlags = mouseButtonToWin32(button, true) | MOUSEEVENTF_ABSOLUTE;
+  // Press
+  INPUT inputDown = {};
+  inputDown.type = INPUT_MOUSE;
+  inputDown.mi.dx = pos.x();
+  inputDown.mi.dy = pos.y();
+  inputDown.mi.dwFlags = mouseButtonToWin32(button, true) | MOUSEEVENTF_ABSOLUTE;
+  SendInput(1, &inputDown, sizeof(INPUT));
 
-  SendInput(1, &input, sizeof(INPUT));
-}
+          // Wait for hold duration using Windows Sleep to avoid Qt event loop interference
+  Sleep(duration);
 
-void ClickEngine::nativeMouseRelease(const QPoint& pos, MouseButton button) {
-  INPUT input = {};
-  input.type = INPUT_MOUSE;
-  input.mi.dx = pos.x();
-  input.mi.dy = pos.y();
-  input.mi.dwFlags = mouseButtonToWin32(button, false) | MOUSEEVENTF_ABSOLUTE;
-
-  SendInput(1, &input, sizeof(INPUT));
-}
-
-void ClickEngine::nativeMouseMove(const QPoint& pos) {
-  SetCursorPos(pos.x(), pos.y());
+  if (!m_stopRequested) {
+    // Release
+    INPUT inputUp = {};
+    inputUp.type = INPUT_MOUSE;
+    inputUp.mi.dx = pos.x();
+    inputUp.mi.dy = pos.y();
+    inputUp.mi.dwFlags = mouseButtonToWin32(button, false) | MOUSEEVENTF_ABSOLUTE;
+    SendInput(1, &inputUp, sizeof(INPUT));
+  }
 }
 
 void ClickEngine::nativeMouseHover(const QPoint& pos, int duration) {
   if (m_stopRequested) return;
 
-  nativeMouseMove(pos);
+  SetCursorPos(pos.x(), pos.y());
 
-  QTimer::singleShot(duration, this, [=]() {
-    if (!m_stopRequested) {
-      // hover sadece bekleme demek, ekstra işlem gerekmez
-    }
-  });
+  // Simply wait at the position
+  Sleep(duration);
 }
 
-void ClickEngine::nativeMouseHold(const QPoint& pos, MouseButton button,
-                                  int duration) {
-  if (m_stopRequested) return;
+void ClickEngine::nativeKeyClick(const QString& key, int clickCount) {
+  if (m_stopRequested || clickCount <= 0) return;
 
-  // 1. Press yap
-  nativeMousePress(pos, button);
-
-  // 2. duration kadar bekle
-  QTimer::singleShot(duration, this, [=]() {
-    if (!m_stopRequested) {
-      // 3. Release yap
-      nativeMouseRelease(pos, button);
-
-      // 4. Hold bittikten sonra bir sonraki action'a geç
-      moveToNextAction();
-    }
-  });
-}
-
-void ClickEngine::nativeKeyPress(const QString& key) {
   WORD vk = qtKeyToVirtualKey(key);
   if (vk == 0) return;
 
-  INPUT input = {};
-  input.type = INPUT_KEYBOARD;
-  input.ki.wVk = vk;
-  input.ki.dwFlags = 0;
+          // Perform clickCount number of key presses with minimal delay
+  for (int i = 0; i < clickCount; i++) {
+    if (m_stopRequested) break;
 
-  SendInput(1, &input, sizeof(INPUT));
-}
+    // Press
+    INPUT inputDown = {};
+    inputDown.type = INPUT_KEYBOARD;
+    inputDown.ki.wVk = vk;
+    inputDown.ki.dwFlags = 0;
+    SendInput(1, &inputDown, sizeof(INPUT));
 
-void ClickEngine::nativeKeyRelease(const QString& key) {
-  WORD vk = qtKeyToVirtualKey(key);
-  if (vk == 0) return;
+    // Small delay between press and release
+    Sleep(1);
 
-  INPUT input = {};
-  input.type = INPUT_KEYBOARD;
-  input.ki.wVk = vk;
-  input.ki.dwFlags = KEYEVENTF_KEYUP;
+    // Release
+    INPUT inputUp = {};
+    inputUp.type = INPUT_KEYBOARD;
+    inputUp.ki.wVk = vk;
+    inputUp.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &inputUp, sizeof(INPUT));
 
-  SendInput(1, &input, sizeof(INPUT));
-}
-
-void ClickEngine::nativeKeyClick(const QString& key, int count) {
-  if (m_stopRequested) return;
-
-  if (count <= 0) return;
-
-  nativeKeyPress(key);
-  nativeKeyRelease(key);
-
-  if (count > 1) {
-    QTimer::singleShot(10, this, [=]() { nativeKeyClick(key, count - 1); });
+    // Small delay between key presses within the same group (except for last one)
+    if (i < clickCount - 1) {
+      Sleep(50); // 50ms between key presses in the same group
+    }
   }
 }
-void ClickEngine::nativeKeyHold(const QString& key, int duration) {
+void ClickEngine::nativeKeyHold(const QString& keyCombo, int duration) {
   if (m_stopRequested) return;
 
-  nativeKeyPress(key);
+  QStringList parts = keyCombo.split('+', Qt::SkipEmptyParts);
+  QList<WORD> modifiers;
+  WORD normalKey = 0;
 
-  QTimer::singleShot(duration, this, [=]() {
-    if (!m_stopRequested) {
-      nativeKeyRelease(key);
-      moveToNextAction();
+  for (const QString& part : parts) {
+    QString upper = part.trimmed().toUpper();
+    if (upper == "SHIFT") modifiers.append(VK_SHIFT);
+    else if (upper == "CTRL") modifiers.append(VK_CONTROL);
+    else if (upper == "ALT") modifiers.append(VK_MENU);
+    else normalKey = qtKeyToVirtualKey(upper); // normal key
+  }
+
+  if (normalKey == 0) return;
+
+  int totalDuration = duration;
+  int pressInterval = 10;
+  int repeatCount = totalDuration / pressInterval;
+
+  for (int i = 0; i < repeatCount && !m_stopRequested; i++) {
+    // Press modifiers
+    for (WORD mod : modifiers) {
+      INPUT modDown = {};
+      modDown.type = INPUT_KEYBOARD;
+      modDown.ki.wVk = mod;
+      modDown.ki.dwFlags = 0;
+      SendInput(1, &modDown, sizeof(INPUT));
     }
-  });
+
+            // Press normal key
+    INPUT keyDown = {};
+    keyDown.type = INPUT_KEYBOARD;
+    keyDown.ki.wVk = normalKey;
+    keyDown.ki.dwFlags = 0;
+    SendInput(1, &keyDown, sizeof(INPUT));
+
+    Sleep(10); // kısa basış
+
+            // Release normal key
+    INPUT keyUp = {};
+    keyUp.type = INPUT_KEYBOARD;
+    keyUp.ki.wVk = normalKey;
+    keyUp.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &keyUp, sizeof(INPUT));
+
+            // Release modifiers
+    for (WORD mod : modifiers) {
+      INPUT modUp = {};
+      modUp.type = INPUT_KEYBOARD;
+      modUp.ki.wVk = mod;
+      modUp.ki.dwFlags = KEYEVENTF_KEYUP;
+      SendInput(1, &modUp, sizeof(INPUT));
+    }
+
+    Sleep(pressInterval - 10);
+  }
 }
 
 DWORD ClickEngine::mouseButtonToWin32(MouseButton button, bool isPress) const {

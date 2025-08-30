@@ -57,54 +57,17 @@ bool MacroManager::isOpen() const { return m_db.isOpen(); }
 bool MacroManager::ensureSchema(QString* error) {
   QSqlQuery q(m_db);
 
-  // Enable foreign keys
+          // Enable foreign keys
   if (!q.exec("PRAGMA foreign_keys = ON;"))
     return execQuery(q, "PRAGMA", error);
 
-  // Migration kontrolü - eğer tablo AUTOINCREMENT ile varsa migrate et
-  QSqlQuery checkQ(m_db);
-  if (!checkQ.exec("SELECT name FROM sqlite_master WHERE type='table' AND "
-                   "name='Macros'")) {
-    return execQuery(checkQ, "check table exists", error);
-  }
-
-  bool tableExists = checkQ.next();
-  checkQ.finish();  // Query'yi kapat
-
-  if (!tableExists) {
-    // Tablo yok, yeni oluştur
-    const char* createMacros =
-        "CREATE TABLE Macros ("
-        " id INTEGER PRIMARY KEY,"  // AUTOINCREMENT yok
-        " name TEXT NOT NULL UNIQUE,"
-        " description TEXT NOT NULL,"
-        " hotkey TEXT NOT NULL"
-        ");";
-    if (!q.exec(createMacros)) return execQuery(q, "create Macros", error);
-  }
-
-  const char* createActions =
-      "CREATE TABLE IF NOT EXISTS MacroActions ("
-      " macro_id INTEGER NOT NULL,"
-      " \"order\" INTEGER NOT NULL,"
-      " action_type TEXT NOT NULL,"
-      " click_type TEXT NOT NULL,"
-      " repeat INTEGER NOT NULL,"
-      " position TEXT NULL,"
-      " current_position INTEGER NOT NULL,"
-      " interval INTEGER NOT NULL,"
-      " hold_duration INTEGER NULL,"
-      " hover_duration INTEGER NULL,"
-      " click_count INTEGER NOT NULL,"
-      " mouse_button TEXT NULL,"
-      " key_name TEXT NULL,"
-      " PRIMARY KEY(macro_id, \"order\"),"
-      " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
-      ");";
-  if (!q.exec(createActions)) return execQuery(q, "create MacroActions", error);
+          // Check if tables exist and validate their schemas
+  if (!validateAndCreateMacrosTable(error)) return false;
+  if (!validateAndCreateActionsTable(error)) return false;
 
   return true;
 }
+
 bool MacroManager::ensureDefaultMacro(QString* error) {
   QSqlQuery q(m_db);
   if (!q.exec("SELECT COUNT(*) FROM Macros;"))
@@ -133,9 +96,9 @@ bool MacroManager::ensureDefaultMacro(QString* error) {
       "INSERT INTO MacroActions("
       "macro_id, \"order\", action_type, click_type, repeat, position, "
       "current_position,"
-      " interval, hold_duration, hover_duration, click_count, mouse_button, "
+      " interval, hold_duration, click_count, mouse_button, "
       "key_name)"
-      " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+      " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
   insA.addBindValue(DEFAULT_MACRO_ID);
   insA.addBindValue(0);
   insA.addBindValue("mouse");
@@ -166,6 +129,286 @@ bool MacroManager::execQuery(QSqlQuery& q, const char* ctx,
   if (error) *error = QString("%1: %2").arg(ctx).arg(q.lastError().text());
   return false;
 }
+
+// ===== Enchanced Validation =====
+bool MacroManager::validateAndCreateMacrosTable(QString* error) {
+  QSqlQuery q(m_db);
+
+  // Check if Macros table exists
+  if (!q.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='Macros'")) {
+    return execQuery(q, "check Macros table", error);
+  }
+
+  bool tableExists = q.next();
+  q.finish();
+
+  if (!tableExists) {
+    // Create new table
+    const char* createMacros =
+        "CREATE TABLE Macros ("
+        " id INTEGER PRIMARY KEY,"
+        " name TEXT NOT NULL UNIQUE,"
+        " description TEXT NOT NULL,"
+        " hotkey TEXT NOT NULL"
+        ");";
+    if (!q.exec(createMacros)) return execQuery(q, "create Macros", error);
+    Logger::instance().mInfo("Created new Macros table");
+    return true;
+  }
+
+  // Validate existing table schema
+  if (!q.exec("PRAGMA table_info(Macros)")) {
+    return execQuery(q, "get Macros schema", error);
+  }
+
+  QStringList expectedColumns = {"id", "name", "description", "hotkey"};
+  QStringList actualColumns;
+
+  while (q.next()) {
+    actualColumns.append(q.value(1).toString()); // column name
+  }
+  q.finish();
+
+  // Check if schema matches
+  if (actualColumns.size() != expectedColumns.size()) {
+    Logger::instance().mWarning("Macros table schema mismatch - recreating");
+    return recreateMacrosTable(error);
+  }
+
+  for (const QString& col : expectedColumns) {
+    if (!actualColumns.contains(col)) {
+      Logger::instance().mWarning("Missing column in Macros: " + col);
+      return recreateMacrosTable(error);
+    }
+  }
+
+  Logger::instance().mInfo("Macros table schema validated");
+  return true;
+}
+
+bool MacroManager::validateAndCreateActionsTable(QString* error) {
+  QSqlQuery q(m_db);
+
+  // Check if MacroActions table exists
+  if (!q.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='MacroActions'")) {
+    return execQuery(q, "check MacroActions table", error);
+  }
+
+  bool tableExists = q.next();
+  q.finish();
+
+  if (!tableExists) {
+    // Create new table
+    const char* createActions =
+        "CREATE TABLE MacroActions ("
+        " macro_id INTEGER NOT NULL,"
+        " \"order\" INTEGER NOT NULL,"
+        " action_type TEXT NOT NULL,"
+        " click_type TEXT NOT NULL,"
+        " repeat INTEGER NOT NULL,"
+        " position TEXT NULL,"
+        " current_position INTEGER NOT NULL,"
+        " interval INTEGER NOT NULL,"
+        " hold_duration INTEGER NULL,"
+        " click_count INTEGER NOT NULL,"
+        " mouse_button TEXT NULL,"
+        " key_name TEXT NULL,"
+        " PRIMARY KEY(macro_id, \"order\"),"
+        " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
+        ");";
+    if (!q.exec(createActions)) return execQuery(q, "create MacroActions", error);
+    Logger::instance().mInfo("Created new MacroActions table");
+    return true;
+  }
+
+  // Validate existing table schema
+  if (!q.exec("PRAGMA table_info(MacroActions)")) {
+    return execQuery(q, "get MacroActions schema", error);
+  }
+
+  QStringList expectedColumns = {
+      "macro_id", "order", "action_type", "click_type", "repeat",
+      "position", "current_position", "interval", "hold_duration",
+      "click_count", "mouse_button", "key_name"
+  };
+
+  QStringList actualColumns;
+  QSet<QString> actualColumnSet;
+
+  while (q.next()) {
+    QString colName = q.value(1).toString();
+    actualColumns.append(colName);
+    actualColumnSet.insert(colName);
+  }
+  q.finish();
+
+  // Check for removed columns (like hover_duration)
+  QStringList removedColumns = {"hover_duration"};
+  bool hasRemovedColumns = false;
+
+  for (const QString& removedCol : removedColumns) {
+    if (actualColumnSet.contains(removedCol)) {
+      Logger::instance().mWarning("Found deprecated column: " + removedCol);
+      hasRemovedColumns = true;
+    }
+  }
+
+  // Check for missing expected columns
+  bool hasMissingColumns = false;
+  for (const QString& col : expectedColumns) {
+    if (!actualColumnSet.contains(col)) {
+      Logger::instance().mWarning("Missing column in MacroActions: " + col);
+      hasMissingColumns = true;
+    }
+  }
+
+  // Recreate table if schema doesn't match
+  if (hasRemovedColumns || hasMissingColumns) {
+    Logger::instance().mWarning("MacroActions table schema mismatch - recreating");
+    return recreateActionsTable(error);
+  }
+
+  Logger::instance().mInfo("MacroActions table schema validated");
+  return true;
+}
+
+bool MacroManager::recreateMacrosTable(QString* error) {
+  if (!m_db.transaction()) {
+    if (error) *error = "Failed to start transaction for Macros recreation";
+    return false;
+  }
+
+  QSqlQuery q(m_db);
+
+  // Backup existing data
+  if (!q.exec("CREATE TEMP TABLE macros_backup AS SELECT * FROM Macros")) {
+    m_db.rollback();
+    return execQuery(q, "backup Macros", error);
+  }
+
+  // Drop old table
+  if (!q.exec("DROP TABLE Macros")) {
+    m_db.rollback();
+    return execQuery(q, "drop old Macros", error);
+  }
+
+  // Create new table
+  const char* createMacros =
+      "CREATE TABLE Macros ("
+      " id INTEGER PRIMARY KEY,"
+      " name TEXT NOT NULL UNIQUE,"
+      " description TEXT NOT NULL,"
+      " hotkey TEXT NOT NULL"
+      ");";
+  if (!q.exec(createMacros)) {
+    m_db.rollback();
+    return execQuery(q, "recreate Macros", error);
+  }
+
+  // Restore data
+  if (!q.exec("INSERT INTO Macros (id, name, description, hotkey) "
+              "SELECT id, name, description, hotkey FROM macros_backup")) {
+    m_db.rollback();
+    return execQuery(q, "restore Macros data", error);
+  }
+
+  // Clean up
+  if (!q.exec("DROP TABLE macros_backup")) {
+    m_db.rollback();
+    return execQuery(q, "cleanup Macros backup", error);
+  }
+
+  if (!m_db.commit()) {
+    m_db.rollback();
+    if (error) *error = "Failed to commit Macros recreation";
+    return false;
+  }
+
+  Logger::instance().mInfo("Successfully recreated Macros table");
+  return true;
+}
+
+bool MacroManager::recreateActionsTable(QString* error) {
+  if (!m_db.transaction()) {
+    if (error) *error = "Failed to start transaction for MacroActions recreation";
+    return false;
+  }
+
+  QSqlQuery q(m_db);
+
+  // Backup existing data with column mapping
+  QString backupQuery = "CREATE TEMP TABLE actions_backup AS SELECT "
+      "macro_id, \"order\", action_type, click_type, repeat, "
+      "position, current_position, interval, "
+      "hold_duration, click_count, mouse_button, key_name "
+      "FROM MacroActions";
+
+  if (!q.exec(backupQuery)) {
+    m_db.rollback();
+    return execQuery(q, "backup MacroActions", error);
+  }
+
+  // Drop old table
+  if (!q.exec("DROP TABLE MacroActions")) {
+    m_db.rollback();
+    return execQuery(q, "drop old MacroActions", error);
+  }
+
+  // Create new table with correct schema
+  const char* createActions =
+      "CREATE TABLE MacroActions ("
+      " macro_id INTEGER NOT NULL,"
+      " \"order\" INTEGER NOT NULL,"
+      " action_type TEXT NOT NULL,"
+      " click_type TEXT NOT NULL,"
+      " repeat INTEGER NOT NULL,"
+      " position TEXT NULL,"
+      " current_position INTEGER NOT NULL,"
+      " interval INTEGER NOT NULL,"
+      " hold_duration INTEGER NULL,"
+      " click_count INTEGER NOT NULL,"
+      " mouse_button TEXT NULL,"
+      " key_name TEXT NULL,"
+      " PRIMARY KEY(macro_id, \"order\"),"
+      " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
+      ");";
+
+  if (!q.exec(createActions)) {
+    m_db.rollback();
+    return execQuery(q, "recreate MacroActions", error);
+  }
+
+  // Restore data
+  QString restoreQuery = "INSERT INTO MacroActions ("
+      "macro_id, \"order\", action_type, click_type, repeat, "
+      "position, current_position, interval, "
+      "hold_duration, click_count, mouse_button, key_name) "
+      "SELECT macro_id, \"order\", action_type, click_type, repeat, "
+      "position, current_position, interval, "
+      "hold_duration, click_count, mouse_button, key_name "
+      "FROM actions_backup";
+
+  if (!q.exec(restoreQuery)) {
+    m_db.rollback();
+    return execQuery(q, "restore MacroActions data", error);
+  }
+
+  // Clean up
+  if (!q.exec("DROP TABLE actions_backup")) {
+    m_db.rollback();
+    return execQuery(q, "cleanup MacroActions backup", error);
+  }
+
+  if (!m_db.commit()) {
+    m_db.rollback();
+    if (error) *error = "Failed to commit MacroActions recreation";
+    return false;
+  }
+
+  Logger::instance().mInfo("Successfully recreated MacroActions table");
+  return true;
+}
+
 
 // ===== Basic Validation =====
 bool MacroManager::validateMacroName(const QString& name,
@@ -203,7 +446,10 @@ bool MacroManager::validateHotkey(const QString& hotkey, QString* error) const {
 
   // Examples allowed: "F7", "Shift + F6", "Ctrl + Alt + A"
   static QRegularExpression rx(
-      R"(^(?:(?:Ctrl|Shift|Alt)\s*\+\s*){0,3}(?:F([1-9]|1[0-9]|2[0-4])|[A-Z0-9])$)");
+      R"(^\s*(?:(?:Ctrl|Shift|Alt)\s*\+\s*){0,3}(?:F([1-9]|1[0-9]|2[0-4])|[A-Z0-9]|Space|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Up|Down|Left|Right)\s*$)",
+      QRegularExpression::CaseInsensitiveOption
+      );
+
   if (!rx.match(hotkey).hasMatch()) {
     if (error) *error = "Invalid hotkey!";
     return false;
@@ -241,7 +487,7 @@ bool MacroManager::validateAction(const MacroAction& a, QString* error) const {
     return false;
   }
 
-  // ENHANCED: Strict validation for KEYBOARD actions
+  // Strict validation for KEYBOARD actions
   if (a.action_type == ActionType::KEYBOARD) {
     if (a.click_type == ClickType::HOVER) {
       if (error) *error = "KEYBOARD actions cannot use HOVER click type.";
@@ -258,7 +504,7 @@ bool MacroManager::validateAction(const MacroAction& a, QString* error) const {
     }
   }
 
-  // ENHANCED: Validation for MOUSE actions
+  // Validation for MOUSE actions
   if (a.action_type == ActionType::MOUSE) {
     if (!a.mouse_button.has_value()) {
       if (error) *error = "MOUSE actions must specify a mouse button.";
@@ -394,7 +640,7 @@ QVector<MacroAction> MacroManager::getActions(int macroId) const {
   q.prepare(
       "SELECT macro_id, \"order\", action_type, click_type, repeat, position, "
       "current_position,"
-      " interval, hold_duration, hover_duration, click_count, mouse_button, "
+      " interval, hold_duration, click_count, mouse_button, "
       "key_name "
       "FROM MacroActions WHERE macro_id=? ORDER BY \"order\" ASC");
   q.addBindValue(macroId);
@@ -412,10 +658,8 @@ QVector<MacroAction> MacroManager::getActions(int macroId) const {
     a.interval = q.value(7).toInt();
     a.hold_duration = q.isNull(8) ? std::optional<int>{}
                                   : std::optional<int>{q.value(8).toInt()};
-    a.hover_duration = q.isNull(9) ? std::optional<int>{}
-                                   : std::optional<int>{q.value(9).toInt()};
-    a.click_count = q.value(10).toInt();
-    a.key_name = q.value(12).toString();
+    a.click_count = q.value(9).toInt();
+    a.key_name = q.value(11).toString();
 
     // Enum casting'ler
     QString strAct = q.value(2).toString();
@@ -438,8 +682,8 @@ QVector<MacroAction> MacroManager::getActions(int macroId) const {
     }
     a.click_type = *clickOpt;
 
-    if (!q.isNull(11)) {
-      auto btnOpt = strToMouseButton(q.value(11).toString());
+    if (!q.isNull(10)) {
+      auto btnOpt = strToMouseButton(q.value(10).toString());
       if (btnOpt) {
         a.mouse_button = *btnOpt;
       }
@@ -511,8 +755,7 @@ bool MacroManager::addAction(const MacroAction& a, QString* error) {
   insQ.prepare(
       "INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, "
       "repeat, position, current_position, interval, hold_duration, "
-      "hover_duration, "
-      "click_count, mouse_button, key_name) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+      "click_count, mouse_button, key_name) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 
   insQ.addBindValue(correctedAction.macro_id);
   insQ.addBindValue(targetOrder);
@@ -541,15 +784,9 @@ bool MacroManager::addAction(const MacroAction& a, QString* error) {
     insQ.addBindValue(QVariant(QVariant::Int));
   }
 
-  if (correctedAction.hover_duration.has_value()) {
-    insQ.addBindValue(correctedAction.hover_duration.value());
-  } else {
-    insQ.addBindValue(QVariant(QVariant::Int));
-  }
-
   insQ.addBindValue(correctedAction.click_count);
 
-  // FIXED: Explicit NULL handling for KEYBOARD actions
+  // Explicit NULL handling for KEYBOARD actions
   if (correctedAction.action_type == ActionType::KEYBOARD ||
       !correctedAction.mouse_button.has_value()) {
     insQ.addBindValue(QVariant(QVariant::String));  // Explicit NULL
@@ -802,9 +1039,9 @@ bool MacroManager::updateAction(int macroId, int oldOrder,
   insQ.prepare(
       "INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, "
       "repeat, position, current_position,"
-      " interval, hold_duration, hover_duration, click_count, mouse_button, "
+      " interval, hold_duration, click_count, mouse_button, "
       "key_name)"
-      " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+      " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 
   insQ.addBindValue(newAction.macro_id);
   insQ.addBindValue(newAction.order);
@@ -823,12 +1060,9 @@ bool MacroManager::updateAction(int macroId, int oldOrder,
   insQ.addBindValue(newAction.hold_duration.has_value()
                         ? QVariant(newAction.hold_duration.value())
                         : QVariant(QVariant::Int));
-  insQ.addBindValue(newAction.hover_duration.has_value()
-                        ? QVariant(newAction.hover_duration.value())
-                        : QVariant(QVariant::Int));
   insQ.addBindValue(newAction.click_count);
 
-  // FIXED: Proper MouseButton handling - ensure NULL for KEYBOARD actions
+  // Proper MouseButton handling - ensure NULL for KEYBOARD actions
   if (newAction.action_type == ActionType::KEYBOARD ||
       !newAction.mouse_button.has_value()) {
     insQ.addBindValue(QVariant(QVariant::String));  // NULL
@@ -924,9 +1158,8 @@ bool MacroManager::setActionsForMacro(int macroId,
         "INSERT INTO MacroActions(macro_id, \"order\", action_type, "
         "click_type, "
         "repeat, position, current_position, interval, hold_duration, "
-        "hover_duration, "
         "click_count, mouse_button, key_name) "
-        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 
     insQ.addBindValue(macroId);
     insQ.addBindValue(action.order);
@@ -950,12 +1183,6 @@ bool MacroManager::setActionsForMacro(int macroId,
 
     if (action.hold_duration.has_value()) {
       insQ.addBindValue(action.hold_duration.value());
-    } else {
-      insQ.addBindValue(QVariant(QVariant::Int));
-    }
-
-    if (action.hover_duration.has_value()) {
-      insQ.addBindValue(action.hover_duration.value());
     } else {
       insQ.addBindValue(QVariant(QVariant::Int));
     }

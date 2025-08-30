@@ -46,7 +46,7 @@ MainWindow::MainWindow(const QJsonObject& settings,
       activeMacro = allMacros.first();
     } else {
       merr() << "No macros found!";
-      return;  // veya uygun bir hata işlemi
+      return;
     }
   }
 
@@ -101,6 +101,7 @@ MainWindow::MainWindow(const QJsonObject& settings,
       loadLanguage();
       setupDynamicIcons();
       adjustTableColumns();
+      MarkAsSaved();
     }
   });
 
@@ -113,34 +114,48 @@ MainWindow::MainWindow(const QJsonObject& settings,
       [this](QTableWidgetItem* item) {
         if (item) {
           int row = item->row();
-          int col = item->column();
-
-          qDebug() << "Item changed at row:" << row
-                   << "col:" << col;  // Debug için
 
           // Tüm sütunlar için değişikliği kabul et
           m_modifiedRows.insert(row);
           if (!m_hasUnsavedChanges) {
             m_hasUnsavedChanges = true;
             MarkAsUnsaved();
-            qDebug() << "MarkAsUnsaved called from itemChanged";  // Debug için
           }
         }
       });
 
   connect(ui->actionsTable, &QTableWidget::cellChanged, this,
-          [this](int row, int column) {
-            qDebug() << "Cell changed at row:" << row
-                     << "column:" << column;  // Debug için
+          [this](int row) {
             markRowAsModified(row);
           });
 
   ui->labelErrors->setVisible(false);
 }
 
-void MainWindow::onMacroStarted(int id) { minfo() << "Macro started: " << id; }
+void MainWindow::lockOrUnlockUI() {
+  bool e = !isMacroRunning;
+  ui->actionActiveMacro->setEnabled(e);
+  ui->actionSettings->setEnabled(e);
+  ui->actionsTable->setEnabled(e);
+  ui->btnAddAction->setEnabled(e);
+  ui->btnDeleteAction->setEnabled(e);
+  ui->btnEditAction->setEnabled(e);
+  ui->actionSave->setEnabled(e);
+}
 
-void MainWindow::onMacroStopped(int id) { minfo() << "Macro stopped: " << id; }
+void MainWindow::onMacroStarted(int id) {
+  isMacroRunning = true;
+  minfo() << "Macro started: " << id;
+  this->setWindowTitle("Auto Clicker 2.0 - " + tr("Running"));
+  lockOrUnlockUI();
+}
+
+void MainWindow::onMacroStopped(int id) {
+  isMacroRunning = false;
+  minfo() << "Macro stopped: " << id;
+  this->setWindowTitle("Auto Clicker 2.0");
+  lockOrUnlockUI();
+}
 
 void MainWindow::onMacroError(int id, const QString& error) {
   merr() << "Macro error in " << id << ": " << error;
@@ -235,6 +250,7 @@ void MainWindow::refreshIcons() {
   // Force refresh all icons if needed
   ThemeManager::instance().refreshAllIcons();
 }
+
 void MainWindow::addActionToTable(MacroAction a) {
   int row = ui->actionsTable->rowCount();
   ui->actionsTable->insertRow(row);
@@ -345,7 +361,6 @@ QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
   connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this, comboBox](int index) {
             Q_UNUSED(index)
-            qDebug() << "Action type combo changed";  // Debug için
 
             int targetRow = -1;
             for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
@@ -361,8 +376,6 @@ QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
                   comboBox->currentData().value<ActionType>();
               applyActionTypeConstraints(targetRow, selectedType);
               markRowAsModified(targetRow);
-              qDebug() << "Row " << targetRow
-                       << " marked as modified";  // Debug için
             }
           });
 
@@ -485,7 +498,6 @@ QComboBox* MainWindow::createClickTypeComboBox(ClickType currentValue) {
       comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
       [this, comboBox](int index) {
         Q_UNUSED(index)
-        qDebug() << "Click type combo changed";  // Debug için
 
         for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
           QWidget* container = ui->actionsTable->cellWidget(row, 2);
@@ -521,12 +533,10 @@ QComboBox* MainWindow::createMouseButtonComboBox(
     comboBox->setCurrentIndex(0);
   }
 
-  // DÜZELTME: Qt::QueuedConnection kullanın
   connect(
       comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
       [this, comboBox](int index) {
         Q_UNUSED(index)
-        qDebug() << "Mouse button combo changed";  // Debug için
 
         for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
           QWidget* container = ui->actionsTable->cellWidget(row, 3);
@@ -536,7 +546,7 @@ QComboBox* MainWindow::createMouseButtonComboBox(
           }
         }
       },
-      Qt::QueuedConnection);  // QueuedConnection ekleyin
+      Qt::QueuedConnection);
 
   return comboBox;
 }
@@ -553,8 +563,6 @@ MacroAction MainWindow::getActionFromRow(int row) {
     QComboBox* actionCombo = actionTypeContainer->findChild<QComboBox*>();
     if (actionCombo) {
       a.action_type = actionCombo->currentData().value<ActionType>();
-      minfo() << "Row" << row
-              << "action_type:" << actionTypeToStr(a.action_type);
     }
   }
 
@@ -564,7 +572,6 @@ MacroAction MainWindow::getActionFromRow(int row) {
     QComboBox* clickCombo = clickTypeContainer->findChild<QComboBox*>();
     if (clickCombo) {
       a.click_type = clickCombo->currentData().value<ClickType>();
-      minfo() << "Row" << row << "click_type:" << clickTypeToStr(a.click_type);
     }
   }
 
@@ -578,11 +585,8 @@ MacroAction MainWindow::getActionFromRow(int row) {
       } else {
         if (mouseButtonCombo->currentData().isValid()) {
           a.mouse_button = mouseButtonCombo->currentData().value<MouseButton>();
-          minfo() << "Row" << row << "mouse_button:"
-                  << mouseButtonToStr(a.mouse_button.value());
         } else {
           a.mouse_button = std::nullopt;
-          minfo() << "Row" << row << "mouse_button: NULL";
         }
       }
     }
@@ -598,7 +602,6 @@ MacroAction MainWindow::getActionFromRow(int row) {
   a.position = "0, 0";
   a.current_pos = true;
   a.hold_duration = 1000;
-  a.hover_duration = 1000;
   a.key_name = "A";
   a.macro_id = activeMacro.id;
 
@@ -622,13 +625,10 @@ void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
 }
 
 void MainWindow::markRowAsModified(int row) {
-  qDebug() << "markRowAsModified called for row:" << row;  // Debug için
-
   m_modifiedRows.insert(row);
   if (!m_hasUnsavedChanges) {
     m_hasUnsavedChanges = true;
     MarkAsUnsaved();
-    qDebug() << "MarkAsUnsaved called from markRowAsModified";  // Debug için
   }
 }
 
@@ -646,14 +646,9 @@ void MainWindow::showAdditionalSettings(int row) {
   if (dialog.exec() == QDialog::Accepted) {
     MacroAction updated = dialog.getUpdatedAction();
 
-    if (updated != original) {  // eşitlik operatörünü kullandık
+    if (updated != original) {
       m_pendingActions[row] = updated;
       markRowAsModified(row);
-      // burada tabloyu komple refresh etmiyoruz; gerekirse sadece görsel ipucu
-      // ver
-      qDebug() << "Additional settings changed for row:" << row;
-    } else {
-      qDebug() << "No changes in additional settings";
     }
   }
 }
@@ -777,13 +772,18 @@ void MainWindow::on_actionSettings_triggered() {
       hserr() << "Hotkey change failed after settings tab!";
       return;
     }
+
+    QTimer::singleShot(10, this, [this]() {
+      if (!m_isClosing) {
+        MarkAsSaved();
+      }
+    });
   }
 }
 
 void MainWindow::refreshMacros() {
   m_macros = MacroManager::instance().getAllMacros();
-  Logger::instance().mInfo(
-      QString("Macros refreshed. Count: %1").arg(m_macros.size()));
+  minfo() << "Macros refreshed. Count " << m_macros.size();
 }
 
 void MainWindow::on_actionActiveMacro_triggered() {
@@ -821,6 +821,10 @@ void MainWindow::on_actionActiveMacro_triggered() {
 
     Logger::instance().mInfo("Active macro set to ID: " +
                              QString::number(newActiveMacroId));
+
+    QTimer::singleShot(20, this, [this](){
+      MarkAsSaved();
+    });
   }
 }
 
@@ -844,7 +848,6 @@ void MainWindow::on_btnAddAction_clicked() {
   a.click_count = 1;
   a.current_pos = true;
   a.hold_duration = 1000;
-  a.hover_duration = 1000;
   a.interval = 100;
   a.repeat = 0;
   a.position = "0, 0";
@@ -886,28 +889,20 @@ void MainWindow::renumberActionsTable() {
 }
 
 void MainWindow::MarkAsUnsaved() {
-  qDebug() << "MarkAsUnsaved called - current hasUnsavedChanges:"
-           << m_hasUnsavedChanges;
-
   m_hasUnsavedChanges = true;
 
   QString unsavedText =
       tr("active macro label").replace("#MCR", activeMacro.name) + "* (" +
       getHotkeyString(activeMacro.hotkey) + ")";
 
-  qDebug() << "Setting unsaved text:" << unsavedText;
   ui->actionActiveMacro->setText(unsavedText);
 
   QFont f = ui->actionActiveMacro->font();
   f.setBold(true);
   ui->actionActiveMacro->setFont(f);
-
-  qDebug() << "UI updated to unsaved state";
 }
 
 void MainWindow::MarkAsSaved() {
-  qDebug() << "MarkAsSaved called";
-
   m_hasUnsavedChanges = false;
   m_modifiedRows.clear();
   m_actionsModified = false;
@@ -917,14 +912,11 @@ void MainWindow::MarkAsSaved() {
       tr("active macro label").replace("#MCR", activeMacro.name) + " (" +
       getHotkeyString(activeMacro.hotkey) + ")";
 
-  qDebug() << "Setting saved text:" << savedText;
   ui->actionActiveMacro->setText(savedText);
 
   QFont f = ui->actionActiveMacro->font();
   f.setBold(false);
   ui->actionActiveMacro->setFont(f);
-
-  qDebug() << "UI updated to saved state";
 }
 
 void MainWindow::on_btnDeleteAction_clicked() {

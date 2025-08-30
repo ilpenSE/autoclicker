@@ -2,14 +2,20 @@
 
 #include <QCursor>
 #include <QRegularExpression>
+#include <QKeyEvent>
+#include <QTimer>
 
+#include "LoggerStream.h"
 #include "languagemanager.h"
 #include "ui_additionalsettingsdialog.h"
+#include "thememanager.h"
 
 AdditionalSettingsDialog::AdditionalSettingsDialog(const MacroAction& action,
                                                    QWidget* parent)
     : QDialog(parent), ui(new Ui::AdditionalSettingsDialog), m_action(action) {
   ui->setupUi(this);
+  ui->labelPosInfo->setVisible(false);
+
   setupUI();
   loadActionData();
   loadLanguage();
@@ -17,17 +23,41 @@ AdditionalSettingsDialog::AdditionalSettingsDialog(const MacroAction& action,
   // Language manager bağlantısı
   connect(&LanguageManager::instance(), &LanguageManager::languageChanged, this,
           &AdditionalSettingsDialog::loadLanguage);
+  // Connect to theme changes
+  connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this,
+          &AdditionalSettingsDialog::onThemeChanged);
 }
 
 AdditionalSettingsDialog::~AdditionalSettingsDialog() { delete ui; }
 
 void AdditionalSettingsDialog::setupUI() {
-  // Current position checkbox bağlantısı
-  connect(ui->checkBoxCurrentPos, &QCheckBox::toggled, this,
-          &AdditionalSettingsDialog::onCurrentPosToggled);
+  connect(ui->btnRecordPos, &QPushButton::clicked, this, [this]() {
+    m_recordingPos = true;
+    ui->labelPosInfo->setText(trans("Cursor tracking started, click Ctrl + S to stop."));
+    ui->labelPosInfo->setVisible(true);
+  });
 
   // Dialog başlığı
-  setWindowTitle(trans("additionals"));
+  setWindowTitle(trans("Additional Settings"));
+
+  setupDynamicIcons();
+}
+
+void AdditionalSettingsDialog::keyPressEvent(QKeyEvent* event) {
+  if (m_recordingPos &&
+      (event->modifiers() & Qt::ControlModifier) &&
+      event->key() == Qt::Key_S) {
+    QPoint pos = QCursor::pos();
+    ui->spinBoxX->setValue(pos.x());
+    ui->spinBoxY->setValue(pos.y());
+    m_recordingPos = false;
+    ui->labelPosInfo->setText(trans("Cursor Position set!"));
+    QTimer::singleShot(1000, this, [this](){
+      ui->labelPosInfo->setVisible(false);
+    });
+    return;
+  }
+  QDialog::keyPressEvent(event);
 }
 
 QString AdditionalSettingsDialog::trans(QString str) {
@@ -48,17 +78,9 @@ void AdditionalSettingsDialog::loadActionData() {
       m_action.current_pos.has_value() ? m_action.current_pos.value() : false;
   ui->checkBoxCurrentPos->setChecked(useCurrentPos);
 
-  // Position spinbox'larını current pos durumuna göre ayarla
-  ui->spinBoxX->setEnabled(!useCurrentPos);
-  ui->spinBoxY->setEnabled(!useCurrentPos);
-
   // Timing ayarları (optional fields)
   ui->spinBoxHoldDuration->setValue(
       m_action.hold_duration.has_value() ? m_action.hold_duration.value() : 0);
-  ui->spinBoxHoverDuration->setValue(m_action.hover_duration.has_value()
-                                         ? m_action.hover_duration.value()
-                                         : 0);
-
   // Action ayarları (default 1)
   ui->spinBoxClickCount->setValue(m_action.click_count);
 
@@ -72,27 +94,14 @@ MacroAction AdditionalSettingsDialog::getUpdatedAction() {
   MacroAction updatedAction = m_action;
 
   // Position bilgilerini güncelle
-  if (ui->checkBoxCurrentPos->isChecked()) {
-    // Mevcut mouse pozisyonunu al
-    QPoint currentPos = QCursor::pos();
-    updatedAction.position =
-        std::make_optional(formatPosition(currentPos.x(), currentPos.y()));
-    updatedAction.current_pos = true;
-  } else {
-    // Manuel girilen pozisyonu kullan
-    updatedAction.position = std::make_optional(
-        formatPosition(ui->spinBoxX->value(), ui->spinBoxY->value()));
-    updatedAction.current_pos = false;
-  }
+  updatedAction.position = std::make_optional(
+      formatPosition(ui->spinBoxX->value(), ui->spinBoxY->value()));
+  updatedAction.current_pos = ui->checkBoxCurrentPos->checkState();
 
   // Timing ayarlarını güncelle (optional fields)
   int holdDur = ui->spinBoxHoldDuration->value();
   updatedAction.hold_duration =
       holdDur > 0 ? std::make_optional(holdDur) : std::nullopt;
-
-  int hoverDur = ui->spinBoxHoverDuration->value();
-  updatedAction.hover_duration =
-      hoverDur > 0 ? std::make_optional(hoverDur) : std::nullopt;
 
   // Action ayarlarını güncelle
   updatedAction.click_count = ui->spinBoxClickCount->value();  // default 1
@@ -105,23 +114,10 @@ MacroAction AdditionalSettingsDialog::getUpdatedAction() {
   return updatedAction;
 }
 
-void AdditionalSettingsDialog::onCurrentPosToggled(bool enabled) {
-  // Current position işaretliyse X,Y spinbox'larını devre dışı bırak
-  ui->spinBoxX->setEnabled(!enabled);
-  ui->spinBoxY->setEnabled(!enabled);
-
-  if (enabled) {
-    // Mevcut mouse pozisyonunu göster
-    QPoint currentPos = QCursor::pos();
-    ui->spinBoxX->setValue(currentPos.x());
-    ui->spinBoxY->setValue(currentPos.y());
-  }
-}
-
 void AdditionalSettingsDialog::parsePosition(const QString& positionStr, int& x,
                                              int& y) {
   // "x, y" formatındaki string'i parse et
-  QRegularExpression regex(R"(\s*(-?\d+)\s*,\s*(-?\d+)\s*)");
+  static QRegularExpression regex(R"(\s*(-?\d+)\s*,\s*(-?\d+)\s*)");
   QRegularExpressionMatch match = regex.match(positionStr);
 
   if (match.hasMatch()) {
@@ -140,31 +136,71 @@ QString AdditionalSettingsDialog::formatPosition(int x, int y) {
 
 void AdditionalSettingsDialog::loadLanguage() {
   // UI çevirileri
-  setWindowTitle(tr("Additional Settings"));
+  setWindowTitle(trans("Additional Settings"));
 
-  ui->groupBoxPosition->setTitle(tr("Position Settings"));
-  ui->labelPosition->setText(tr("Position (X, Y):"));
-  ui->labelCurrentPos->setText(tr("Use Current Position:"));
-  ui->checkBoxCurrentPos->setText(tr("Current mouse position"));
+  ui->groupBoxPosition->setTitle(trans("Position Settings"));
+  ui->labelPosition->setText(trans("Position (X, Y):"));
+  ui->labelCurrentPos->setText(trans("Use Current Position:"));
+  ui->checkBoxCurrentPos->setText(trans("Current mouse position"));
 
-  ui->groupBoxTiming->setTitle(tr("Timing Settings"));
-  ui->labelHoldDuration->setText(tr("Hold Duration (ms):"));
-  ui->labelHoverDuration->setText(tr("Hover Duration (ms):"));
+  ui->groupBoxTiming->setTitle(trans("Timing Settings"));
+  ui->labelHoldDuration->setText(trans("Hold Duration (ms):"));
 
-  ui->groupBoxAction->setTitle(tr("Action Settings"));
-  ui->labelClickCount->setText(tr("Click Count:"));
-  ui->labelKeyName->setText(tr("Key Name:"));
+  ui->groupBoxAction->setTitle(trans("Action Settings"));
+  ui->labelClickCount->setText(trans("Click Count:"));
+  ui->labelKeyName->setText(trans("Key Name:"));
   ui->lineEditKeyName->setPlaceholderText(
-      tr("Enter key name (e.g., A, Space, Enter)"));
+      trans("Enter key name (e.g., A, Space, Enter)"));
 
   // Tooltip'ler
-  ui->spinBoxX->setToolTip(tr("X coordinate"));
-  ui->spinBoxY->setToolTip(tr("Y coordinate"));
-  ui->checkBoxCurrentPos->setToolTip(tr("Use current mouse cursor position"));
+  ui->spinBoxX->setToolTip(trans("X coordinate"));
+  ui->spinBoxY->setToolTip(trans("Y coordinate"));
+  ui->checkBoxCurrentPos->setToolTip(trans("Use current mouse cursor position"));
   ui->spinBoxHoldDuration->setToolTip(
-      tr("How long to hold the mouse button (0 = no hold)"));
-  ui->spinBoxHoverDuration->setToolTip(
-      tr("How long to hover before action (0 = no hover)"));
-  ui->spinBoxClickCount->setToolTip(tr("Number of clicks to perform"));
-  ui->lineEditKeyName->setToolTip(tr("Key to press (for KEY action type)"));
+      trans("How long to hold the mouse button (0 = no hold)"));
+  ui->spinBoxClickCount->setToolTip(trans("Number of clicks to perform"));
+  ui->lineEditKeyName->setToolTip(trans("Key to press (for KEY action type)"));
+  ui->btnRecordPos->setToolTip(trans("Starts recording cursor position"));
+  ui->btnSelectKey->setToolTip(trans("Stops the key capture"));
 }
+
+// DYNAMIC ICONS
+void AdditionalSettingsDialog::onThemeChanged() {
+  // This slot is called when theme changes
+  // Icons are automatically updated by ThemeManager
+  thinfo() << "Theme changed, icons updated automatically";
+
+  refreshIcons();
+}
+
+void AdditionalSettingsDialog::refreshIcons() {
+  // Force refresh all icons if needed
+  ThemeManager::instance().refreshAllIcons();
+}
+void AdditionalSettingsDialog::setupDynamicIcons() {
+  // Use assets/icons from the project directory
+  QString iconsPath = ":/assets/icons";  // Resource path
+
+  // record cursor pos
+  if (ui->btnRecordPos) {
+    ThemeManager::instance().setupDynamicButton(
+        ui->btnRecordPos, iconsPath + "/cursor.svg", QSize(16, 16));
+  }
+  // select key
+  if (ui->btnSelectKey) {
+    ThemeManager::instance().setupDynamicButton(
+        ui->btnSelectKey, iconsPath + "/select.svg", QSize(16,16));
+  }
+
+  thinfo() << "Dynamic icons setup completed";
+}
+
+void AdditionalSettingsDialog::on_btnSelectKey_clicked()
+{
+  if (ui->lineEditKeyName->isCapturing()) {
+    // Capture modundaysa, hotkey'i tamamla
+    ui->lineEditKeyName->stopCapture();
+  }
+  ui->lineEditKeyName->clearFocus();  // fokus kalksın
+}
+

@@ -67,13 +67,6 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget* parent)
   QString currentHotkey = getSetting("DefaultHotkey").toString();
   ui->lineHotkey->setHotkey(currentHotkey);
 
-  connect(ui->btnSelectHotkey, &QPushButton::clicked, this, [this]() {
-    if (ui->lineHotkey->isCapturing()) {
-      ui->lineHotkey->stopCapture();  // finalize
-    }
-    ui->lineHotkey->clearFocus();  // fokus kalksın
-  });
-
   loadLanguage();
 }
 
@@ -129,11 +122,8 @@ void SettingsWin::on_btnSelectHotkey_clicked() {
     // Capture modundaysa, hotkey'i tamamla
     ui->lineHotkey->stopCapture();
     hsinfo() << "Hotkey capture completed: " + ui->lineHotkey->getHotkey();
-  } else {
-    // Capture modunda değilse, başlat
-    ui->lineHotkey->startCapture();
-    hsinfo() << "Hotkey capture started";
   }
+  ui->lineHotkey->clearFocus();  // fokus kalksın
 }
 
 QString SettingsWin::trans(const QString& key) {

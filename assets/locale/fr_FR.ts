@@ -121,11 +121,11 @@
     </message>
     <message>
         <source>edit action orders</source>
-        <translation>Modifier l'ordre</translation>
+        <translation>Modifier l&apos;ordre</translation>
     </message>
     <message>
         <source>delete action</source>
-        <translation>Supprimer l'action</translation>
+        <translation>Supprimer l&apos;action</translation>
     </message>
     <message>
         <source>start</source>
@@ -189,11 +189,11 @@
     </message>
     <message>
         <source>settings tooltip</source>
-        <translation>Ouvre les paramètres de l'AutoClicker</translation>
+        <translation>Ouvre les paramètres de l&apos;AutoClicker</translation>
     </message>
     <message>
         <source>about tooltip</source>
-        <translation>Informations sur l'AutoClicker</translation>
+        <translation>Informations sur l&apos;AutoClicker</translation>
     </message>
     <message>
         <source>add action tooltip</source>
@@ -205,7 +205,7 @@
     </message>
     <message>
         <source>delete action tooltip</source>
-        <translation>Permet de supprimer l'action sélectionnée</translation>
+        <translation>Permet de supprimer l&apos;action sélectionnée</translation>
     </message>
     <message>
         <source>start tooltip</source>
@@ -271,5 +271,94 @@
         <source>select an action to del</source>
         <translation>Veuillez sélectionner une action à supprimer</translation>
     </message>
+    <message>
+        <source>Additional Settings</source>
+        <translation>Paramètres supplémentaires</translation>
+    </message>
+    <message>
+        <source>Position Settings</source>
+        <translation>Paramètres de position</translation>
+    </message>
+    <message>
+        <source>Position (X, Y):</source>
+        <translation>Position (X, Y) :</translation>
+    </message>
+    <message>
+        <source>Use Current Position:</source>
+        <translation>Utiliser la position actuelle :</translation>
+    </message>
+    <message>
+        <source>Current mouse position</source>
+        <translation>Position actuelle de la souris</translation>
+    </message>
+    <message>
+        <source>Timing Settings</source>
+        <translation>Paramètres de temporisation</translation>
+    </message>
+    <message>
+        <source>Hold Duration (ms):</source>
+        <translation>Durée de maintien (ms) :</translation>
+    </message>
+    <message>
+        <source>Action Settings</source>
+        <translation>Paramètres d’action</translation>
+    </message>
+    <message>
+        <source>Click Count:</source>
+        <translation>Nombre de clics :</translation>
+    </message>
+    <message>
+        <source>Key Name:</source>
+        <translation>Nom de la touche :</translation>
+    </message>
+    <message>
+        <source>Enter key name (e.g., A, Space, Enter)</source>
+        <translation>Entrez le nom de la touche (ex. : A, Espace, Entrée)</translation>
+    </message>
+    <message>
+        <source>X coordinate</source>
+        <translation>Coordonnée X</translation>
+    </message>
+    <message>
+        <source>Y coordinate</source>
+        <translation>Coordonnée Y</translation>
+    </message>
+    <message>
+        <source>Use current mouse cursor position</source>
+        <translation>Utiliser la position actuelle du curseur</translation>
+    </message>
+    <message>
+        <source>How long to hold the mouse button (0 = no hold)</source>
+        <translation>Durée de maintien du bouton de la souris (0 = aucun maintien)</translation>
+    </message>
+    <message>
+        <source>Number of clicks to perform</source>
+        <translation>Nombre de clics à effectuer</translation>
+    </message>
+    <message>
+        <source>Key to press (for KEY action type)</source>
+        <translation>Touche à presser (pour type d’action KEY)</translation>
+    </message>
+    <message>
+        <source>Cursor tracking started, click Ctrl + S to stop.</source>
+        <translation>Suivi du curseur démarré, appuyez sur Ctrl + S pour arrêter.</translation>
+    </message>
+    <message>
+        <source>Cursor Position set!</source>
+        <translation>Position du curseur définie !</translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation>En cours</translation>
+    </message>
+    <message>
+        <source>Starts recording cursor position</source>
+        <translation>Commence l'enregistrement de la position du curseur</translation>
+    </message>
+    <message>
+        <source>Stops the key capture</source>
+        <translation>Arrête la capture des touches</translation>
+    </message>
+
 </context>
 </TS>

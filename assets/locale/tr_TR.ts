@@ -189,7 +189,7 @@
     </message>
     <message>
         <source>settings tooltip</source>
-        <translation>AutoClicker'ın ayarlarını açar</translation>
+        <translation>AutoClicker&apos;ın ayarlarını açar</translation>
     </message>
     <message>
         <source>about tooltip</source>
@@ -270,6 +270,94 @@
     <message>
         <source>select an action to del</source>
         <translation>Silinecek bir aksiyon seçin.</translation>
+    </message>
+    <message>
+        <source>Additional Settings</source>
+        <translation>Ek Ayarlar</translation>
+    </message>
+    <message>
+        <source>Position Settings</source>
+        <translation>Pozisyon Ayarları</translation>
+    </message>
+    <message>
+        <source>Position (X, Y):</source>
+        <translation>Pozisyon (X, Y):</translation>
+    </message>
+    <message>
+        <source>Use Current Position:</source>
+        <translation>Mevcut Pozisyonu Kullan:</translation>
+    </message>
+    <message>
+        <source>Current mouse position</source>
+        <translation>Mevcut fare pozisyonu</translation>
+    </message>
+    <message>
+        <source>Timing Settings</source>
+        <translation>Zamanlama Ayarları</translation>
+    </message>
+    <message>
+        <source>Hold Duration (ms):</source>
+        <translation>Basılı Tutma Süresi (ms):</translation>
+    </message>
+    <message>
+        <source>Action Settings</source>
+        <translation>Eylem Ayarları</translation>
+    </message>
+    <message>
+        <source>Click Count:</source>
+        <translation>Tıklama Sayısı:</translation>
+    </message>
+    <message>
+        <source>Key Name:</source>
+        <translation>Tuş Adı:</translation>
+    </message>
+    <message>
+        <source>Enter key name (e.g., A, Space, Enter)</source>
+        <translation>Tuş adı giriniz (örn: A, Space, Enter)</translation>
+    </message>
+    <message>
+        <source>X coordinate</source>
+        <translation>X koordinatı</translation>
+    </message>
+    <message>
+        <source>Y coordinate</source>
+        <translation>Y koordinatı</translation>
+    </message>
+    <message>
+        <source>Use current mouse cursor position</source>
+        <translation>Geçerli fare imleci konumunu kullan</translation>
+    </message>
+    <message>
+        <source>How long to hold the mouse button (0 = no hold)</source>
+        <translation>Fare tuşunun ne kadar basılı tutulacağı (0 = tutma yok)</translation>
+    </message>
+    <message>
+        <source>Number of clicks to perform</source>
+        <translation>Yapılacak tıklama sayısı</translation>
+    </message>
+    <message>
+        <source>Key to press (for KEY action type)</source>
+        <translation>Basılacak tuş (KEY eylem tipi için)</translation>
+    </message>
+    <message>
+        <source>Cursor tracking started, click Ctrl + S to stop.</source>
+        <translation>İşaretçi takip ediliyor, Ctrl + S yaparak durdurun.</translation>
+    </message>
+    <message>
+        <source>Cursor Position set!</source>
+        <translation>İşaretçi pozisyonu ayarlandı!</translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation>Çalışıyor</translation>
+    </message>
+    <message>
+        <source>Starts recording cursor position</source>
+        <translation>İşaretçi pozisyonu yakalamayı başlatır</translation>
+    </message>
+    <message>
+        <source>Stops the key capture</source>
+        <translation>Tuş yakalamayı bitirir</translation>
     </message>
 </context>
 </TS>

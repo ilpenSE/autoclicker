@@ -197,7 +197,7 @@
     </message>
     <message>
         <source>add action tooltip</source>
-        <translation>Aggiunge un'azione al macro selezionato</translation>
+        <translation>Aggiunge un&apos;azione al macro selezionato</translation>
     </message>
     <message>
         <source>edit orders tooltip</source>
@@ -205,7 +205,7 @@
     </message>
     <message>
         <source>delete action tooltip</source>
-        <translation>Consente di eliminare l'azione selezionata</translation>
+        <translation>Consente di eliminare l&apos;azione selezionata</translation>
     </message>
     <message>
         <source>start tooltip</source>
@@ -269,7 +269,96 @@
     </message>
     <message>
         <source>select an action to del</source>
-        <translation>Seleziona un'azione da eliminare</translation>
+        <translation>Seleziona un&apos;azione da eliminare</translation>
     </message>
+    <message>
+        <source>Additional Settings</source>
+        <translation>Impostazioni aggiuntive</translation>
+    </message>
+    <message>
+        <source>Position Settings</source>
+        <translation>Impostazioni posizione</translation>
+    </message>
+    <message>
+        <source>Position (X, Y):</source>
+        <translation>Posizione (X, Y):</translation>
+    </message>
+    <message>
+        <source>Use Current Position:</source>
+        <translation>Usa posizione attuale:</translation>
+    </message>
+    <message>
+        <source>Current mouse position</source>
+        <translation>Posizione attuale del mouse</translation>
+    </message>
+    <message>
+        <source>Timing Settings</source>
+        <translation>Impostazioni temporizzazione</translation>
+    </message>
+    <message>
+        <source>Hold Duration (ms):</source>
+        <translation>Durata pressione (ms):</translation>
+    </message>
+    <message>
+        <source>Action Settings</source>
+        <translation>Impostazioni azione</translation>
+    </message>
+    <message>
+        <source>Click Count:</source>
+        <translation>Numero di clic:</translation>
+    </message>
+    <message>
+        <source>Key Name:</source>
+        <translation>Nome del tasto:</translation>
+    </message>
+    <message>
+        <source>Enter key name (e.g., A, Space, Enter)</source>
+        <translation>Inserisci nome tasto (es. A, Spazio, Invio)</translation>
+    </message>
+    <message>
+        <source>X coordinate</source>
+        <translation>Coordinata X</translation>
+    </message>
+    <message>
+        <source>Y coordinate</source>
+        <translation>Coordinata Y</translation>
+    </message>
+    <message>
+        <source>Use current mouse cursor position</source>
+        <translation>Usa la posizione attuale del cursore</translation>
+    </message>
+    <message>
+        <source>How long to hold the mouse button (0 = no hold)</source>
+        <translation>Per quanto tempo tenere premuto il pulsante del mouse (0 = nessuna pressione)</translation>
+    </message>
+    <message>
+        <source>Number of clicks to perform</source>
+        <translation>Numero di clic da eseguire</translation>
+    </message>
+    <message>
+        <source>Key to press (for KEY action type)</source>
+        <translation>Tasto da premere (per tipo di azione KEY)</translation>
+    </message>
+    <message>
+        <source>Cursor tracking started, click Ctrl + S to stop.</source>
+        <translation>Tracciamento del cursore avviato, premi Ctrl + S per interrompere.</translation>
+    </message>
+    <message>
+        <source>Cursor Position set!</source>
+        <translation>Posizione del cursore impostata!</translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation>In esecuzione</translation>
+    </message>
+    <message>
+        <source>Starts recording cursor position</source>
+        <translation>Inizia la registrazione della posizione del cursore</translation>
+    </message>
+    <message>
+        <source>Stops the key capture</source>
+        <translation>Interrompe la cattura dei tasti</translation>
+    </message>
+
 </context>
 </TS>

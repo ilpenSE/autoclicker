@@ -28,7 +28,6 @@ struct MacroAction {
   std::optional<bool> current_pos = true;  // uses current cursor pos
   int interval = 0;                        // ms
   std::optional<int> hold_duration;        // ms
-  std::optional<int> hover_duration;       // ms
   int click_count = 1;
   std::optional<MouseButton> mouse_button;  // "LEFT" | "RIGHT" | "MID" | ...
   std::optional<QString> key_name;
@@ -49,7 +48,6 @@ inline bool operator==(const MacroAction& lhs, const MacroAction& rhs) {
          optEq(lhs.current_pos, rhs.current_pos) &&
          optEq(lhs.position, rhs.position) &&
          optEq(lhs.hold_duration, rhs.hold_duration) &&
-         optEq(lhs.hover_duration, rhs.hover_duration) &&
          lhs.interval == rhs.interval && lhs.repeat == rhs.repeat &&
          optEq(lhs.key_name, rhs.key_name) && lhs.macro_id == rhs.macro_id;
 }
@@ -111,6 +109,11 @@ class MacroManager final : public QObject {
   bool ensureSchema(QString* error = nullptr);
   bool ensureDefaultMacro(QString* error = nullptr);
   bool execQuery(QSqlQuery& q, const char* ctx, QString* error) const;
+
+  bool validateAndCreateMacrosTable(QString* error = nullptr);
+  bool validateAndCreateActionsTable(QString* error = nullptr);
+  bool recreateMacrosTable(QString* error = nullptr);
+  bool recreateActionsTable(QString* error = nullptr);
 
   QSqlDatabase m_db;
 };

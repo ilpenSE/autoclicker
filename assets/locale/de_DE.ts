@@ -271,5 +271,94 @@
         <source>select an action to del</source>
         <translation>Bitte wählen Sie eine Aktion zum Löschen aus.</translation>
     </message>
+    <message>
+        <source>Additional Settings</source>
+        <translation>Zusätzliche Einstellungen</translation>
+    </message>
+    <message>
+        <source>Position Settings</source>
+        <translation>Positionseinstellungen</translation>
+    </message>
+    <message>
+        <source>Position (X, Y):</source>
+        <translation>Position (X, Y):</translation>
+    </message>
+    <message>
+        <source>Use Current Position:</source>
+        <translation>Aktuelle Position verwenden:</translation>
+    </message>
+    <message>
+        <source>Current mouse position</source>
+        <translation>Aktuelle Mausposition</translation>
+    </message>
+    <message>
+        <source>Timing Settings</source>
+        <translation>Zeit-Einstellungen</translation>
+    </message>
+    <message>
+        <source>Hold Duration (ms):</source>
+        <translation>Haltezeit (ms):</translation>
+    </message>
+    <message>
+        <source>Action Settings</source>
+        <translation>Aktionseinstellungen</translation>
+    </message>
+    <message>
+        <source>Click Count:</source>
+        <translation>Klickanzahl:</translation>
+    </message>
+    <message>
+        <source>Key Name:</source>
+        <translation>Tastenname:</translation>
+    </message>
+    <message>
+        <source>Enter key name (e.g., A, Space, Enter)</source>
+        <translation>Tastennamen eingeben (z. B. A, Leertaste, Eingabe)</translation>
+    </message>
+    <message>
+        <source>X coordinate</source>
+        <translation>X-Koordinate</translation>
+    </message>
+    <message>
+        <source>Y coordinate</source>
+        <translation>Y-Koordinate</translation>
+    </message>
+    <message>
+        <source>Use current mouse cursor position</source>
+        <translation>Aktuelle Mauszeigerposition verwenden</translation>
+    </message>
+    <message>
+        <source>How long to hold the mouse button (0 = no hold)</source>
+        <translation>Wie lange die Maustaste gedrückt gehalten wird (0 = kein Halten)</translation>
+    </message>
+    <message>
+        <source>Number of clicks to perform</source>
+        <translation>Anzahl der auszuführenden Klicks</translation>
+    </message>
+    <message>
+        <source>Key to press (for KEY action type)</source>
+        <translation>Zu drückende Taste (für KEY-Aktionstyp)</translation>
+    </message>
+    <message>
+        <source>Cursor tracking started, click Ctrl + S to stop.</source>
+        <translation>Cursor-Verfolgung gestartet, drücken Sie Strg + S, um zu stoppen.</translation>
+    </message>
+    <message>
+        <source>Cursor Position set!</source>
+        <translation>Cursor-Position gesetzt!</translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation>Läuft</translation>
+    </message>
+    <message>
+        <source>Starts recording cursor position</source>
+        <translation>Beginnt mit der Aufzeichnung der Cursorposition</translation>
+    </message>
+    <message>
+        <source>Stops the key capture</source>
+        <translation>Beendet die Tastenerfassung</translation>
+    </message>
+
 </context>
 </TS>

@@ -16,14 +16,19 @@ class AdditionalSettingsDialog : public QDialog {
   explicit AdditionalSettingsDialog(const MacroAction& action,
                                     QWidget* parent = nullptr);
   ~AdditionalSettingsDialog();
-
   MacroAction getUpdatedAction();
 
  private slots:
-  void onCurrentPosToggled(bool enabled);
   void loadLanguage();
 
+  void on_btnSelectKey_clicked();
+
+ protected:
+  void keyPressEvent(QKeyEvent* event) override;
+
  private:
+  bool m_recordingPos = false;
+
   Ui::AdditionalSettingsDialog* ui;
   MacroAction m_action;
 
@@ -34,6 +39,11 @@ class AdditionalSettingsDialog : public QDialog {
   void updateActionData();
   void parsePosition(const QString& positionStr, int& x, int& y);
   QString formatPosition(int x, int y);
+
+  void onThemeChanged();
+  void setupDynamicIcons();
+  void refreshIcons();
+
 };
 
 #endif  // ADDITIONALSETTINGSDIALOG_H

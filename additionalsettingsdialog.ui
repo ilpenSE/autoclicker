@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>350</height>
+    <height>360</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,19 +59,55 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="btnRecordPos">
+          <property name="styleSheet">
+           <string notr="true">padding: 0;</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/assets/icons/cursor.svg</normaloff>:/assets/icons/cursor.svg</iconset>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
-      <item row="1" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="labelCurrentPos">
         <property name="text">
          <string>Use Current Position:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="3" column="1">
        <widget class="QCheckBox" name="checkBoxCurrentPos">
         <property name="text">
          <string>Current mouse position</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="labelPosInfo">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>INFO LABEL</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -93,34 +129,14 @@
       </item>
       <item row="0" column="1">
        <widget class="QSpinBox" name="spinBoxHoldDuration">
+        <property name="suffix">
+         <string> </string>
+        </property>
         <property name="minimum">
          <number>0</number>
         </property>
         <property name="maximum">
          <number>999999</number>
-        </property>
-        <property name="suffix">
-         <string> ms</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelHoverDuration">
-        <property name="text">
-         <string>Hover Duration (ms):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="spinBoxHoverDuration">
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>999999</number>
-        </property>
-        <property name="suffix">
-         <string> ms</string>
         </property>
        </widget>
       </item>
@@ -153,19 +169,34 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelKeyName">
-        <property name="text">
-         <string>Key Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEditKeyName">
-        <property name="placeholderText">
-         <string>Enter key name (e.g., A, Space, Enter)</string>
-        </property>
-       </widget>
+      <item row="1" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="keyLayout">
+        <item>
+         <widget class="QLabel" name="labelKeyName">
+          <property name="text">
+           <string>Key Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="HotkeyLineEdit" name="lineEditKeyName" native="true">
+          <property name="placeholderText" stdset="0">
+           <string>Enter key name (e.g., A, Space, Enter)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSelectKey">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/assets/icons/select.svg</normaloff>:/assets/icons/select.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -173,7 +204,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -186,16 +217,25 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>HotkeyLineEdit</class>
+   <extends>QWidget</extends>
+   <header>hotkeylineedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
@@ -226,38 +266,6 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBoxCurrentPos</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBoxX</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>200</x>
-     <y>80</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>150</x>
-     <y>50</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBoxCurrentPos</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>spinBoxY</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>200</x>
-     <y>80</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>250</x>
-     <y>50</y>
     </hint>
    </hints>
   </connection>

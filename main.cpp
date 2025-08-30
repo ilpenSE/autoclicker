@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // ÖNEMLİ: Burada dili yüklerken dosyadan okunan değeri kullan
+  // Burada dili yüklerken dosyadan okunan değeri kullan
   QString savedLanguage = settings["Language"].toString("en_US");
 
   lninfo() << "(From main) Loading language from settings: " << savedLanguage;

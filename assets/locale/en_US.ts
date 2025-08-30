@@ -49,7 +49,7 @@
     </message>
     <message>
         <source>repeat tooltip</source>
-        <translation>Action's repeat time (0 = infinite)</translation>
+        <translation>Action&apos;s repeat time (0 = infinite)</translation>
     </message>
     <message>
         <source>interval tooltip</source>
@@ -185,11 +185,11 @@
     </message>
     <message>
         <source>macro save tooltip</source>
-        <translation>Save macro's actions</translation>
+        <translation>Save macro&apos;s actions</translation>
     </message>
     <message>
         <source>settings tooltip</source>
-        <translation>Opens AutoClicker's settings</translation>
+        <translation>Opens AutoClicker&apos;s settings</translation>
     </message>
     <message>
         <source>about tooltip</source>
@@ -270,6 +270,94 @@
     <message>
         <source>select an action to del</source>
         <translation>Please select an action to delete</translation>
+    </message>
+    <message>
+        <source>Additional Settings</source>
+        <translation>Additional Settings</translation>
+    </message>
+    <message>
+        <source>Position Settings</source>
+        <translation>Position Settings</translation>
+    </message>
+    <message>
+        <source>Position (X, Y):</source>
+        <translation>Position (X, Y):</translation>
+    </message>
+    <message>
+        <source>Use Current Position:</source>
+        <translation>Use Current Position:</translation>
+    </message>
+    <message>
+        <source>Current mouse position</source>
+        <translation>Current mouse position</translation>
+    </message>
+    <message>
+        <source>Timing Settings</source>
+        <translation>Timing Settings</translation>
+    </message>
+    <message>
+        <source>Hold Duration (ms):</source>
+        <translation>Hold Duration (ms):</translation>
+    </message>
+    <message>
+        <source>Action Settings</source>
+        <translation>Action Settings</translation>
+    </message>
+    <message>
+        <source>Click Count:</source>
+        <translation>Click Count:</translation>
+    </message>
+    <message>
+        <source>Key Name:</source>
+        <translation>Key Name:</translation>
+    </message>
+    <message>
+        <source>Enter key name (e.g., A, Space, Enter)</source>
+        <translation>Enter key name (e.g., A, Space, Enter)</translation>
+    </message>
+    <message>
+        <source>X coordinate</source>
+        <translation>X coordinate</translation>
+    </message>
+    <message>
+        <source>Y coordinate</source>
+        <translation>Y coordinate</translation>
+    </message>
+    <message>
+        <source>Use current mouse cursor position</source>
+        <translation>Use current mouse cursor position</translation>
+    </message>
+    <message>
+        <source>How long to hold the mouse button (0 = no hold)</source>
+        <translation>How long to hold the mouse button (0 = no hold)</translation>
+    </message>
+    <message>
+        <source>Number of clicks to perform</source>
+        <translation>Number of clicks to perform</translation>
+    </message>
+    <message>
+        <source>Key to press (for KEY action type)</source>
+        <translation>Key to press (for KEY action type)</translation>
+    </message>
+    <message>
+        <source>Cursor tracking started, click Ctrl + S to stop.</source>
+        <translation>Cursor tracking started, click Ctrl + S to stop.</translation>
+    </message>
+    <message>
+        <source>Cursor Position set!</source>
+        <translation>Cursor Position set!</translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation>Running</translation>
+    </message>
+    <message>
+        <source>Starts recording cursor position</source>
+        <translation>Starts recording cursor position</translation>
+    </message>
+    <message>
+        <source>Stops the key capture</source>
+        <translation>Stops the key capture</translation>
     </message>
 </context>
 </TS>

@@ -92,21 +92,17 @@ class ClickEngine : public QObject {
   void executeMacroStep();
   void executeCurrentAction();
   void scheduleNextAction();
+  void scheduleNextRepeat();
   void moveToNextAction();
   void completeCurrentCycle();
   QList<MacroAction> loadMacroActions(int macroId);
 
   // Platform specific mouse operations
   void nativeMouseClick(const QPoint& pos, MouseButton button, int count = 1);
-  void nativeMousePress(const QPoint& pos, MouseButton button);
-  void nativeMouseRelease(const QPoint& pos, MouseButton button);
-  void nativeMouseMove(const QPoint& pos);
   void nativeMouseHover(const QPoint& pos, int duration);
   void nativeMouseHold(const QPoint& pos, MouseButton button, int duration);
 
   // Platform specific keyboard operations
-  void nativeKeyPress(const QString& key);
-  void nativeKeyRelease(const QString& key);
   void nativeKeyClick(const QString& key, int count = 1);
   void nativeKeyHold(const QString& key, int duration);
 

@@ -58,7 +58,6 @@ void HotkeyLineEdit::startCapture() {
   clearCapture();
   setText("+ ...");
   setPlaceholderText("Press keys and click Select button");
-  // setFocus(); // kaldırıldı
 }
 
 void HotkeyLineEdit::stopCapture() {
@@ -132,8 +131,6 @@ void HotkeyLineEdit::keyPressEvent(QKeyEvent* event) {
 void HotkeyLineEdit::keyReleaseEvent(QKeyEvent* event) {
   if (!m_capturing) return;
   if (event->isAutoRepeat()) return;
-
-  // Artık release’te modifiyer/ana tuşu silmiyoruz
 }
 
 void HotkeyLineEdit::focusInEvent(QFocusEvent* event) {
