@@ -124,6 +124,14 @@
         <translation>Sırayı Düzenle</translation>
     </message>
     <message>
+        <source>finish editing orders</source>
+        <translation>Düzenlemeyi Bitir</translation>
+    </message>
+    <message>
+        <source>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</source>
+        <translation>Aksiyonları düzenlemek için sıraları sürükleyip bırakın. Bitirdiğinizde 'Düzenlemeyi Bitir'e basın.</translation>
+    </message>
+    <message>
         <source>delete action</source>
         <translation>Aksiyonu Sil</translation>
     </message>
@@ -358,6 +366,75 @@
     <message>
         <source>Stops the key capture</source>
         <translation>Tuş yakalamayı bitirir</translation>
+    </message>
+    <!-- Makro Doğrulama Hata Mesajları -->
+    <message>
+        <source>Warning: %1th action repeats infinitely, following actions will never execute.</source>
+        <translation>Uyarı: %1. eylem sonsuz tekrarlanıyor, sonraki eylemler hiç çalışmayacak.</translation>
+    </message>
+    <message>
+        <source>Warning: Multiple consecutive actions with infinite repeat.</source>
+        <translation>Uyarı: Ard arda birden fazla sonsuz tekrarlanan eylem.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</source>
+        <translation>Uyarı: %1. eylemde negatif aralık (%2ms). Aralık >= 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</source>
+        <translation>Uyarı: %1. eylemde negatif tutma süresi (%2ms). Tutma süresi >= 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</source>
+        <translation>Uyarı: %1. eylemde tutma süresi var ama tıklama tipi CLICK. Tutma süresi sadece HOLD eylemleri için anlamlıdır.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOLD type but has no hold duration. HOLD actions require a positive hold duration.</source>
+        <translation>Uyarı: %1. eylem HOLD tipinde ama tutma süresi yok. HOLD eylemleri pozitif tutma süresi gerektirir.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid click count (%2). Click count must be positive.</source>
+        <translation>Uyarı: %1. eylemde geçersiz tıklama sayısı (%2). Tıklama sayısı pozitif olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</source>
+        <translation>Uyarı: %1. eylem HOVER tipinde ama tıklama sayısı > 1. HOVER eylemleri tıklama sayısı = 1 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</source>
+        <translation>Uyarı: %1. eylem fare eylemi ama konum belirtilmemiş ve current_pos false.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position format. Expected 'x,y' format.</source>
+        <translation>Uyarı: %1. eylemde geçersiz konum formatı. 'x,y' formatı bekleniyor.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position coordinates. Must be valid integers.</source>
+        <translation>Uyarı: %1. eylemde geçersiz konum koordinatları. Geçerli tam sayılar olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 position (%2,%3) is outside screen bounds.</source>
+        <translation>Uyarı: %1. eylem konumu (%2,%3) ekran sınırları dışında.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is keyboard action but has no key specified.</source>
+        <translation>Uyarı: %1. eylem klavye eylemi ama tuş belirtilmemiş.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large interval (%2ms = %3 seconds). This might cause long delays.</source>
+        <translation>Uyarı: %1. eylemde çok büyük aralık (%2ms = %3 saniye). Bu uzun gecikmeler yaratabilir.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large hold duration (%2ms = %3 seconds).</source>
+        <translation>Uyarı: %1. eylemde çok büyük tutma süresi (%2ms = %3 saniye).</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large repeat count (%2). This might cause long execution times.</source>
+        <translation>Uyarı: %1. eylemde çok büyük tekrar sayısı (%2). Bu uzun çalışma süreleri yaratabilir.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</source>
+        <translation>Uyarı: %1. eylemde çok büyük tıklama sayısı (%2). Bu beklenmedik davranışlar yaratabilir.</translation>
     </message>
 </context>
 </TS>

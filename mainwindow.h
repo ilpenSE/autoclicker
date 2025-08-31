@@ -4,8 +4,10 @@
 #include <QJsonObject>
 #include <QMainWindow>
 #include <QVector>
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
 
-#include "additionalsettingsdialog.h"
 #include "clickengine.h"
 #include "hotkeyservice.h"
 #include "macromanager.h"
@@ -57,8 +59,12 @@ class MainWindow : public QMainWindow {
 
   void on_actionSave_triggered();
 
+  void on_btnEditAction_clicked();
+  void onReorderCellClicked(int row, int column);
+
  protected:
   void resizeEvent(QResizeEvent* event) override;
+  bool eventFilter(QObject *watched, QEvent *event) override;
 
  private:
   QVector<MacroAction>
@@ -70,6 +76,23 @@ class MainWindow : public QMainWindow {
   bool m_isClosing = false;
   void markRowAsModified(int row);
 
+  // order edit işlemleri
+  bool m_reorderMode = false;
+  int m_reorderCurrentRow = -1;
+
+  void enterReorderMode(int row);
+  void exitReorderMode();
+  void moveRowUp();
+  void moveRowDown();
+  void rebuildTableFromPendingActions();
+  void highlightReorderRow();
+  void clearRowHighlights();
+
+  QString m_reorderOriginalLabelText;
+  bool m_reorderOriginalLabelVisible = false;
+
+  void showMoveAnimation(int fromRow, int toRow);
+
   QJsonObject m_settings;
   QVector<Macro> m_macros;
   ClickEngine* clickEngine;
@@ -79,16 +102,32 @@ class MainWindow : public QMainWindow {
   Ui::MainWindow* ui;
 
   bool isMacroRunning;
-  void lockOrUnlockUI();
+  void lockOrUnlockUI(); // clicker çalışırken ui'ı kilitler ya da kapandığında ui'ı açar
 
+  /* İZİN VERİLMEYEN DAVRANIŞLAR:
+   * BİRDEN FAZLA AKSİYON VARKEN SONSUZ TEKRAR
+   * ÇOK BÜYÜK CLICK COUNT
+   * ÇOK BÜYÜK REPEAT
+   * NEGATİF SAYILAR (INTERVAL, REPEAT, CLICK COUNT VS)
+   * CLICK TYPE İLE EK AYARLAR UYUMSUZLUĞU ÖRN "HOLD"DA HOLD DURATION 0'SA MANTIKSIZ
+  */
+  void validateCurrentActions();
+  bool checkPointlessCycles();
+
+  // makro ayarlayan fonksiyonlar
   void refreshMacros();
   void setActiveMacro(int id);
+
   QJsonValue getSetting(const QString& key) const;
+
+  // dinamik ikonlar
   void setupDynamicIcons();
   void refreshIcons();
 
+  // action typeların saçma ayarlara sahip olmasını engeller mesela keyboard'da mouse button ayarını kapatır vs.
   void applyActionTypeConstraints(int row, ActionType actionType);
 
+  // actionları table'a ekleyip düzenleyen ya da alan fonksiyonlar
   void updateActionFromTableRow(int row);
   QComboBox* createMouseButtonComboBox(std::optional<MouseButton> currentValue);
   QComboBox* createClickTypeComboBox(ClickType currentValue);

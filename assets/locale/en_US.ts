@@ -124,6 +124,14 @@
         <translation>Edit Orders</translation>
     </message>
     <message>
+        <source>finish editing orders</source>
+        <translation>Finish Editing</translation>
+    </message>
+    <message>
+        <source>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</source>
+        <translation>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</translation>
+    </message>
+    <message>
         <source>delete action</source>
         <translation>Delete Action</translation>
     </message>
@@ -358,6 +366,75 @@
     <message>
         <source>Stops the key capture</source>
         <translation>Stops the key capture</translation>
+    </message>
+    <!-- Macro Validation Error Messages -->
+    <message>
+        <source>Warning: %1th action repeats infinitely, following actions will never execute.</source>
+        <translation>Warning: %1th action repeats infinitely, following actions will never execute.</translation>
+    </message>
+    <message>
+        <source>Warning: Multiple consecutive actions with infinite repeat.</source>
+        <translation>Warning: Multiple consecutive actions with infinite repeat.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</source>
+        <translation>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</source>
+        <translation>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</source>
+        <translation>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOLD type but has no hold duration. HOLD actions require a positive hold duration.</source>
+        <translation>Warning: Action %1 is HOLD type but has no hold duration. HOLD actions require a positive hold duration.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid click count (%2). Click count must be positive.</source>
+        <translation>Warning: Action %1 has invalid click count (%2). Click count must be positive.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</source>
+        <translation>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</source>
+        <translation>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position format. Expected 'x,y' format.</source>
+        <translation>Warning: Action %1 has invalid position format. Expected 'x,y' format.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position coordinates. Must be valid integers.</source>
+        <translation>Warning: Action %1 has invalid position coordinates. Must be valid integers.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 position (%2,%3) is outside screen bounds.</source>
+        <translation>Warning: Action %1 position (%2,%3) is outside screen bounds.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is keyboard action but has no key specified.</source>
+        <translation>Warning: Action %1 is keyboard action but has no key specified.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large interval (%2ms = %3 seconds). This might cause long delays.</source>
+        <translation>Warning: Action %1 has very large interval (%2ms = %3 seconds). This might cause long delays.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large hold duration (%2ms = %3 seconds).</source>
+        <translation>Warning: Action %1 has very large hold duration (%2ms = %3 seconds).</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large repeat count (%2). This might cause long execution times.</source>
+        <translation>Warning: Action %1 has very large repeat count (%2). This might cause long execution times.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</source>
+        <translation>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</translation>
     </message>
 </context>
 </TS>

@@ -182,27 +182,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnEditAction">
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>Seçili aksiyonu düzenler</string>
-           </property>
-           <property name="text">
-            <string>Edit Orders</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="btnDeleteAction">
            <property name="minimumSize">
             <size>
@@ -220,6 +199,27 @@
            </property>
            <property name="text">
             <string>Delete Action</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnEditAction">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>35</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Seçili aksiyonu düzenler</string>
+           </property>
+           <property name="text">
+            <string>Edit Orders</string>
            </property>
           </widget>
          </item>

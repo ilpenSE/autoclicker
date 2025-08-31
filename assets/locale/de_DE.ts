@@ -124,6 +124,14 @@
         <translation>Reihenfolge bearbeiten</translation>
     </message>
     <message>
+        <source>finish editing orders</source>
+        <translation>Bearbeitung abschließen</translation>
+    </message>
+    <message>
+        <source>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</source>
+        <translation>Ziehen Sie die Zeilen per Drag and Drop, um die Aktionen neu anzuordnen. Klicken Sie auf „Bearbeitung abschließen“, wenn Sie fertig sind.</translation>
+    </message>
+    <message>
         <source>delete action</source>
         <translation>Aktion löschen</translation>
     </message>
@@ -359,6 +367,74 @@
         <source>Stops the key capture</source>
         <translation>Beendet die Tastenerfassung</translation>
     </message>
-
+    <!-- Makro-Validierung Fehlermeldungen -->
+    <message>
+        <source>Warning: %1th action repeats infinitely, following actions will never execute.</source>
+        <translation>Warnung: Die %1. Aktion wiederholt sich unendlich, nachfolgende Aktionen werden nie ausgeführt.</translation>
+    </message>
+    <message>
+        <source>Warning: Multiple consecutive actions with infinite repeat.</source>
+        <translation>Warnung: Mehrere aufeinanderfolgende Aktionen mit unendlicher Wiederholung.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</source>
+        <translation>Warnung: Aktion %1 hat ein negatives Intervall (%2ms). Intervall muss >= 0 sein.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</source>
+        <translation>Warnung: Aktion %1 hat eine negative Haltezeit (%2ms). Haltezeit muss >= 0 sein.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</source>
+        <translation>Warnung: Aktion %1 hat eine Haltezeit, aber der Klicktyp ist CLICK. Haltezeit ist nur für HOLD-Aktionen sinnvoll.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOLD type but has no hold duration. HOLD actions require a positive hold duration.</source>
+        <translation>Warnung: Aktion %1 ist vom Typ HOLD, hat aber keine Haltezeit. HOLD-Aktionen erfordern eine positive Haltezeit.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid click count (%2). Click count must be positive.</source>
+        <translation>Warnung: Aktion %1 hat eine ungültige Klickanzahl (%2). Klickanzahl muss positiv sein.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</source>
+        <translation>Warnung: Aktion %1 ist vom Typ HOVER, hat aber Klickanzahl > 1. HOVER-Aktionen sollten Klickanzahl = 1 haben.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</source>
+        <translation>Warnung: Aktion %1 ist eine Mausaktion, hat aber keine Position angegeben und current_pos ist false.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position format. Expected 'x,y' format.</source>
+        <translation>Warnung: Aktion %1 hat ein ungültiges Positionsformat. 'x,y'-Format erwartet.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position coordinates. Must be valid integers.</source>
+        <translation>Warnung: Aktion %1 hat ungültige Positionskoordinaten. Müssen gültige Ganzzahlen sein.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 position (%2,%3) is outside screen bounds.</source>
+        <translation>Warnung: Aktion %1 Position (%2,%3) liegt außerhalb der Bildschirmgrenzen.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is keyboard action but has no key specified.</source>
+        <translation>Warnung: Aktion %1 ist eine Tastaturaktion, hat aber keine Taste angegeben.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large interval (%2ms = %3 seconds). This might cause long delays.</source>
+        <translation>Warnung: Aktion %1 hat ein sehr großes Intervall (%2ms = %3 Sekunden). Dies könnte lange Verzögerungen verursachen.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large hold duration (%2ms = %3 seconds).</source>
+        <translation>Warnung: Aktion %1 hat eine sehr große Haltezeit (%2ms = %3 Sekunden).</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large repeat count (%2). This might cause long execution times.</source>
+        <translation>Warnung: Aktion %1 hat eine sehr große Wiederholungsanzahl (%2). Dies könnte lange Ausführungszeiten verursachen.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</source>
+        <translation>Warnung: Aktion %1 hat eine sehr große Klickanzahl (%2). Dies könnte unerwartetes Verhalten verursachen.</translation>
+    </message>
 </context>
 </TS>

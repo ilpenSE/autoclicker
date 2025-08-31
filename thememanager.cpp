@@ -47,6 +47,38 @@ QString ThemeManager::readQssFile(const QString& filePath) const {
   return QString::fromUtf8(file.readAll());
 }
 
+void ThemeManager::resolveVars(QString* qssContent) const {
+  if (!qssContent) return;
+
+  QString& qss = *qssContent;
+
+  // Root içindeki --key: value; eşleşmelerini topla
+  QMap<QString, QString> varMap;
+  QRegularExpression declRegex(R"(--([a-zA-Z0-9_-]+)\s*:\s*([^;]+);)");
+  static QRegularExpressionMatchIterator it = declRegex.globalMatch(qss);
+  while (it.hasNext()) {
+    auto m = it.next();
+    QString key = m.captured(1).trimmed();
+    QString value = m.captured(2).trimmed();
+    varMap[key] = value;
+  }
+
+  // var(--key) olan her yeri değiştir
+  QRegularExpression useRegex(R"(var\(--([a-zA-Z0-9_-]+)\))");
+  static QRegularExpressionMatchIterator it2 = useRegex.globalMatch(qss);
+  while (it2.hasNext()) {
+    auto m = it2.next();
+    QString key = m.captured(1);
+    if (varMap.contains(key)) {
+      qss.replace(m.captured(0), varMap[key]);
+    }
+  }
+
+  // root'u tamamen temizle
+  static QRegularExpression rootRegex(R"(:root\s*\{[^}]*\})");
+  qss.remove(rootRegex);
+}
+
 void ThemeManager::loadThemesFromJson() {
   themeMap.clear();
 
@@ -265,12 +297,12 @@ bool ThemeManager::applyTheme(const QString& visibleName) {
     return false;
   }
 
+  resolveVars(&qss);
   // Parse theme colors before applying
   parseThemeColors(qss);
 
   qApp->setStyleSheet(qss);
-  thinfo() << ("Theme applied: " +
-               visibleName);  // PROGRAM EN SON BURDA LOG VERDİ
+  thinfo() << ("Theme applied: " + visibleName);
 
   // Update all registered icons
   updateIconColors();

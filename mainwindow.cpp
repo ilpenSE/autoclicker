@@ -9,6 +9,7 @@
 #include <QResizeEvent>
 #include <QTimer>
 #include <QtSvg/QSvgRenderer>
+#include <QThread>
 
 #include "LoggerStream.h"
 #include "appdatamanager.h"
@@ -21,6 +22,7 @@
 #include "settingswin.h"
 #include "thememanager.h"
 #include "ui_mainwindow.h"
+#include "additionalsettingsdialog.h"
 
 MainWindow::MainWindow(const QJsonObject& settings,
                        const QVector<Macro>& macros, QWidget* parent)
@@ -65,7 +67,7 @@ MainWindow::MainWindow(const QJsonObject& settings,
   connect(clickEngine, &ClickEngine::macroStopped, this,
           &MainWindow::onMacroStopped);
 
-  // hotkey pressed eventleri
+  // hotkey eventleri
   connect(hotkeyService, &HotkeyService::hotkeyPressed, this, [this](int id) {
     hsinfo() << "Hotkey pressed!";
     if (clickEngine->isMacroRunning() &&
@@ -75,13 +77,13 @@ MainWindow::MainWindow(const QJsonObject& settings,
       clickEngine->startMacro(id);
     }
   });
-
   connect(hotkeyService, &HotkeyService::hotkeyRegistrationFailed, this,
           [](int id, const QString& reason) {
             hserr() << "Hotkey registration failed, reason: " << reason
                     << ", id: " << id;
           });
 
+  // connect to language changes
   connect(&LanguageManager::instance(), &LanguageManager::languageChanged, this,
           &MainWindow::retranslateUi);
 
@@ -102,6 +104,10 @@ MainWindow::MainWindow(const QJsonObject& settings,
       setupDynamicIcons();
       adjustTableColumns();
       MarkAsSaved();
+
+      QTimer::singleShot(100, this, [this]() {
+        validateCurrentActions();
+      });
     }
   });
 
@@ -129,6 +135,18 @@ MainWindow::MainWindow(const QJsonObject& settings,
             markRowAsModified(row);
           });
 
+  ui->labelErrors->setVisible(false);
+}
+
+// Real time validation
+void MainWindow::validateCurrentActions() {
+  // Sadece UI'da göster, kaydetmeyi engelleme
+  if (!checkPointlessCycles()) {
+    // Hata zaten gösterildi, hiçbir şey yapma
+    return;
+  }
+
+  // Validasyon başarılı, hata mesajını gizle
   ui->labelErrors->setVisible(false);
 }
 
@@ -238,12 +256,16 @@ void MainWindow::setupDynamicIcons() {
 }
 
 void MainWindow::onThemeChanged() {
-  // This slot is called when theme changes
-  // Icons are automatically updated by ThemeManager
-  thinfo() << "Theme changed, icons updated automatically";
-
-  // You can add additional theme-related updates here if needed
   refreshIcons();
+  for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
+    for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+      if (QWidget* widget = ui->actionsTable->cellWidget(row, col)) {
+        widget->setProperty("animationState", QVariant());
+        widget->style()->unpolish(widget);
+        widget->style()->polish(widget);
+      }
+    }
+  }
 }
 
 void MainWindow::refreshIcons() {
@@ -341,6 +363,10 @@ void MainWindow::updateActionFromTableRow(int row) {
     m_hasUnsavedChanges = true;
     MarkAsUnsaved();
   }
+
+  QTimer::singleShot(50, this, [this]() {
+    validateCurrentActions();
+  });
 }
 QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
   QComboBox* comboBox = new QComboBox();
@@ -377,6 +403,9 @@ QComboBox* MainWindow::createActionTypeComboBox(ActionType currentValue) {
               applyActionTypeConstraints(targetRow, selectedType);
               markRowAsModified(targetRow);
             }
+            QTimer::singleShot(100, this, [this]() {
+              validateCurrentActions();
+            });
           });
 
   return comboBox;
@@ -506,6 +535,9 @@ QComboBox* MainWindow::createClickTypeComboBox(ClickType currentValue) {
             break;
           }
         }
+        QTimer::singleShot(100, this, [this]() {
+          validateCurrentActions();
+        });
       },
       Qt::QueuedConnection);  // QueuedConnection ekleyin
 
@@ -545,6 +577,9 @@ QComboBox* MainWindow::createMouseButtonComboBox(
             break;
           }
         }
+        QTimer::singleShot(100, this, [this]() {
+          validateCurrentActions();
+        });
       },
       Qt::QueuedConnection);
 
@@ -554,59 +589,70 @@ QComboBox* MainWindow::createMouseButtonComboBox(
 MacroAction MainWindow::getActionFromRow(int row) {
   MacroAction a;
 
+          // Eğer m_pendingActions'da var ise oradan base al, yoksa default
+  if (m_actionsModified && row < m_pendingActions.size()) {
+    a = m_pendingActions[row]; // Mevcut tüm değerleri al
+  } else {
+    // Database'den al
+    QVector<MacroAction> dbActions = MacroManager::instance().getActions(activeMacro.id);
+    if (row < dbActions.size()) {
+      a = dbActions[row];
+    } else {
+      // Yeni action için default değerler
+      a.action_type = ActionType::MOUSE;
+      a.click_type = ClickType::CLICK;
+      a.click_count = 1;
+      a.current_pos = true;
+      a.hold_duration = 1000;
+      a.interval = 100;
+      a.repeat = 1;
+      a.position = "0, 0";
+      a.macro_id = activeMacro.id;
+      a.key_name = "A";
+      a.mouse_button = MouseButton::LEFT;
+    }
+  }
+
+          // UI'dan görünür sütunları oku ve güncelle
   QTableWidgetItem* noItem = ui->actionsTable->item(row, 0);
-  a.order = noItem ? noItem->text().toInt() : 0;
+  a.order = noItem ? noItem->text().toInt() : row;
 
-  // Action Type
-  QWidget* actionTypeContainer = ui->actionsTable->cellWidget(row, 1);
-  if (actionTypeContainer) {
-    QComboBox* actionCombo = actionTypeContainer->findChild<QComboBox*>();
-    if (actionCombo) {
-      a.action_type = actionCombo->currentData().value<ActionType>();
-    }
+          // Action Type
+  if (QWidget* w = ui->actionsTable->cellWidget(row, 1)) {
+    if (auto combo = w->findChild<QComboBox*>())
+      a.action_type = combo->currentData().value<ActionType>();
   }
 
-  // Click Type
-  QWidget* clickTypeContainer = ui->actionsTable->cellWidget(row, 2);
-  if (clickTypeContainer) {
-    QComboBox* clickCombo = clickTypeContainer->findChild<QComboBox*>();
-    if (clickCombo) {
-      a.click_type = clickCombo->currentData().value<ClickType>();
-    }
+          // Click Type
+  if (QWidget* w = ui->actionsTable->cellWidget(row, 2)) {
+    if (auto combo = w->findChild<QComboBox*>())
+      a.click_type = combo->currentData().value<ClickType>();
   }
 
-  // Mouse Button
-  QWidget* mouseButtonContainer = ui->actionsTable->cellWidget(row, 3);
-  if (mouseButtonContainer) {
-    QComboBox* mouseButtonCombo = mouseButtonContainer->findChild<QComboBox*>();
-    if (mouseButtonCombo) {
-      if (a.action_type == ActionType::KEYBOARD) {
-        a.mouse_button = std::nullopt;
-      } else {
-        if (mouseButtonCombo->currentData().isValid()) {
-          a.mouse_button = mouseButtonCombo->currentData().value<MouseButton>();
-        } else {
-          a.mouse_button = std::nullopt;
-        }
+          // Mouse Button (action_type KEYBOARD ise nullopt)
+  if (a.action_type == ActionType::KEYBOARD) {
+    a.mouse_button = std::nullopt;
+  } else {
+    if (QWidget* w = ui->actionsTable->cellWidget(row, 3)) {
+      if (auto combo = w->findChild<QComboBox*>()) {
+        a.mouse_button = combo->currentData().isValid()
+        ? std::optional<MouseButton>(
+              combo->currentData().value<MouseButton>())
+        : std::nullopt;
       }
     }
   }
 
-  QTableWidgetItem* repeatItem = ui->actionsTable->item(row, 4);
-  a.repeat = repeatItem ? repeatItem->text().toInt() : 1;
+          // Repeat / Interval
+  if (auto it = ui->actionsTable->item(row, 4)) a.repeat = it->text().toInt();
+  if (auto it = ui->actionsTable->item(row, 5)) a.interval = it->text().toInt();
 
-  QTableWidgetItem* intervalItem = ui->actionsTable->item(row, 5);
-  a.interval = intervalItem ? intervalItem->text().toInt() : 0;
-
-  // Diğer alanlar için default değerler
-  a.position = "0, 0";
-  a.current_pos = true;
-  a.hold_duration = 1000;
-  a.key_name = "A";
+          // Macro ID ve Order
   a.macro_id = activeMacro.id;
 
   return a;
 }
+
 
 QJsonValue MainWindow::getSetting(const QString& key) const {
   return m_settings.value(key);
@@ -625,6 +671,18 @@ void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
 }
 
 void MainWindow::markRowAsModified(int row) {
+  // İlk kez değişiklik yapılıyorsa pending actions'ı yükle
+  if (!m_actionsModified) {
+    m_pendingActions = MacroManager::instance().getActions(activeMacro.id);
+    m_actionsModified = true;
+  }
+
+  // Eğer row pending actions'da varsa, UI'dan güncelle
+  if (row < m_pendingActions.size()) {
+    MacroAction updated = getActionFromRow(row);
+    m_pendingActions[row] = updated;
+  }
+
   m_modifiedRows.insert(row);
   if (!m_hasUnsavedChanges) {
     m_hasUnsavedChanges = true;
@@ -659,18 +717,26 @@ void MainWindow::loadLanguage() {
   ui->actionSettings->setText(tr("settings"));
   ui->actionSave->setText(tr("macro save"));
 
+  // headerlar
+  ui->actionsTable->setHorizontalHeaderLabels(
+      QStringList() << "No" << tr("action type") << tr("click type")
+                    << tr("mouse button") << tr("repeat") << tr("interval")
+                    << tr("additionals"));
+
   // tooltipler
-  ui->actionsTable->horizontalHeaderItem(0)->setToolTip("No");
-  ui->actionsTable->horizontalHeaderItem(1)->setToolTip(
-      tr("action type tooltip"));
-  ui->actionsTable->horizontalHeaderItem(2)->setToolTip(
-      tr("click type tooltip"));
-  ui->actionsTable->horizontalHeaderItem(3)->setToolTip(
-      tr("mouse button tooltip"));
-  ui->actionsTable->horizontalHeaderItem(4)->setToolTip(tr("repeat tooltip"));
-  ui->actionsTable->horizontalHeaderItem(5)->setToolTip(tr("interval tooltip"));
-  ui->actionsTable->horizontalHeaderItem(6)->setToolTip(
-      tr("additionals tooltip"));
+  for (int i = 0; i < ui->actionsTable->columnCount(); ++i) {
+    if (ui->actionsTable->horizontalHeaderItem(i)) {
+      switch (i) {
+        case 0: ui->actionsTable->horizontalHeaderItem(i)->setToolTip("No"); break;
+        case 1: ui->actionsTable->horizontalHeaderItem(i)->setToolTip(tr("action type tooltip")); break;
+        case 2: ui->actionsTable->horizontalHeaderItem(i)->setToolTip(tr("click type tooltip")); break;
+        case 3: ui->actionsTable->horizontalHeaderItem(i)->setToolTip(tr("mouse button tooltip")); break;
+        case 4: ui->actionsTable->horizontalHeaderItem(i)->setToolTip(tr("repeat tooltip")); break;
+        case 5: ui->actionsTable->horizontalHeaderItem(i)->setToolTip(tr("interval tooltip")); break;
+        case 6: ui->actionsTable->horizontalHeaderItem(i)->setToolTip(tr("additionals tooltip")); break;
+      }
+    }
+  }
 
   ui->actionActiveMacro->setToolTip(tr("active macro label tooltip"));
   ui->actionSave->setToolTip(tr("macro save tooltip"));
@@ -681,13 +747,7 @@ void MainWindow::loadLanguage() {
   ui->btnDeleteAction->setToolTip(tr("delete action tooltip"));
   ui->btnEditAction->setToolTip(tr("edit orders tooltip"));
 
-  // headerlar
-  ui->actionsTable->setHorizontalHeaderLabels(
-      QStringList() << "No" << tr("action type") << tr("click type")
-                    << tr("mouse button") << tr("repeat") << tr("interval")
-                    << tr("additionals"));
-
-  // BUTONLAR
+          // BUTONLAR
   ui->btnAddAction->setText(tr("add action"));
   ui->btnDeleteAction->setText(tr("delete action"));
   ui->btnEditAction->setText(tr("edit action orders"));
@@ -902,6 +962,180 @@ void MainWindow::MarkAsUnsaved() {
   ui->actionActiveMacro->setFont(f);
 }
 
+bool MainWindow::checkPointlessCycles() {
+  QVector<MacroAction> acts;
+
+  for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
+    MacroAction a = getActionFromRow(row);
+    acts.append(a);
+  }
+
+  if (acts.isEmpty()) return true; // action yoksa sorun yok
+
+  for (int i = 0; i < acts.size(); ++i) {
+    const MacroAction& a = acts[i];
+
+    // Mevcut sonsuz repeat kontrolü
+    if (a.repeat == 0 && acts.size() > 1) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: %1th action repeats infinitely, following actions will never execute.").arg(i));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Negatif interval kontrolü
+    if (a.interval < 0) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.")
+                                   .arg(i + 1).arg(a.interval));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Hold duration kontrolü
+    if (a.hold_duration.has_value()) {
+      if (a.hold_duration.value() < 0) {
+        ui->labelErrors->setVisible(true);
+        ui->labelErrors->setText(tr("Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.")
+                                     .arg(i + 1).arg(a.hold_duration.value()));
+        MessageBeep(MB_ICONHAND);
+        return false;
+      }
+
+      // Hold duration varsa ama click type CLICK ise mantıksız
+      if (a.click_type == ClickType::CLICK && a.hold_duration.value() > 0) {
+        ui->labelErrors->setVisible(true);
+        ui->labelErrors->setText(tr("Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.")
+                                     .arg(i + 1));
+        MessageBeep(MB_ICONHAND);
+        return false;
+      }
+    }
+
+    // HOLD action için hold_duration zorunlu
+    if (a.click_type == ClickType::HOLD && (!a.hold_duration.has_value() || a.hold_duration.value() == 0)) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 is HOLD type but has no hold duration. HOLD actions require a positive hold duration.")
+                                   .arg(i + 1));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Click count kontrolü
+    if (a.click_count <= 0) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 has invalid click count (%2). Click count must be positive.")
+                                   .arg(i + 1).arg(a.click_count));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // HOVER için click count 1'den fazla mantıksız
+    if (a.click_type == ClickType::HOVER && a.click_count > 1) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.")
+                                   .arg(i + 1));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Mouse action için position kontrolü
+    if (a.action_type == ActionType::MOUSE) {
+      if (!a.current_pos.value_or(false) && !a.position.has_value()) {
+        ui->labelErrors->setVisible(true);
+        ui->labelErrors->setText(tr("Warning: Action %1 is mouse action but has no position specified and current_pos is false.")
+                                     .arg(i + 1));
+        MessageBeep(MB_ICONHAND);
+        return false;
+      }
+
+      // Position formatı kontrolü (varsa)
+      if (a.position.has_value()) {
+        QStringList coords = a.position.value().split(",");
+        if (coords.size() != 2) {
+          ui->labelErrors->setVisible(true);
+          ui->labelErrors->setText(tr("Warning: Action %1 has invalid position format. Expected 'x,y' format.")
+                                       .arg(i + 1));
+          MessageBeep(MB_ICONHAND);
+          return false;
+        }
+
+        bool okX, okY;
+        int x = coords[0].trimmed().toInt(&okX);
+        int y = coords[1].trimmed().toInt(&okY);
+
+        if (!okX || !okY) {
+          ui->labelErrors->setVisible(true);
+          ui->labelErrors->setText(tr("Warning: Action %1 has invalid position coordinates. Must be valid integers.")
+                                       .arg(i + 1));
+          MessageBeep(MB_ICONHAND);
+          return false;
+        }
+
+        // Ekran sınırları kontrolü (isteğe bağlı)
+        QRect screenGeometry = QApplication::primaryScreen()->geometry();
+        if (x < 0 || y < 0 || x > screenGeometry.width() || y > screenGeometry.height()) {
+          ui->labelErrors->setVisible(true);
+          ui->labelErrors->setText(tr("Warning: Action %1 position (%2,%3) is outside screen bounds.")
+                                       .arg(i + 1).arg(x).arg(y));
+          MessageBeep(MB_ICONHAND);
+          return false;
+        }
+      }
+    }
+
+    // Keyboard action için key_name kontrolü
+    if (a.action_type == ActionType::KEYBOARD) {
+      if (!a.key_name.has_value() || a.key_name.value().isEmpty()) {
+        ui->labelErrors->setVisible(true);
+        ui->labelErrors->setText(tr("Warning: Action %1 is keyboard action but has no key specified.")
+                                     .arg(i + 1));
+        MessageBeep(MB_ICONHAND);
+        return false;
+      }
+    }
+
+    // Çok büyük interval uyarısı (performans için)
+    if (a.interval > 300000) { // 5 dakikadan fazla
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 has very large interval (%2ms = %3 seconds). This might cause long delays.")
+                                   .arg(i + 1).arg(a.interval).arg(a.interval / 1000.0, 0, 'f', 1));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Çok büyük hold duration uyarısı
+    if (a.hold_duration.has_value() && a.hold_duration.value() > 60000) { // 1 dakikadan fazla
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 has very large hold duration (%2ms = %3 seconds).")
+                                   .arg(i + 1).arg(a.hold_duration.value()).arg(a.hold_duration.value() / 1000.0, 0, 'f', 1));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Çok büyük repeat count uyarısı
+    if (a.repeat > 10000) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 has very large repeat count (%2). This might cause long execution times.")
+                                   .arg(i + 1).arg(a.repeat));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+
+    // Çok büyük click count uyarısı
+    if (a.click_count > 100) {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.")
+                                   .arg(i + 1).arg(a.click_count));
+      MessageBeep(MB_ICONHAND);
+      return false;
+    }
+  }
+
+  // Tüm kontroller başarılı
+  ui->labelErrors->setVisible(false);
+  return true;
+}
 void MainWindow::MarkAsSaved() {
   m_hasUnsavedChanges = false;
   m_modifiedRows.clear();
@@ -962,6 +1196,10 @@ void MainWindow::on_btnDeleteAction_clicked() {
 
 void MainWindow::on_actionSave_triggered() {
   if (!m_hasUnsavedChanges) return;
+
+  if (!checkPointlessCycles()) {
+    return; // Validasyon başarısız, kaydetme
+  }
 
   QString err;
   QVector<MacroAction> base =
@@ -1034,4 +1272,386 @@ void MainWindow::on_actionSave_triggered() {
   m_pendingActions.clear();
   MarkAsSaved();
   ui->labelErrors->setVisible(false);
+}
+
+void MainWindow::on_btnEditAction_clicked()
+{
+  if (m_reorderMode) {
+    // Confirm Order - reorder mode'dan çık ve değişiklikleri koru
+    exitReorderMode();
+
+    // Unsaved changes olarak işaretle
+    if (!m_hasUnsavedChanges) {
+      m_hasUnsavedChanges = true;
+      MarkAsUnsaved();
+    }
+
+    ui->labelErrors->setVisible(true);
+    ui->labelErrors->setText(tr("Action order updated. Don't forget to save your changes!"));
+    ui->labelErrors->setProperty("reorderMode", false);
+    ui->labelErrors->setProperty("statusType", "success");
+    ui->labelErrors->style()->unpolish(ui->labelErrors);
+    ui->labelErrors->style()->polish(ui->labelErrors);
+
+    // 3 saniye sonra mesajı temizle
+    QTimer::singleShot(3000, this, [this]() {
+      if (!m_reorderMode) { // Hala reorder mode'da değilse temizle
+        ui->labelErrors->setVisible(false);
+        ui->labelErrors->setProperty("reorderMode", false);
+        ui->labelErrors->setProperty("statusType", QVariant()); // Clear property
+        ui->labelErrors->style()->unpolish(ui->labelErrors);
+        ui->labelErrors->style()->polish(ui->labelErrors);
+      }
+    });
+
+    return;
+  }
+
+          // Normal mode - reorder mode'a gir
+  QList<QTableWidgetItem*> selected = ui->actionsTable->selectedItems();
+  if (selected.isEmpty()) {
+    // Eğer seçim yoksa ilk satırı seç
+    if (ui->actionsTable->rowCount() > 0) {
+      ui->actionsTable->selectRow(0);
+      enterReorderMode(0);
+    } else {
+      ui->labelErrors->setVisible(true);
+      ui->labelErrors->setText(tr("No actions to reorder"));
+      ui->labelErrors->setProperty("reorderMode", false);
+      ui->labelErrors->setProperty("statusType", "error");
+      ui->labelErrors->style()->unpolish(ui->labelErrors);
+      ui->labelErrors->style()->polish(ui->labelErrors);
+      MessageBeep(MB_ICONHAND);
+    }
+    return;
+  }
+
+  int currentRow = selected.first()->row();
+  enterReorderMode(currentRow);
+}
+void MainWindow::enterReorderMode(int row) {
+  m_reorderMode = true;
+  m_reorderCurrentRow = row;
+  m_reorderOriginalLabelText = ui->labelErrors->text(); // Orijinal metni sakla
+  m_reorderOriginalLabelVisible = ui->labelErrors->isVisible(); // Orijinal visibility durumunu sakla
+
+          // Pending actions'ı mevcut UI'dan oluştur (DB'den değil)
+  if (!m_actionsModified) {
+    // UI'dan current actions'ları çek
+    QVector<MacroAction> currentActions;
+    for (int i = 0; i < ui->actionsTable->rowCount(); ++i) {
+      MacroAction action = getActionFromRow(i);
+      currentActions.append(action);
+    }
+    m_pendingActions = currentActions;
+    m_actionsModified = true;
+  }
+
+          // UI'yi reorder mode için ayarla
+  ui->actionsTable->setFocusPolicy(Qt::StrongFocus);
+  ui->actionsTable->setFocus();
+  ui->actionsTable->selectRow(row);
+
+          // Kullanıcıya bilgi ver - sürekli mode olduğunu belirt
+  ui->labelErrors->setVisible(true);
+  ui->labelErrors->setText(tr("Reorder mode: Use UP/DOWN arrows to move actions, select different rows to continue reordering. Click 'Confirm Order' to save changes or ESC to cancel"));
+  ui->labelErrors->setProperty("reorderMode", true);
+  ui->labelErrors->setProperty("statusType", "info");
+  ui->labelErrors->style()->unpolish(ui->labelErrors);
+  ui->labelErrors->style()->polish(ui->labelErrors);
+
+          // Key event filter ekle
+  ui->actionsTable->installEventFilter(this);
+
+          // Buton metnini değiştir
+  ui->btnEditAction->setText(tr("Confirm Order"));
+
+          // Mouse click events'ini de handle etmek için
+  connect(ui->actionsTable, &QTableWidget::cellClicked, this, &MainWindow::onReorderCellClicked, Qt::UniqueConnection);
+
+  highlightReorderRow();
+}
+
+void MainWindow::onReorderCellClicked(int row, int column) {
+  Q_UNUSED(column)
+  if (m_reorderMode) {
+    // Önceki satırın highlight'ını temizle
+    clearRowHighlights();
+
+    // Yeni satırı seç ve highlight et
+    m_reorderCurrentRow = row;
+    highlightReorderRow();
+
+    // Label'ın gitmesini engelle - sadece row bilgisini güncelle
+    ui->labelErrors->setText(tr("Reorder mode: Selected row %1. Use UP/DOWN arrows to move, select other rows to continue, 'Confirm Order' to save or ESC to cancel").arg(row + 1));
+    ui->labelErrors->setVisible(true);
+    ui->labelErrors->setProperty("statusType", "info");
+    ui->labelErrors->style()->unpolish(ui->labelErrors);
+    ui->labelErrors->style()->polish(ui->labelErrors);
+  }
+}
+
+void MainWindow::exitReorderMode() {
+  if (!m_reorderMode) return;
+
+  m_reorderMode = false;
+  m_reorderCurrentRow = -1;
+
+          // UI'yi normal mode'a döndür
+  ui->actionsTable->removeEventFilter(this);
+
+  // Cell click connection'ı kaldır
+  disconnect(ui->actionsTable, &QTableWidget::cellClicked, this, &MainWindow::onReorderCellClicked);
+
+          // Buton metnini geri al
+  ui->btnEditAction->setText(tr("edit action orders"));
+
+          // Orijinal label durumunu geri yükle
+  if (m_reorderOriginalLabelVisible) {
+    ui->labelErrors->setText(m_reorderOriginalLabelText);
+    ui->labelErrors->setVisible(true);
+  } else {
+    ui->labelErrors->setVisible(false);
+  }
+  ui->labelErrors->setProperty("reorderMode", false);
+  ui->labelErrors->setProperty("statusType", QVariant()); // Clear property
+  ui->labelErrors->style()->unpolish(ui->labelErrors);
+  ui->labelErrors->style()->polish(ui->labelErrors);
+
+          // Highlight temizle
+  clearRowHighlights();
+}
+
+void MainWindow::moveRowUp() {
+  if (m_reorderCurrentRow <= 0) return;
+
+  // Memory'de swap
+  m_pendingActions.swapItemsAt(m_reorderCurrentRow, m_reorderCurrentRow - 1);
+
+  // Order'ları güncelle
+  m_pendingActions[m_reorderCurrentRow].order = m_reorderCurrentRow;
+  m_pendingActions[m_reorderCurrentRow - 1].order = m_reorderCurrentRow - 1;
+
+  // Current row'u güncelle
+  m_reorderCurrentRow--;
+
+  // Tabloyu tamamen yeniden inşa et (güvenli)
+  rebuildTableFromPendingActions();
+
+  // Seçimi güncelle
+  ui->actionsTable->selectRow(m_reorderCurrentRow);
+  highlightReorderRow();
+
+  // Unsaved olarak işaretle
+  if (!m_hasUnsavedChanges) {
+    m_hasUnsavedChanges = true;
+    MarkAsUnsaved();
+  }
+}
+
+void MainWindow::moveRowDown() {
+  if (m_reorderCurrentRow >= ui->actionsTable->rowCount() - 1) return;
+
+  // Memory'de swap
+  m_pendingActions.swapItemsAt(m_reorderCurrentRow, m_reorderCurrentRow + 1);
+
+  // Order'ları güncelle
+  m_pendingActions[m_reorderCurrentRow].order = m_reorderCurrentRow;
+  m_pendingActions[m_reorderCurrentRow + 1].order = m_reorderCurrentRow + 1;
+
+  // Current row'u güncelle
+  m_reorderCurrentRow++;
+
+  // Tabloyu tamamen yeniden inşa et (güvenli)
+  rebuildTableFromPendingActions();
+
+  // Seçimi güncelle
+  ui->actionsTable->selectRow(m_reorderCurrentRow);
+  highlightReorderRow();
+
+  // Unsaved olarak işaretle
+  if (!m_hasUnsavedChanges) {
+    m_hasUnsavedChanges = true;
+    MarkAsUnsaved();
+  }
+}
+
+void MainWindow::rebuildTableFromPendingActions() {
+  // Tabloyu temizle
+  ui->actionsTable->setRowCount(0);
+
+  // Pending actions'dan tabloyu yeniden inşa et
+  for (const MacroAction& action : m_pendingActions) {
+    addActionToTable(action);
+  }
+}
+
+void MainWindow::highlightReorderRow() {
+  // Önce tüm highlight'ları temizle
+  clearRowHighlights();
+
+  if (m_reorderCurrentRow >= 0 && m_reorderCurrentRow < ui->actionsTable->rowCount()) {
+    // Seçili satırı vurgula
+    ui->actionsTable->selectRow(m_reorderCurrentRow);
+
+            // Daha belirgin görsel feedback
+    for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+      if (QTableWidgetItem* item = ui->actionsTable->item(m_reorderCurrentRow, col)) {
+        // Gradient benzeri effect için farklı renk tonları
+        item->setBackground(QBrush(QColor(70, 130, 255, 150))); // Daha koyu mavi
+        item->setForeground(QBrush(QColor(255, 255, 255))); // Beyaz text daha iyi kontrast
+
+        // Border effect
+        QFont font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+      }
+
+      // Widget'lar için de enhanced highlight
+      if (QWidget* widget = ui->actionsTable->cellWidget(m_reorderCurrentRow, col)) {
+        widget->setProperty("reorderHighlight", true);
+        widget->style()->unpolish(widget);
+        widget->style()->polish(widget);
+      }
+    }
+
+            // Satır yüksekliğini biraz artır (daha dramatik görünüm için)
+    ui->actionsTable->setRowHeight(m_reorderCurrentRow, 36);
+  }
+}
+
+
+void MainWindow::clearRowHighlights() {
+  // Tüm satırların background'ını ve formatting'ini temizle
+  for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
+    for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+      if (QTableWidgetItem* item = ui->actionsTable->item(row, col)) {
+        item->setBackground(QBrush());
+        item->setForeground(QBrush()); // Text rengini de sıfırla
+
+        // Font'u da normal haline çevir
+        QFont font = item->font();
+        font.setBold(false);
+        item->setFont(font);
+      }
+
+      // Widget'ların style'ını da temizle
+      if (QWidget* widget = ui->actionsTable->cellWidget(row, col)) {
+        QString currentStyle = widget->styleSheet();
+        // Reorder ile eklenen style'ları temizle
+        widget->setProperty("reorderHighlight", QVariant());
+        widget->style()->unpolish(widget);
+        widget->style()->polish(widget);
+      }
+    }
+
+    // Satır yüksekliğini normale döndür
+    ui->actionsTable->setRowHeight(row, 32);
+  }
+}
+bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
+  if (watched == ui->actionsTable && m_reorderMode && event->type() == QEvent::KeyPress) {
+    QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+
+    switch (keyEvent->key()) {
+      case Qt::Key_Up:
+        moveRowUp();
+        return true;
+
+      case Qt::Key_Down:
+        moveRowDown();
+        return true;
+
+      case Qt::Key_Return:
+      case Qt::Key_Enter:
+        // Enter ile de confirm et
+        on_btnEditAction_clicked(); // Confirm Order işlemi
+        return true;
+
+      case Qt::Key_Escape:
+        // Cancel - orijinal sıralamayı yükle
+        ui->labelErrors->setVisible(true);
+        ui->labelErrors->setText(tr("Reorder cancelled, changes discarded"));
+        ui->labelErrors->setProperty("reorderMode", false);
+        ui->labelErrors->setProperty("statusType", "warning");
+        ui->labelErrors->style()->unpolish(ui->labelErrors);
+        ui->labelErrors->style()->polish(ui->labelErrors);
+
+        // Orijinal data'yı yükle
+        setActiveMacro(activeMacro.id);
+        exitReorderMode();
+
+        // 2 saniye sonra mesajı temizle
+        QTimer::singleShot(2000, this, [this]() {
+          if (!m_reorderMode) {
+            ui->labelErrors->setVisible(false);
+            ui->labelErrors->setStyleSheet("");
+          }
+        });
+        return true;
+    }
+  }
+
+  return QMainWindow::eventFilter(watched, event);
+}
+void MainWindow::showMoveAnimation(int fromRow, int toRow) {
+  // From row
+  for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+    if (QTableWidgetItem* item = ui->actionsTable->item(fromRow, col)) {
+      item->setBackground(QBrush(QColor(255, 100, 100, 150)));
+    }
+    if (QWidget* widget = ui->actionsTable->cellWidget(fromRow, col)) {
+      widget->setProperty("animationState", "from");
+      widget->style()->unpolish(widget);
+      widget->style()->polish(widget);
+    }
+  }
+
+  // To row
+  for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+    if (QTableWidgetItem* item = ui->actionsTable->item(toRow, col)) {
+      item->setBackground(QBrush(QColor(100, 255, 100, 150)));
+    }
+    if (QWidget* widget = ui->actionsTable->cellWidget(toRow, col)) {
+      widget->setProperty("animationState", "to");
+      widget->style()->unpolish(widget);
+      widget->style()->polish(widget);
+    }
+  }
+
+  // Tabloyu repaint et
+  ui->actionsTable->repaint();
+
+  // Qt event loop'a işlem yaptır (animasyon etkisi için)
+  QApplication::processEvents();
+
+  // 150ms bekle
+  QThread::msleep(150);
+
+  // From row'u temizle
+  for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+    if (QTableWidgetItem* item = ui->actionsTable->item(fromRow, col)) {
+      item->setData(Qt::UserRole + 1, QVariant()); // Clear custom property
+    }
+    if (QWidget* widget = ui->actionsTable->cellWidget(fromRow, col)) {
+      widget->setProperty("animationState", QVariant()); // Clear property
+      widget->style()->unpolish(widget);
+      widget->style()->polish(widget);
+    }
+  }
+
+  // To row'u temizle
+  for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
+    if (QTableWidgetItem* item = ui->actionsTable->item(toRow, col)) {
+      item->setData(Qt::UserRole + 1, QVariant()); // Clear custom property
+    }
+    if (QWidget* widget = ui->actionsTable->cellWidget(toRow, col)) {
+      widget->setProperty("animationState", QVariant()); // Clear property
+      widget->style()->unpolish(widget);
+      widget->style()->polish(widget);
+    }
+  }
+
+  // Son repaint
+  ui->actionsTable->repaint();
 }

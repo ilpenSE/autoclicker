@@ -124,6 +124,14 @@
         <translation>Modifier l&apos;ordre</translation>
     </message>
     <message>
+        <source>finish editing orders</source>
+        <translation>Terminer la modification</translation>
+    </message>
+    <message>
+        <source>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</source>
+        <translation>Faites glisser et déposez les lignes pour réorganiser les actions. Cliquez sur « Terminer la modification » lorsque vous avez terminé.</translation>
+    </message>
+    <message>
         <source>delete action</source>
         <translation>Supprimer l&apos;action</translation>
     </message>
@@ -359,6 +367,74 @@
         <source>Stops the key capture</source>
         <translation>Arrête la capture des touches</translation>
     </message>
-
+    <!-- Messages d'erreur de validation des macros -->
+    <message>
+        <source>Warning: %1th action repeats infinitely, following actions will never execute.</source>
+        <translation>Avertissement: l’action n°%1 se répète indéfiniment, les actions suivantes ne s'exécuteront jamais.</translation>
+    </message>
+    <message>
+        <source>Warning: Multiple consecutive actions with infinite repeat.</source>
+        <translation>Avertissement: Plusieurs actions consécutives avec répétition infinie.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</source>
+        <translation>Avertissement: L'action %1 a un intervalle négatif (%2ms). L'intervalle doit être >= 0.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</source>
+        <translation>Avertissement: L'action %1 a une durée de maintien négative (%2ms). La durée de maintien doit être >= 0.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</source>
+        <translation>Avertissement: L'action %1 a une durée de maintien mais le type de clic est CLICK. La durée de maintien n'est significative que pour les actions HOLD.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOLD type but has no hold duration. HOLD actions require a positive hold duration.</source>
+        <translation>Avertissement: L'action %1 est de type HOLD mais n'a pas de durée de maintien. Les actions HOLD nécessitent une durée de maintien positive.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid click count (%2). Click count must be positive.</source>
+        <translation>Avertissement: L'action %1 a un nombre de clics invalide (%2). Le nombre de clics doit être positif.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</source>
+        <translation>Avertissement: L'action %1 est de type HOVER mais a un nombre de clics > 1. Les actions HOVER devraient avoir un nombre de clics = 1.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</source>
+        <translation>Avertissement: L'action %1 est une action de souris mais n'a pas de position spécifiée et current_pos est false.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position format. Expected 'x,y' format.</source>
+        <translation>Avertissement: L'action %1 a un format de position invalide. Format 'x,y' attendu.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has invalid position coordinates. Must be valid integers.</source>
+        <translation>Avertissement: L'action %1 a des coordonnées de position invalides. Doivent être des entiers valides.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 position (%2,%3) is outside screen bounds.</source>
+        <translation>Avertissement: La position de l'action %1 (%2,%3) est en dehors des limites de l'écran.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 is keyboard action but has no key specified.</source>
+        <translation>Avertissement: L'action %1 est une action de clavier mais n'a pas de touche spécifiée.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large interval (%2ms = %3 seconds). This might cause long delays.</source>
+        <translation>Avertissement: L'action %1 a un très grand intervalle (%2ms = %3 secondes). Cela pourrait causer de longs délais.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large hold duration (%2ms = %3 seconds).</source>
+        <translation>Avertissement: L'action %1 a une très grande durée de maintien (%2ms = %3 secondes).</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large repeat count (%2). This might cause long execution times.</source>
+        <translation>Avertissement: L'action %1 a un très grand nombre de répétitions (%2). Cela pourrait causer de longs temps d'exécution.</translation>
+    </message>
+    <message>
+        <source>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</source>
+        <translation>Avertissement: L'action %1 a un très grand nombre de clics (%2). Cela pourrait causer un comportement inattendu.</translation>
+    </message>
 </context>
 </TS>
