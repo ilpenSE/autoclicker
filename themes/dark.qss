@@ -115,15 +115,15 @@ QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox {
     min-height: 20px;
 }
 
-QSpinBox {
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-primary);
-    border-radius: 4px;
+QTableWidget HotkeyLineEdit,
+QTableWidget QLineEdit[readOnly="true"] {
     color: var(--text-primary);
-    padding: 4px;
-    selection-background-color: var(--accent-color);
-    font-size: 9pt;
-    min-height: 20px;
+}
+
+QTableWidget HotkeyLineEdit:focus,
+QTableWidget QLineEdit[readOnly="true"]:focus {
+    color: var(--text-primary);
+    background-color: var(--primary-bg);
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
@@ -135,6 +135,17 @@ QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled {
     background-color: #1a1a1a;
     color: var(--text-disabled);
     border-color: #2a2a2a;
+}
+
+QSpinBox {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    color: var(--text-primary);
+    padding: 4px;
+    selection-background-color: var(--accent-color);
+    font-size: 9pt;
+    min-height: 20px;
 }
 
 /* ComboBox */
@@ -156,7 +167,6 @@ QTableWidget QComboBox:disabled {
     background-color: #3c3c3c;
 }
 
-/* Tablo içindeki ComboBox'lar için özel ayar */
 QTableWidget QComboBox {
     margin: 1px;
     min-width: 80px;
@@ -660,9 +670,6 @@ QToolTip {
 
 /* Reorder Mode Specific Styling */
 QLabel[reorderMode="true"] {
-    background-color: var(--reorder-info-bg);
-    border: 1px solid var(--reorder-border);
-    border-radius: 6px;
     padding: 8px 12px;
     font-weight: bold;
     color: var(--info-color);
@@ -670,26 +677,18 @@ QLabel[reorderMode="true"] {
 
 /* Status Message Styling */
 QLabel[statusType="success"] {
-    background-color: var(--reorder-success-bg);
-    border: 1px solid var(--success-color);
     color: var(--success-color);
 }
 
 QLabel[statusType="warning"] {
-    background-color: var(--reorder-warning-bg);
-    border: 1px solid var(--warning-color);
     color: var(--warning-color);
 }
 
 QLabel[statusType="error"] {
-    background-color: var(--reorder-error-bg);
-    border: 1px solid var(--error-color);
     color: var(--error-color);
 }
 
 QLabel[statusType="info"] {
-    background-color: var(--reorder-info-bg);
-    border: 1px solid var(--info-color);
     color: var(--info-color);
 }
 /* Reorder animation states için */
@@ -706,6 +705,5 @@ QWidget[animationState="to"] {
 QWidget[reorderHighlight="true"] {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
         stop:0 var(--reorder-bg), stop:1 var(--reorder-bg-light)) !important;
-    border: 2px solid var(--reorder-border) !important;
     border-radius: 3px;
 }
