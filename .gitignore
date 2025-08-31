@@ -1,0 +1,5 @@
+icon_cache
+*.log
+*.tmp
+icon_cache/
+icon_cache/*
