@@ -1,5 +1,6 @@
 icon_cache
-*.log
-*.tmp
-icon_cache/
 icon_cache/*
+icon_cache/
+*.sqlite
+*.json
+*.log
