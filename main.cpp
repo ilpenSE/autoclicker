@@ -31,6 +31,11 @@ int main(int argc, char *argv[]) {
     QMessageBox::critical(NULL, "Error", "AppData cannot be created or found.");
     return -1;
   }
+  if (!AppDataManager::instance().ensureDefaultAssets()) {
+    lnerr() << "(From main) Default assets cannot be downloaded.";
+    QMessageBox::critical(nullptr, "Error", "Default assets cannot be downloaded. Check your internet connection.");
+    return -1;
+  }
 
   // ayarları yükle
   // BURDA, APPDATA/ROAMING/AutoClicker2/settings.json'dan ayarları çekicek
@@ -54,8 +59,7 @@ int main(int argc, char *argv[]) {
     SettingsManager::instance().saveSettings(settingsPath, settings);
     fswrn() << "Settings file was deleted or corrupted, created one.";
   } else {
-    // ÖNEMLİ: Dosya mevcutsa SADECE eksik ayarları ekle, mevcut ayarları
-    // değiştirme!
+    // Dosya mevcutsa SADECE eksik ayarları ekle, mevcut ayarları değiştirme!
     bool needsUpdate = false;
 
     // Sadece eksik ayarları kontrol et
@@ -91,6 +95,39 @@ int main(int argc, char *argv[]) {
     if (!LanguageManager::instance().loadLanguage("en_US")) {
       QMessageBox::critical(NULL, "Error", "Language cannot be loaded.");
       return -1;
+    }
+  }
+
+  // Theme dosyası kontrolü
+  QString themesPath = AppDataManager::instance().appFolderPath() + "/themes.json";
+
+  bool themesOk = false;
+  QJsonObject themes =
+      SettingsManager::instance().loadSettings(themesPath, themesOk);
+
+  if (!themesOk) {
+    // Varsayılan themes.json oluştur
+    QJsonObject defaults;
+    defaults["dark"] = "Fluent Dark";
+    defaults["light"] = "Fluent Light";
+
+    SettingsManager::instance().saveSettings(themesPath, defaults);
+    fswrn() << "Themes file was deleted or corrupted, created one.";
+    themes = defaults;
+  } else {
+    // Eksik key varsa ekle
+    bool needsUpdate = false;
+    if (!themes.contains("dark")) {
+      themes["dark"] = "Fluent Dark";
+      needsUpdate = true;
+    }
+    if (!themes.contains("light")) {
+      themes["light"] = "Fluent Light";
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
+      SettingsManager::instance().saveSettings(themesPath, themes);
     }
   }
 

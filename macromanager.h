@@ -75,6 +75,9 @@ class MacroManager final : public QObject {
                   const QString& hotkey, QString* error = nullptr);
   bool updateMacro(const Macro& m, QString* error = nullptr);
   bool deleteMacro(int id, QString* error = nullptr);
+  bool updateMacroName(int macroId, const QString& newName, QString* error = nullptr);
+  bool updateMacroDescription(int macroId, const QString& newDescription, QString* error = nullptr);
+  bool updateMacroHotkey(int macroId, const QString& newHotkey, QString* error = nullptr);
 
   // Actions
   QVector<MacroAction> getActions(int macroId) const;

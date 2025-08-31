@@ -96,16 +96,10 @@ void SettingsWin::setupDynamicIcons() {
 }
 
 void SettingsWin::onThemeChanged() {
-  // This slot is called when theme changes
-  // Icons are automatically updated by ThemeManager
-  thinfo() << "Theme changed, icons updated automatically";
-
-  // You can add additional theme-related updates here if needed
   refreshIcons();
 }
 
 void SettingsWin::refreshIcons() {
-  // Force refresh all icons if needed
   ThemeManager::instance().refreshAllIcons();
 }
 

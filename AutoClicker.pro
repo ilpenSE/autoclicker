@@ -2,6 +2,7 @@ QT       += core gui
 QT += sql
 QT += svg
 LIBS += -luser32
+QT += network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17

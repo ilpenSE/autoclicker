@@ -101,17 +101,16 @@ bool MacroManager::ensureDefaultMacro(QString* error) {
       " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
   insA.addBindValue(DEFAULT_MACRO_ID);
   insA.addBindValue(0);
-  insA.addBindValue("mouse");
-  insA.addBindValue("CLICK");
-  insA.addBindValue(0);
-  insA.addBindValue("0, 0");
-  insA.addBindValue(1);
-  insA.addBindValue(100);
-  insA.addBindValue(1000);
-  insA.addBindValue(1000);
-  insA.addBindValue(1);
-  insA.addBindValue("LEFT");
-  insA.addBindValue("A");
+  insA.addBindValue("mouse"); // action type
+  insA.addBindValue("CLICK"); // click type
+  insA.addBindValue(0); // repeat
+  insA.addBindValue("0, 0"); // position
+  insA.addBindValue(1); // current_pos
+  insA.addBindValue(100); // interval
+  insA.addBindValue(1000); // hold_duration
+  insA.addBindValue(1); // click_count
+  insA.addBindValue("LEFT"); // mouse button
+  insA.addBindValue("A"); // key_name
   if (!insA.exec()) {
     m_db.rollback();
     return execQuery(insA, "insert DEFAULT Action", error);
@@ -630,6 +629,80 @@ bool MacroManager::deleteMacro(int id, QString* error) {
   q.prepare("DELETE FROM Macros WHERE id=?");
   q.addBindValue(id);
   if (!q.exec()) return execQuery(q, "delete Macro", error);
+  return true;
+}
+// MacroManager'ın cpp dosyasına ekleyin:
+
+bool MacroManager::updateMacroName(int macroId, const QString& newName, QString* error) {
+  if (macroId == DEFAULT_MACRO_ID) {
+    if (error) *error = "DEFAULT cannot be edited.";
+    return false;
+  }
+
+  if (!validateMacroName(newName, error)) {
+    return false;
+  }
+
+  // Aynı isimde başka macro var mı kontrol et (kendisi hariç)
+  QSqlQuery checkQuery(m_db);
+  checkQuery.prepare("SELECT id FROM Macros WHERE name=? AND id!=?");
+  checkQuery.addBindValue(newName);
+  checkQuery.addBindValue(macroId);
+  if (checkQuery.exec() && checkQuery.next()) {
+    if (error) *error = "A macro with this name exists!";
+    return false;
+  }
+
+  QSqlQuery q(m_db);
+  q.prepare("UPDATE Macros SET name=? WHERE id=?");
+  q.addBindValue(newName);
+  q.addBindValue(macroId);
+
+  if (!q.exec()) {
+    return execQuery(q, "update macro name", error);
+  }
+  return true;
+}
+
+bool MacroManager::updateMacroDescription(int macroId, const QString& newDescription, QString* error) {
+  if (macroId == DEFAULT_MACRO_ID) {
+    if (error) *error = "DEFAULT cannot be edited.";
+    return false;
+  }
+
+  if (!validateMacroDescription(newDescription, error)) {
+    return false;
+  }
+
+  QSqlQuery q(m_db);
+  q.prepare("UPDATE Macros SET description=? WHERE id=?");
+  q.addBindValue(newDescription);
+  q.addBindValue(macroId);
+
+  if (!q.exec()) {
+    return execQuery(q, "update macro description", error);
+  }
+  return true;
+}
+
+bool MacroManager::updateMacroHotkey(int macroId, const QString& newHotkey, QString* error) {
+  if (macroId == DEFAULT_MACRO_ID) {
+    if (error) *error = "DEFAULT cannot be edited.";
+    return false;
+  }
+
+  if (!validateHotkey(newHotkey, error)) {
+    return false;
+  }
+
+  QSqlQuery q(m_db);
+  q.prepare("UPDATE Macros SET hotkey=? WHERE id=?");
+  q.addBindValue(newHotkey);
+  q.addBindValue(macroId);
+
+  if (!q.exec()) {
+    return execQuery(q, "update macro hotkey", error);
+  }
   return true;
 }
 

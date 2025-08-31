@@ -14,6 +14,8 @@ class HotkeyLineEdit : public QLineEdit {
  public:
   explicit HotkeyLineEdit(QWidget* parent = nullptr);
   ~HotkeyLineEdit();
+  void setTableMode(bool enabled);
+  void setReadOnlyMode(bool readOnly);
 
   // Hotkey set/get
   void setHotkey(const QString& hotkey);
@@ -43,6 +45,10 @@ class HotkeyLineEdit : public QLineEdit {
   void updateDisplay();
 
  private:
+  bool m_isInTable;
+  bool m_manualActivation;
+  bool m_readOnlyMode;
+
   QString keyToString(int key) const;
   bool isModifierKey(int key) const;
   bool isValidKey(int key) const;

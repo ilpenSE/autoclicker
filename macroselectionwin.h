@@ -2,6 +2,7 @@
 #define MACROSELECTIONWIN_H
 
 #include <QDialog>
+#include <QTableWidgetItem>
 
 #include "macromanager.h"
 
@@ -35,6 +36,10 @@ class MacroSelectionWin : public QDialog {
   void on_btnDelete_clicked();
 
   void on_btnCreate_clicked();
+
+  void onItemChanged(QTableWidgetItem* item);
+  void onHotkeyReady(const QString& hotkey);
+  void onHotkeyChanged();
 
  protected:
   void resizeEvent(QResizeEvent* event) override;

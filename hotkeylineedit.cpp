@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QVBoxLayout>
+#include <QTableWidget>
 
 HotkeyLineEdit::HotkeyLineEdit(QWidget* parent)
     : QLineEdit(parent),
@@ -12,7 +13,10 @@ HotkeyLineEdit::HotkeyLineEdit(QWidget* parent)
       m_updateTimer(nullptr),
       m_dummyFocusWidget(nullptr),
       m_inUpdateDisplay(false),
-      m_inFocusEvent(false) {
+      m_inFocusEvent(false),
+      m_isInTable(false),
+      m_manualActivation(true),
+      m_readOnlyMode(false) {
   // Timer
   m_updateTimer = new QTimer(this);
   m_updateTimer->setSingleShot(true);
@@ -30,7 +34,18 @@ HotkeyLineEdit::HotkeyLineEdit(QWidget* parent)
   // Widget settings
   setReadOnly(true);
   setPlaceholderText("Click to set hotkey...");
-  setStyleSheet("QLineEdit { padding: 6px 10px; }");
+
+  // Table'da mı kontrol et
+  QWidget* parentWidget = parent;
+  while (parentWidget) {
+    if (qobject_cast<QTableWidget*>(parentWidget)) {
+      m_isInTable = true;
+      // Table'dayken farklı ayarlar
+      setFocusPolicy(Qt::NoFocus);  // Hiç focus almasın
+      break;
+    }
+    parentWidget = parentWidget->parentWidget();
+  }
 }
 
 HotkeyLineEdit::~HotkeyLineEdit() {
@@ -48,7 +63,17 @@ void HotkeyLineEdit::setHotkey(const QString& hotkey) {
     setPlaceholderText("Click to change hotkey...");
   }
 }
+void HotkeyLineEdit::setReadOnlyMode(bool readOnly) {
+  m_readOnlyMode = readOnly;
 
+  if (readOnly) {
+    setPlaceholderText("Hotkey cannot be changed");
+    setToolTip("This macro's hotkey cannot be modified");
+  } else {
+    setPlaceholderText("Click to set hotkey...");
+    setToolTip("");
+  }
+}
 QString HotkeyLineEdit::getHotkey() const { return m_finalHotkey; }
 
 void HotkeyLineEdit::startCapture() {
@@ -56,7 +81,7 @@ void HotkeyLineEdit::startCapture() {
 
   m_capturing = true;
   clearCapture();
-  setText("+ ...");
+  setText("...");
   setPlaceholderText("Press keys and click Select button");
 }
 
@@ -66,15 +91,29 @@ void HotkeyLineEdit::stopCapture() {
 }
 
 void HotkeyLineEdit::acceptHotkey() {
-  stopCapture();  // finalize
-  clearFocus();   // focus lineedit’ten kalksın
+  stopCapture();
+
+  if (m_isInTable) {
+    setFocusPolicy(Qt::NoFocus); // Focus policy'yi tekrar kapat
+    clearFocus();
+    m_manualActivation = false;
+  } else {
+    clearFocus();
+  }
 }
 
 void HotkeyLineEdit::cancelCapture() {
   m_capturing = false;
   setText(m_finalHotkey);
   clearCapture();
-  clearFocus();
+
+  if (m_isInTable) {
+    setFocusPolicy(Qt::NoFocus);
+    clearFocus();
+    m_manualActivation = false;
+  } else {
+    clearFocus();
+  }
 }
 
 void HotkeyLineEdit::finalizeCapturedHotkey() {
@@ -99,17 +138,48 @@ void HotkeyLineEdit::finalizeCapturedHotkey() {
     m_dummyFocusWidget->setFocus();
   }
 }
+void HotkeyLineEdit::mousePressEvent(QMouseEvent* e) {
+  if (m_readOnlyMode) {
+    e->ignore();
+    return;
+  }
 
+  if (m_isInTable) {
+    m_manualActivation = true;
+    setFocusPolicy(Qt::StrongFocus); // Geçici olarak focus'a izin ver
+    setFocus(); // Manuel focus
+    if (!m_capturing) {
+      startCapture();
+    }
+  } else {
+    QLineEdit::mousePressEvent(e);
+    if (!m_capturing) {
+      startCapture();
+    }
+  }
+}
 void HotkeyLineEdit::keyPressEvent(QKeyEvent* event) {
+  if (m_readOnlyMode) {
+    event->ignore();
+    return;
+  }
+
+  // Table'daysa ve manuel aktivasyon yoksa tuşları ignore et
+  if (m_isInTable && !m_manualActivation && !m_capturing) {
+    event->ignore();
+    return;
+  }
+
   if (!m_capturing) {
     startCapture();
     return;
   }
+
   if (event->isAutoRepeat()) return;
 
   int key = event->key();
 
-  // ESC cancel
+          // ESC cancel
   if (key == Qt::Key_Escape) {
     cancelCapture();
     return;
@@ -118,10 +188,10 @@ void HotkeyLineEdit::keyPressEvent(QKeyEvent* event) {
   if (!isValidKey(key)) return;
 
   if (isModifierKey(key)) {
-    m_modifiers.insert(key);  // release’te silmiyoruz
+    m_modifiers.insert(key);
   } else {
     if (m_mainKey == -1) {
-      m_mainKey = key;  // ilk non-modifier key’i al
+      m_mainKey = key;
     }
   }
 
@@ -132,26 +202,38 @@ void HotkeyLineEdit::keyReleaseEvent(QKeyEvent* event) {
   if (!m_capturing) return;
   if (event->isAutoRepeat()) return;
 }
-
 void HotkeyLineEdit::focusInEvent(QFocusEvent* event) {
+  if (m_isInTable && !m_manualActivation) {
+    // Table'daysa ve manuel aktivasyon değilse focus'u reddet
+    event->ignore();
+    return;
+  }
+
   QLineEdit::focusInEvent(event);
-  if (!m_capturing) {
+
+  if (!m_capturing && event->reason() != Qt::PopupFocusReason) {
     startCapture();
   }
 }
 
 void HotkeyLineEdit::focusOutEvent(QFocusEvent* event) {
   QLineEdit::focusOutEvent(event);
+
   if (m_capturing) {
-    acceptHotkey();
+    QTimer::singleShot(0, this, &HotkeyLineEdit::acceptHotkey);
+  }
+
+  m_manualActivation = false; // Reset
+}
+
+void HotkeyLineEdit::setTableMode(bool enabled) {
+  m_isInTable = enabled;
+  if (enabled) {
+    setFocusPolicy(Qt::NoFocus);
+  } else {
+    setFocusPolicy(Qt::StrongFocus);
   }
 }
-
-void HotkeyLineEdit::mousePressEvent(QMouseEvent* e) {
-  QLineEdit::mousePressEvent(e);
-  startCapture();  // sadece kullanıcı tıkladığında başlat
-}
-
 void HotkeyLineEdit::updateDisplay() {
   if (!m_capturing || m_inUpdateDisplay) return;
   m_inUpdateDisplay = true;

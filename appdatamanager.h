@@ -34,6 +34,11 @@ class AppDataManager : public QObject {
   bool createSettingsFile();
   bool fixSettingsFile();
 
+  // assets
+  QString assetUrl(const QString& relativePath);
+  bool ensureFileExists(const QString& relativePath);
+  bool ensureDefaultAssets();
+
  private:
   explicit AppDataManager(QObject* parent = nullptr) : QObject(parent) {}
 

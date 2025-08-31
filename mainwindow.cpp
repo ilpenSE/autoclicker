@@ -138,15 +138,9 @@ MainWindow::MainWindow(const QJsonObject& settings,
   ui->labelErrors->setVisible(false);
 }
 
-// Real time validation
 void MainWindow::validateCurrentActions() {
-  // Sadece UI'da göster, kaydetmeyi engelleme
-  if (!checkPointlessCycles()) {
-    // Hata zaten gösterildi, hiçbir şey yapma
-    return;
-  }
+  if (!checkPointlessCycles()) return;
 
-  // Validasyon başarılı, hata mesajını gizle
   ui->labelErrors->setVisible(false);
 }
 
@@ -227,7 +221,6 @@ void MainWindow::setActiveMacro(int id) {
 }
 
 void MainWindow::setupDynamicIcons() {
-  // Use assets/icons from the project directory
   QString iconsPath = ":/assets/icons";  // Resource path
 
   // Setup QActions with dynamic icons
@@ -257,15 +250,6 @@ void MainWindow::setupDynamicIcons() {
 
 void MainWindow::onThemeChanged() {
   refreshIcons();
-  for (int row = 0; row < ui->actionsTable->rowCount(); ++row) {
-    for (int col = 0; col < ui->actionsTable->columnCount(); ++col) {
-      if (QWidget* widget = ui->actionsTable->cellWidget(row, col)) {
-        widget->setProperty("animationState", QVariant());
-        widget->style()->unpolish(widget);
-        widget->style()->polish(widget);
-      }
-    }
-  }
 }
 
 void MainWindow::refreshIcons() {
@@ -1001,15 +985,6 @@ bool MainWindow::checkPointlessCycles() {
         MessageBeep(MB_ICONHAND);
         return false;
       }
-
-      // Hold duration varsa ama click type CLICK ise mantıksız
-      if (a.click_type == ClickType::CLICK && a.hold_duration.value() > 0) {
-        ui->labelErrors->setVisible(true);
-        ui->labelErrors->setText(tr("Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.")
-                                     .arg(i + 1));
-        MessageBeep(MB_ICONHAND);
-        return false;
-      }
     }
 
     // HOLD action için hold_duration zorunlu
@@ -1352,13 +1327,13 @@ void MainWindow::enterReorderMode(int row) {
   ui->actionsTable->setFocus();
   ui->actionsTable->selectRow(row);
 
-          // Kullanıcıya bilgi ver - sürekli mode olduğunu belirt
+  // Kullanıcıya bilgi ver - sürekli mode olduğunu belirt
   ui->labelErrors->setVisible(true);
-  ui->labelErrors->setText(tr("Reorder mode: Use UP/DOWN arrows to move actions, select different rows to continue reordering. Click 'Confirm Order' to save changes or ESC to cancel"));
+  ui->labelErrors->setText(tr("Use UP/DOWN arrows to move actions, select different rows to continue reordering. Click 'Confirm Order' to save changes or ESC to cancel"));
   ui->labelErrors->setProperty("reorderMode", true);
   ui->labelErrors->setProperty("statusType", "info");
-  ui->labelErrors->style()->unpolish(ui->labelErrors);
-  ui->labelErrors->style()->polish(ui->labelErrors);
+  /*ui->labelErrors->style()->unpolish(ui->labelErrors);
+  ui->labelErrors->style()->polish(ui->labelErrors);*/
 
           // Key event filter ekle
   ui->actionsTable->installEventFilter(this);
@@ -1383,11 +1358,10 @@ void MainWindow::onReorderCellClicked(int row, int column) {
     highlightReorderRow();
 
     // Label'ın gitmesini engelle - sadece row bilgisini güncelle
-    ui->labelErrors->setText(tr("Reorder mode: Selected row %1. Use UP/DOWN arrows to move, select other rows to continue, 'Confirm Order' to save or ESC to cancel").arg(row + 1));
-    ui->labelErrors->setVisible(true);
+    ui->labelErrors->setText(tr("Selected row %1. Use UP/DOWN arrows to move, select other rows to continue, 'Confirm Order' to save or ESC to cancel").arg(row + 1));
     ui->labelErrors->setProperty("statusType", "info");
-    ui->labelErrors->style()->unpolish(ui->labelErrors);
-    ui->labelErrors->style()->polish(ui->labelErrors);
+    ThemeManager::instance().applyQssColors(ui->labelErrors);
+    ui->labelErrors->setVisible(true);
   }
 }
 
@@ -1415,10 +1389,8 @@ void MainWindow::exitReorderMode() {
   }
   ui->labelErrors->setProperty("reorderMode", false);
   ui->labelErrors->setProperty("statusType", QVariant()); // Clear property
-  ui->labelErrors->style()->unpolish(ui->labelErrors);
-  ui->labelErrors->style()->polish(ui->labelErrors);
+  ThemeManager::instance().applyQssColors(ui->labelErrors);
 
-          // Highlight temizle
   clearRowHighlights();
 }
 
@@ -1510,8 +1482,8 @@ void MainWindow::highlightReorderRow() {
       // Widget'lar için de enhanced highlight
       if (QWidget* widget = ui->actionsTable->cellWidget(m_reorderCurrentRow, col)) {
         widget->setProperty("reorderHighlight", true);
-        widget->style()->unpolish(widget);
-        widget->style()->polish(widget);
+        ThemeManager::instance().applyQssColors(widget);
+
       }
     }
 
@@ -1537,11 +1509,9 @@ void MainWindow::clearRowHighlights() {
 
       // Widget'ların style'ını da temizle
       if (QWidget* widget = ui->actionsTable->cellWidget(row, col)) {
-        QString currentStyle = widget->styleSheet();
         // Reorder ile eklenen style'ları temizle
         widget->setProperty("reorderHighlight", QVariant());
-        widget->style()->unpolish(widget);
-        widget->style()->polish(widget);
+        ThemeManager::instance().applyQssColors(widget);
       }
     }
 
@@ -1574,18 +1544,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
         ui->labelErrors->setText(tr("Reorder cancelled, changes discarded"));
         ui->labelErrors->setProperty("reorderMode", false);
         ui->labelErrors->setProperty("statusType", "warning");
-        ui->labelErrors->style()->unpolish(ui->labelErrors);
-        ui->labelErrors->style()->polish(ui->labelErrors);
+        ThemeManager::instance().applyQssColors(ui->labelErrors);
 
         // Orijinal data'yı yükle
         setActiveMacro(activeMacro.id);
         exitReorderMode();
 
-        // 2 saniye sonra mesajı temizle
-        QTimer::singleShot(2000, this, [this]() {
+        // 3 saniye sonra mesajı temizle
+        QTimer::singleShot(3000, this, [this]() {
           if (!m_reorderMode) {
             ui->labelErrors->setVisible(false);
-            ui->labelErrors->setStyleSheet("");
           }
         });
         return true;
@@ -1602,8 +1570,7 @@ void MainWindow::showMoveAnimation(int fromRow, int toRow) {
     }
     if (QWidget* widget = ui->actionsTable->cellWidget(fromRow, col)) {
       widget->setProperty("animationState", "from");
-      widget->style()->unpolish(widget);
-      widget->style()->polish(widget);
+      ThemeManager::instance().applyQssColors(widget);
     }
   }
 
@@ -1614,8 +1581,7 @@ void MainWindow::showMoveAnimation(int fromRow, int toRow) {
     }
     if (QWidget* widget = ui->actionsTable->cellWidget(toRow, col)) {
       widget->setProperty("animationState", "to");
-      widget->style()->unpolish(widget);
-      widget->style()->polish(widget);
+      ThemeManager::instance().applyQssColors(widget);
     }
   }
 
@@ -1635,8 +1601,7 @@ void MainWindow::showMoveAnimation(int fromRow, int toRow) {
     }
     if (QWidget* widget = ui->actionsTable->cellWidget(fromRow, col)) {
       widget->setProperty("animationState", QVariant()); // Clear property
-      widget->style()->unpolish(widget);
-      widget->style()->polish(widget);
+      ThemeManager::instance().applyQssColors(widget);
     }
   }
 
@@ -1647,8 +1612,7 @@ void MainWindow::showMoveAnimation(int fromRow, int toRow) {
     }
     if (QWidget* widget = ui->actionsTable->cellWidget(toRow, col)) {
       widget->setProperty("animationState", QVariant()); // Clear property
-      widget->style()->unpolish(widget);
-      widget->style()->polish(widget);
+      ThemeManager::instance().applyQssColors(widget);
     }
   }
 
