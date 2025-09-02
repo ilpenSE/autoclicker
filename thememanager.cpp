@@ -5,13 +5,13 @@
 #include <QImage>
 #include <QJsonObject>
 #include <QPainter>
+#include <QPalette>
 #include <QPointer>
 #include <QRegularExpression>
 #include <QStandardPaths>
-#include <QtSvg/QSvgRenderer>
-#include <QWidget>
-#include <QPalette>
 #include <QStyle>
+#include <QWidget>
+#include <QtSvg/QSvgRenderer>
 
 #include "LoggerStream.h"
 #include "appdatamanager.h"
@@ -55,7 +55,7 @@ void ThemeManager::resolveVars(QString* qssContent) const {
 
   QString& qss = *qssContent;
 
-          // :root {...} bloğunu bul ve değişkenleri çıkar
+  // :root {...} bloğunu bul ve değişkenleri çıkar
   QRegularExpression rootRegex(R"(:root\s*\{([^}]+)\})");
   QRegularExpressionMatch rootMatch = rootRegex.match(qss);
 
@@ -78,7 +78,7 @@ void ThemeManager::resolveVars(QString* qssContent) const {
     }
   }
 
-          // var(--key) kullanımlarını değiştir
+  // var(--key) kullanımlarını değiştir
   QRegularExpression useRegex(R"(var\(--([a-zA-Z0-9_-]+)\))");
   QRegularExpressionMatchIterator useIt = useRegex.globalMatch(qss);
 
@@ -96,7 +96,7 @@ void ThemeManager::resolveVars(QString* qssContent) const {
     }
   }
 
-          // :root bloğunu tamamen kaldır
+  // :root bloğunu tamamen kaldır
   qss.remove(rootRegex);
 
   thinfo() << "CSS variables resolved and :root block removed";
@@ -260,30 +260,34 @@ void ThemeManager::setIconColors(const QColor& normal, const QColor& hover,
 
 void ThemeManager::parseThemeColors(const QString& qssContent) {
   // İlk olarak yorumlardan icon renklerini çıkar
-  static QRegularExpression iconColorRegex(R"(\/\*\s*@icon-color:\s*([^*]+)\s*\*\/)");
-  static QRegularExpression hoverColorRegex(R"(\/\*\s*@hover-color:\s*([^*]+)\s*\*\/)");
-  static QRegularExpression pressedColorRegex(R"(\/\*\s*@pressed-color:\s*([^*]+)\s*\*\/)");
-  static QRegularExpression disabledColorRegex(R"(\/\*\s*@disabled-color:\s*([^*]+)\s*\*\/)");
+  static QRegularExpression iconColorRegex(
+      R"(\/\*\s*@icon-color:\s*([^*]+)\s*\*\/)");
+  static QRegularExpression hoverColorRegex(
+      R"(\/\*\s*@hover-color:\s*([^*]+)\s*\*\/)");
+  static QRegularExpression pressedColorRegex(
+      R"(\/\*\s*@pressed-color:\s*([^*]+)\s*\*\/)");
+  static QRegularExpression disabledColorRegex(
+      R"(\/\*\s*@disabled-color:\s*([^*]+)\s*\*\/)");
 
   // Default değerler
-  m_iconColor    = QColor(204, 204, 204); // Dark tema için default
-  m_hoverColor   = QColor(255, 255, 255);
+  m_iconColor = QColor(204, 204, 204);  // Dark tema için default
+  m_hoverColor = QColor(255, 255, 255);
   m_pressedColor = QColor(136, 136, 136);
-  m_disabledColor= QColor(85, 85, 85);
+  m_disabledColor = QColor(85, 85, 85);
 
   // Light tema tespiti için QSS içeriğini kontrol et
-  bool isLightTheme = qssContent.contains("light", Qt::CaseInsensitive) ||
-                      (qssContent.contains("#ffffff") &&
-                       !qssContent.contains("#1e1e1e"));
+  bool isLightTheme =
+      qssContent.contains("light", Qt::CaseInsensitive) ||
+      (qssContent.contains("#ffffff") && !qssContent.contains("#1e1e1e"));
 
   if (isLightTheme) {
-    m_iconColor    = QColor(51, 51, 51);
-    m_hoverColor   = QColor(0, 120, 212);
+    m_iconColor = QColor(51, 51, 51);
+    m_hoverColor = QColor(0, 120, 212);
     m_pressedColor = QColor(0, 90, 158);
-    m_disabledColor= QColor(136, 136, 136);
+    m_disabledColor = QColor(136, 136, 136);
   }
 
-          // Yorumlardan custom renkleri parse et
+  // Yorumlardan custom renkleri parse et
   auto iconMatch = iconColorRegex.match(qssContent);
   if (iconMatch.hasMatch()) {
     QString colorStr = iconMatch.captured(1).trimmed();
@@ -320,48 +324,14 @@ void ThemeManager::parseThemeColors(const QString& qssContent) {
     }
   }
 
-  thinfo() << QString("Theme colors parsed - Icon: %1, Hover: %2, Pressed: %3, Disabled: %4")
+  thinfo() << QString(
+                  "Theme colors parsed - Icon: %1, Hover: %2, Pressed: %3, "
+                  "Disabled: %4")
                   .arg(m_iconColor.name())
                   .arg(m_hoverColor.name())
                   .arg(m_pressedColor.name())
                   .arg(m_disabledColor.name());
 }
-
-void ThemeManager::applyQssColors(QWidget* widget) {
-  if (!widget) return;
-
-  // Önce widget’ın stilini resetle
-  widget->style()->unpolish(widget);
-  widget->style()->polish(widget);
-
-  QString qss = widget->styleSheet();
-
-  // Regex ile tüm color değerlerini bul
-  static QRegularExpression re("color\\s*:\\s*([^;]+);");
-  static QRegularExpressionMatchIterator i = re.globalMatch(qss);
-
-  while (i.hasNext()) {
-    QRegularExpressionMatch match = i.next();
-    QString colorStr = match.captured(1).trimmed();
-
-    // var(--...) kullanılmışsa fallback olarak sabit bir renk seç
-    if (colorStr.startsWith("var(")) {
-      colorStr = "#000000"; // default fallback
-    }
-
-    QColor color(colorStr);
-    if (!color.isValid()) continue;
-
-    // Widget palette’ine uygula
-    QPalette pal = widget->palette();
-    pal.setColor(QPalette::WindowText, color);
-    pal.setColor(QPalette::ButtonText, color);
-    pal.setColor(QPalette::Text, color); // QTextEdit, QLineEdit için
-    widget->setPalette(pal);
-  }
-  widget->update();
-}
-
 
 bool ThemeManager::applyTheme(const QString& visibleName) {
   if (!themeMap.contains(visibleName)) {

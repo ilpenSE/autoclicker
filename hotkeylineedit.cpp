@@ -2,8 +2,8 @@
 
 #include <QApplication>
 #include <QDebug>
-#include <QVBoxLayout>
 #include <QTableWidget>
+#include <QVBoxLayout>
 
 HotkeyLineEdit::HotkeyLineEdit(QWidget* parent)
     : QLineEdit(parent),
@@ -94,7 +94,7 @@ void HotkeyLineEdit::acceptHotkey() {
   stopCapture();
 
   if (m_isInTable) {
-    setFocusPolicy(Qt::NoFocus); // Focus policy'yi tekrar kapat
+    setFocusPolicy(Qt::NoFocus);  // Focus policy'yi tekrar kapat
     clearFocus();
     m_manualActivation = false;
   } else {
@@ -146,8 +146,8 @@ void HotkeyLineEdit::mousePressEvent(QMouseEvent* e) {
 
   if (m_isInTable) {
     m_manualActivation = true;
-    setFocusPolicy(Qt::StrongFocus); // Geçici olarak focus'a izin ver
-    setFocus(); // Manuel focus
+    setFocusPolicy(Qt::StrongFocus);  // Geçici olarak focus'a izin ver
+    setFocus();                       // Manuel focus
     if (!m_capturing) {
       startCapture();
     }
@@ -179,7 +179,7 @@ void HotkeyLineEdit::keyPressEvent(QKeyEvent* event) {
 
   int key = event->key();
 
-          // ESC cancel
+  // ESC cancel
   if (key == Qt::Key_Escape) {
     cancelCapture();
     return;
@@ -223,7 +223,7 @@ void HotkeyLineEdit::focusOutEvent(QFocusEvent* event) {
     QTimer::singleShot(0, this, &HotkeyLineEdit::acceptHotkey);
   }
 
-  m_manualActivation = false; // Reset
+  m_manualActivation = false;  // Reset
 }
 
 void HotkeyLineEdit::setTableMode(bool enabled) {

@@ -245,9 +245,6 @@
            <bold>true</bold>
           </font>
          </property>
-         <property name="styleSheet">
-          <string notr="true">color: #db4335;</string>
-         </property>
          <property name="text">
           <string>ERRORS SHOULD VISIBLE HERE</string>
          </property>

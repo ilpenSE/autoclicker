@@ -1,12 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include <QComboBox>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include <QJsonObject>
 #include <QMainWindow>
 #include <QVector>
-#include <QDropEvent>
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
 
 #include "clickengine.h"
 #include "hotkeyservice.h"
@@ -64,9 +64,11 @@ class MainWindow : public QMainWindow {
 
  protected:
   void resizeEvent(QResizeEvent* event) override;
-  bool eventFilter(QObject *watched, QEvent *event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
+  void showmsg(QString str, MessageType t = MessageType::INFO);
+
   QVector<MacroAction>
       m_pendingActions;  // Memory'de tutulan geçici action listesi
   bool m_actionsModified = false;
@@ -102,15 +104,17 @@ class MainWindow : public QMainWindow {
   Ui::MainWindow* ui;
 
   bool isMacroRunning;
-  void lockOrUnlockUI(); // clicker çalışırken ui'ı kilitler ya da kapandığında ui'ı açar
+  void lockOrUnlockUI();  // clicker çalışırken ui'ı kilitler ya da kapandığında
+                          // ui'ı açar
 
   /* İZİN VERİLMEYEN DAVRANIŞLAR:
    * BİRDEN FAZLA AKSİYON VARKEN SONSUZ TEKRAR
    * ÇOK BÜYÜK CLICK COUNT
    * ÇOK BÜYÜK REPEAT
    * NEGATİF SAYILAR (INTERVAL, REPEAT, CLICK COUNT VS)
-   * CLICK TYPE İLE EK AYARLAR UYUMSUZLUĞU ÖRN "HOLD"DA HOLD DURATION 0'SA MANTIKSIZ
-  */
+   * CLICK TYPE İLE EK AYARLAR UYUMSUZLUĞU ÖRN "HOLD"DA HOLD DURATION 0'SA
+   * MANTIKSIZ
+   */
   void validateCurrentActions();
   bool checkPointlessCycles();
 
@@ -124,7 +128,8 @@ class MainWindow : public QMainWindow {
   void setupDynamicIcons();
   void refreshIcons();
 
-  // action typeların saçma ayarlara sahip olmasını engeller mesela keyboard'da mouse button ayarını kapatır vs.
+  // action typeların saçma ayarlara sahip olmasını engeller mesela keyboard'da
+  // mouse button ayarını kapatır vs.
   void applyActionTypeConstraints(int row, ActionType actionType);
 
   // actionları table'a ekleyip düzenleyen ya da alan fonksiyonlar

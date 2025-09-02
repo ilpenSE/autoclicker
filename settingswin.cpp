@@ -9,6 +9,15 @@
 #include "macromanager.h"
 #include "thememanager.h"
 #include "ui_settingswin.h"
+#include "consts.h"
+
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QEventLoop>
+#include <QTextEdit>
+#include <QUrl>
+#include <QDebug>
 
 SettingsWin::SettingsWin(const QJsonObject& settings, QWidget* parent)
     : QDialog(parent), m_settings(settings), ui(new Ui::SettingsWin) {
@@ -67,7 +76,10 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget* parent)
   QString currentHotkey = getSetting("DefaultHotkey").toString();
   ui->lineHotkey->setHotkey(currentHotkey);
 
-  loadLanguage();
+  QTimer::singleShot(1, this, [this]() {
+    loadLanguage();
+    loadPatchNotes();
+  });
 }
 
 void SettingsWin::setupDynamicIcons() {
@@ -95,13 +107,9 @@ void SettingsWin::setupDynamicIcons() {
   thinfo() << "Dynamic icons setup completed";
 }
 
-void SettingsWin::onThemeChanged() {
-  refreshIcons();
-}
+void SettingsWin::onThemeChanged() { refreshIcons(); }
 
-void SettingsWin::refreshIcons() {
-  ThemeManager::instance().refreshAllIcons();
-}
+void SettingsWin::refreshIcons() { ThemeManager::instance().refreshAllIcons(); }
 
 void SettingsWin::onHotkeyReady(const QString& hotkey) {
   hsinfo() << "Hotkey ready: " + hotkey;
@@ -201,4 +209,36 @@ void SettingsWin::on_btnSave_clicked() {
 void SettingsWin::on_btnDiscard_clicked() {
   // CANCEL
   reject();
+}
+
+void SettingsWin::loadPatchNotes() {
+  QString relativePath = "patchnotes.md";
+  QString urlStr = QString("https://raw.githubusercontent.com/%1/%2/%3/%4")
+                       .arg(GITHUB_USER)
+                       .arg(GITHUB_REPO)
+                       .arg("external_assets")
+                       .arg(relativePath);
+
+  QUrl url(urlStr);
+  QNetworkAccessManager manager;
+  QNetworkRequest request(url);
+
+  QNetworkReply* reply = manager.get(request);
+
+  QEventLoop loop;
+  QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+  loop.exec();
+
+  if (reply->error() != QNetworkReply::NoError) {
+    warn() << "Cannot download patch notes:" << reply->errorString();
+    ui->textPatchNotes->setMarkdown(trans("Cannot load patch notes."));
+    reply->deleteLater();
+    return;
+  }
+
+  QByteArray data = reply->readAll();
+  reply->deleteLater();
+
+  // Markdown olarak QTextEdit'e yaz
+  ui->textPatchNotes->setMarkdown(QString::fromUtf8(data));
 }

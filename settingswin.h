@@ -33,6 +33,8 @@ class SettingsWin : public QDialog {
 
   void on_btnDiscard_clicked();
 
+  void loadPatchNotes();
+
  private:
   QString trans(const QString& key);
   Ui::SettingsWin* ui;

@@ -43,7 +43,6 @@ class AdditionalSettingsDialog : public QDialog {
   void onThemeChanged();
   void setupDynamicIcons();
   void refreshIcons();
-
 };
 
 #endif  // ADDITIONALSETTINGSDIALOG_H

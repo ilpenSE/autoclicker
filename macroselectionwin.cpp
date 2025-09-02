@@ -5,13 +5,13 @@
 #include <QMessageBox>
 #include <QTimer>
 
+#include "LoggerStream.h"
+#include "hotkeylineedit.h"
 #include "languagemanager.h"
 #include "logger.h"
 #include "macromanager.h"
 #include "thememanager.h"
 #include "ui_macroselectionwin.h"
-#include "hotkeylineedit.h"
-#include "LoggerStream.h"
 
 MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, int activeMacroId,
                                      QWidget* parent)
@@ -31,7 +31,8 @@ MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, int activeMacroId,
 
   // tablo ayarlamaları
   QTimer::singleShot(0, this, &MacroSelectionWin::adjustTableColumns);
-  connect(ui->macrosTable, &QTableWidget::itemChanged, this, &MacroSelectionWin::onItemChanged);
+  connect(ui->macrosTable, &QTableWidget::itemChanged, this,
+          &MacroSelectionWin::onItemChanged);
   ui->macrosTable->verticalHeader()->setVisible(false);
 
   loadLang();
@@ -84,9 +85,7 @@ void MacroSelectionWin::setupDynamicIcons() {
   sinfo() << "Dynamic icons setup completed";
 }
 
-void MacroSelectionWin::onThemeChanged() {
-  refreshIcons();
-}
+void MacroSelectionWin::onThemeChanged() { refreshIcons(); }
 
 void MacroSelectionWin::refreshIcons() {
   ThemeManager::instance().refreshAllIcons();
@@ -149,28 +148,31 @@ void MacroSelectionWin::onItemChanged(QTableWidgetItem* item) {
   Macro& macro = m_macros[row];
   QString newValue = item->text().trimmed();
 
-  if (column == 1) { // Name sütunu
-    if (macro.name == newValue) return; // Değişiklik yoksa çık
+  if (column == 1) {                     // Name sütunu
+    if (macro.name == newValue) return;  // Değişiklik yoksa çık
 
     QString oldName = macro.name;
     macro.name = newValue;
 
     // SQL güncelleme
     QString error;
-    bool success = MacroManager::instance().updateMacroName(macro.id, newValue, &error);
+    bool success =
+        MacroManager::instance().updateMacroName(macro.id, newValue, &error);
 
     if (!success) {
       // Hata varsa eski değere geri dön
       macro.name = oldName;
       item->setText(oldName);
-      QMessageBox::critical(this, trans("error"), error);
-      Logger::instance().mError("Macro name update failed: " + error);
+      QMessageBox::critical(this, trans("error"), trans(error));
+      merr() << "Macro name update failed: " << error;
     } else {
-      Logger::instance().mInfo(QString("Macro name updated: ID %1, new name: %2")
-                                   .arg(macro.id).arg(newValue));
+      minfo() <<
+          QString("Macro name updated: ID %1, new name: %2")
+              .arg(macro.id)
+              .arg(newValue);
     }
 
-  } else if (column == 2) { // Description sütunu
+  } else if (column == 2) {  // Description sütunu
     if (macro.description == newValue) return;
 
     QString oldDesc = macro.description;
@@ -178,17 +180,20 @@ void MacroSelectionWin::onItemChanged(QTableWidgetItem* item) {
 
     // SQL güncelleme
     QString error;
-    bool success = MacroManager::instance().updateMacroDescription(macro.id, newValue, &error);
+    bool success = MacroManager::instance().updateMacroDescription(
+        macro.id, newValue, &error);
 
     if (!success) {
       // Hata varsa eski değere geri dön
       macro.description = oldDesc;
       item->setText(oldDesc);
-      QMessageBox::critical(this, trans("error"), error);
-      Logger::instance().mError("Macro description update failed: " + error);
+      QMessageBox::critical(this, trans("error"), trans(error));
+      merr() << "Macro description update failed: " << error;
     } else {
-      Logger::instance().mInfo(QString("Macro description updated: ID %1, new desc: %2")
-                                   .arg(macro.id).arg(newValue));
+      minfo() <<
+          QString("Macro description updated: ID %1, new desc: %2")
+              .arg(macro.id)
+              .arg(newValue);
     }
   }
 }
@@ -211,29 +216,30 @@ void MacroSelectionWin::onHotkeyReady(const QString& hotkey) {
   Macro& macro = m_macros[row];
   QString oldHotkey = macro.hotkey;
 
-  if (oldHotkey == hotkey) return; // Değişiklik yoksa çık
+  if (oldHotkey == hotkey) return;  // Değişiklik yoksa çık
 
   macro.hotkey = hotkey;
 
   // SQL güncelleme
   QString error;
-  bool success = MacroManager::instance().updateMacroHotkey(macro.id, hotkey, &error);
+  bool success =
+      MacroManager::instance().updateMacroHotkey(macro.id, hotkey, &error);
 
   if (!success) {
     // Hata varsa eski değere geri dön
     macro.hotkey = oldHotkey;
     senderWidget->setHotkey(oldHotkey);
-    QMessageBox::critical(this, trans("error"), error);
-    Logger::instance().mError("Macro hotkey update failed: " + error);
+    QMessageBox::critical(this, trans("error"), trans(error));
+    merr() << "Macro hotkey update failed: " << error;
   } else {
-    Logger::instance().mInfo(QString("Macro hotkey updated: ID %1, new hotkey: %2")
-                                 .arg(macro.id).arg(hotkey));
+    minfo() <<
+        QString("Macro hotkey updated: ID %1, new hotkey: %2")
+            .arg(macro.id)
+            .arg(hotkey);
   }
 }
 
-void MacroSelectionWin::onHotkeyChanged() {
-  info() << "Hotkey Changed!";
-}
+void MacroSelectionWin::onHotkeyChanged() { info() << "Hotkey Changed!"; }
 
 QString MacroSelectionWin::trans(const QString& key) {
   return QApplication::translate("MainWindow", qPrintable(key));
@@ -249,7 +255,6 @@ void MacroSelectionWin::loadLang() {
   ui->macrosTable->setHorizontalHeaderLabels(
       QStringList() << "ID" << trans("name") << trans("description")
                     << trans("hotkey"));
-
 }
 
 void MacroSelectionWin::retranslateUi() {
@@ -270,9 +275,8 @@ void MacroSelectionWin::on_btnSelect_clicked() {
 
   if (selectedRow >= 0 && selectedRow < m_macros.size()) {
     activeMacroId = m_macros[selectedRow].id;
-    Logger::instance().mInfo(
-        "(From Macro Selection Window) New active macro ID: " +
-        QString::number(activeMacroId));
+    minfo() <<
+        "(From Macro Selection Window) New active macro ID: " << activeMacroId;
     accept();
   } else {
     QMessageBox::critical(this, trans("error"), trans("Invalid selection."));
@@ -314,22 +318,21 @@ void MacroSelectionWin::on_btnDelete_clicked() {
   // UI'dan sil
   ui->macrosTable->removeRow(selectedRow);
 
-  Logger::instance().mInfo("Macro deleted successfully. ID: " +
-                           QString::number(macroToDelete.id));
+  minfo() << "Macro deleted successfully. ID: " << macroToDelete.id;
 }
 
 void MacroSelectionWin::on_btnCreate_clicked() {
   QString err;
 
   bool ok;
-  QString name = QInputDialog::getText(
-      this,                           // parent
-      trans("new macro name"),        // dialog başlığı
-      trans("enter new macro name"),  // label
-      QLineEdit::Normal,              // input type
-      "",                             // default text
-      &ok                             // okPressed flag
-  );
+  QString name =
+      QInputDialog::getText(this,                           // parent
+                            trans("new macro name"),        // dialog başlığı
+                            trans("enter new macro name"),  // label
+                            QLineEdit::Normal,              // input type
+                            "",                             // default text
+                            &ok                             // okPressed flag
+      );
 
   if (!ok) return;
 
@@ -354,8 +357,8 @@ void MacroSelectionWin::on_btnCreate_clicked() {
     // UI güncelle
     addMacro(macro);
 
-    Logger::instance().mInfo("Macro created successfully: " + name);
+    minfo() << "Macro created successfully: " << name;
   } else {
-    Logger::instance().mError(err);
+    merr() << err;
   }
 }

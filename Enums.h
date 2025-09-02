@@ -8,6 +8,7 @@ enum class ActionType { MOUSE, KEYBOARD };
 enum class ClickType { CLICK, HOLD, HOVER };
 enum class MouseButton { LEFT, RIGHT, MID };
 enum class Language { ENGLISH, TURKISH, GERMAN, FRENCH, ITALIAN };
+enum class MessageType { ERR, INFO, WARN, SUCCESS };
 
 // Enum → QString
 inline QString actionTypeToStr(ActionType t) {
@@ -40,6 +41,20 @@ inline QString mouseButtonToStr(MouseButton b) {
       return "RIGHT";
     case MouseButton::MID:
       return "MID";
+  }
+  return {};
+}
+
+inline QString msgtypeToStr(MessageType mt) {
+  switch (mt) {
+    case MessageType::ERR:
+      return "error";
+    case MessageType::WARN:
+      return "warning";
+    case MessageType::INFO:
+      return "info";
+    case MessageType::SUCCESS:
+      return "success";
   }
   return {};
 }

@@ -16,6 +16,10 @@
         <translation>Vazgeç</translation>
     </message>
     <message>
+        <source>ok</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
         <source>action type</source>
         <translation>Aksiyon Tipi</translation>
     </message>
@@ -128,8 +132,8 @@
         <translation>Düzenlemeyi Bitir</translation>
     </message>
     <message>
-        <source>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</source>
-        <translation>Aksiyonları düzenlemek için sıraları sürükleyip bırakın. Bitirdiğinizde 'Düzenlemeyi Bitir'e basın.</translation>
+        <source>Drag and drop rows to reorder actions. Click &apos;Finish Editing&apos; when done.</source>
+        <translation>Aksiyonları düzenlemek için sıraları sürükleyip bırakın. Bitirdiğinizde &apos;Düzenlemeyi Bitir&apos;e basın.</translation>
     </message>
     <message>
         <source>delete action</source>
@@ -367,7 +371,6 @@
         <source>Stops the key capture</source>
         <translation>Tuş yakalamayı bitirir</translation>
     </message>
-    <!-- Makro Doğrulama Hata Mesajları -->
     <message>
         <source>Warning: %1th action repeats infinitely, following actions will never execute.</source>
         <translation>Uyarı: %1. eylem sonsuz tekrarlanıyor, sonraki eylemler hiç çalışmayacak.</translation>
@@ -377,12 +380,12 @@
         <translation>Uyarı: Ard arda birden fazla sonsuz tekrarlanan eylem.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</source>
-        <translation>Uyarı: %1. eylemde negatif aralık (%2ms). Aralık >= 0 olmalıdır.</translation>
+        <source>Warning: Action %1 has negative interval (%2ms). Interval must be &gt;= 0.</source>
+        <translation>Uyarı: %1. eylemde negatif aralık (%2ms). Aralık &gt;= 0 olmalıdır.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</source>
-        <translation>Uyarı: %1. eylemde negatif tutma süresi (%2ms). Tutma süresi >= 0 olmalıdır.</translation>
+        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be &gt;= 0.</source>
+        <translation>Uyarı: %1. eylemde negatif tutma süresi (%2ms). Tutma süresi &gt;= 0 olmalıdır.</translation>
     </message>
     <message>
         <source>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</source>
@@ -397,16 +400,16 @@
         <translation>Uyarı: %1. eylemde geçersiz tıklama sayısı (%2). Tıklama sayısı pozitif olmalıdır.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</source>
-        <translation>Uyarı: %1. eylem HOVER tipinde ama tıklama sayısı > 1. HOVER eylemleri tıklama sayısı = 1 olmalıdır.</translation>
+        <source>Warning: Action %1 is HOVER type but has click count &gt; 1. HOVER actions should have click count = 1.</source>
+        <translation>Uyarı: %1. eylem HOVER tipinde ama tıklama sayısı &gt; 1. HOVER eylemleri tıklama sayısı = 1 olmalıdır.</translation>
     </message>
     <message>
         <source>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</source>
         <translation>Uyarı: %1. eylem fare eylemi ama konum belirtilmemiş ve current_pos false.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 has invalid position format. Expected 'x,y' format.</source>
-        <translation>Uyarı: %1. eylemde geçersiz konum formatı. 'x,y' formatı bekleniyor.</translation>
+        <source>Warning: Action %1 has invalid position format. Expected &apos;x,y&apos; format.</source>
+        <translation>Uyarı: %1. eylemde geçersiz konum formatı. &apos;x,y&apos; formatı bekleniyor.</translation>
     </message>
     <message>
         <source>Warning: Action %1 has invalid position coordinates. Must be valid integers.</source>
@@ -435,6 +438,130 @@
     <message>
         <source>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</source>
         <translation>Uyarı: %1. eylemde çok büyük tıklama sayısı (%2). Bu beklenmedik davranışlar yaratabilir.</translation>
+    </message>
+    <message>
+        <source>Save failed: %1.</source>
+        <translation>Kaydetme başarısız: %1.</translation>
+    </message>
+    <message>
+        <source>Action order updated. Don&apos;t forget to save your changes!</source>
+        <translation>Aksiyon sıraları güncellendi. Değişiklikleri kaydetmeyi unutmayın!</translation>
+    </message>
+    <message>
+        <source>No actions to reorder</source>
+        <translation>Düzenlenecek bir aksiyon yok</translation>
+    </message>
+    <message>
+        <source>Use UP/DOWN arrows to move actions, select different rows to continue reordering. Click &apos;Confirm Order&apos; to save changes or ESC to cancel</source>
+        <translation>YUKARI/AŞAĞI tuşlarıyla aksiyonları taşıyın, farklı satırları seçerek düzenlemeye devam edin. &apos;Sırayı Onayla&apos;yla kaydedin ya da ESC&apos;yle iptal edin.</translation>
+    </message>
+    <message>
+        <source>Confirm Order</source>
+        <translation>Sırayı Onayla</translation>
+    </message>
+    <message>
+        <source>Selected row %1. Use UP/DOWN arrows to move, select other rows to continue, &apos;Confirm Order&apos; to save or ESC to cancel</source>
+        <translation>%1. satır seçildi. YUKARI/AŞAĞI ok tuşlarıyla hareket ettirin, devam etmek için diğer satırları seçin, &apos;Sırayı Onayla&apos;yla kaydedin ya da ESC ile iptal edin</translation>
+    </message>
+    <message>
+        <source>Reorder cancelled, changes discarded</source>
+        <translation>Düzenleme iptal edildi, değişiklikler geri alındı</translation>
+    </message>
+    <message>
+        <source>Repeat value isn&apos;t an integer.</source>
+        <translation>Tekrar değeri bir tam sayı değil.</translation>
+    </message>
+    <message>
+        <source>Interval value isn&apos;t an integer.</source>
+        <translation>Aralık değeri bir tam sayı değil.</translation>
+    </message>
+    <message>
+        <source>Macro name cannot be empty.</source>
+        <translation>Makro adı boş olamaz.</translation>
+    </message>
+    <message>
+        <source>Macro name length must be between 1 and 20 characters.</source>
+        <translation>Makro adı uzunluğu 1 ile 20 karakter arasında olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Macro description cannot be empty.</source>
+        <translation>Makro açıklaması boş olamaz.</translation>
+    </message>
+    <message>
+        <source>Macro description length must be between 1 and 100 characters.</source>
+        <translation>Makro açıklaması uzunluğu 1 ile 100 karakter arasında olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Failed to add macro: %1</source>
+        <translation>Makro eklenemedi: %1</translation>
+    </message>
+    <message>
+        <source>Failed to update macro: %1</source>
+        <translation>Makro güncellenemedi: %1</translation>
+    </message>
+    <message>
+        <source>Failed to delete macro: %1</source>
+        <translation>Makro silinemedi: %1</translation>
+    </message>
+    <message>
+        <source>Failed to add action: %1</source>
+        <translation>İşlem eklenemedi: %1</translation>
+    </message>
+    <message>
+        <source>Failed to update action: %1</source>
+        <translation>İşlem güncellenemedi: %1</translation>
+    </message>
+    <message>
+        <source>Failed to delete action: %1</source>
+        <translation>İşlem silinemedi: %1</translation>
+    </message>
+    <message>
+        <source>Invalid action type.</source>
+        <translation>Geçersiz işlem türü.</translation>
+    </message>
+    <message>
+        <source>Invalid click type.</source>
+        <translation>Geçersiz tıklama türü.</translation>
+    </message>
+    <message>
+        <source>Repeat must be &gt;= 0.</source>
+        <translation>Tekrar sayısı &gt;= 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Interval must be &gt;= 0.</source>
+        <translation>Aralık &gt;= 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Hold duration must be &gt;= 0.</source>
+        <translation>Basılı tutma süresi &gt;= 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Click count must be &gt; 0.</source>
+        <translation>Tıklama sayısı &gt; 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Mouse button must be &gt;= 0.</source>
+        <translation>Fare düğmesi &gt;= 0 olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Invalid position format.</source>
+        <translation>Geçersiz pozisyon formatı.</translation>
+    </message>
+    <message>
+        <source>Invalid position coordinates.</source>
+        <translation>Geçersiz pozisyon koordinatları.</translation>
+    </message>
+    <message>
+        <source>Action is mouse type but has no position and current_pos is false.</source>
+        <translation>İşlem fare türünde ama pozisyon yok ve current_pos yanlış.</translation>
+    </message>
+    <message>
+        <source>Action is keyboard type but has no key.</source>
+        <translation>İşlem klavye türünde ama tuş yok.</translation>
+    </message>
+    <message>
+        <source>Cannot load patch notes.</source>
+        <translation>Yama notları yüklenemedi.</translation>
     </message>
 </context>
 </TS>

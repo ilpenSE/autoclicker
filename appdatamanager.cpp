@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QDir>
+#include <QEventLoop>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -9,11 +10,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QStandardPaths>
-#include <QEventLoop>
 
+#include "consts.h"
 #include "logger.h"
 #include "settingsmanager.h"
-#include "consts.h"
 
 QString AppDataManager::appFolderPath() {
 #ifdef Q_OS_WIN
@@ -42,7 +42,7 @@ bool AppDataManager::ensureAppDataFolderExists() {
     Logger::instance().fsInfo("Directory already exists: " + appFolderPath());
   }
 
-          // logs klasörü
+  // logs klasörü
   QString logsPath = dir.filePath("logs");
   QDir logsDir(logsPath);
   if (!logsDir.exists()) {
@@ -98,7 +98,7 @@ bool AppDataManager::fixSettingsFile() {
 
 QString AppDataManager::assetUrl(const QString& relativePath) {
   return QString("https://raw.githubusercontent.com/%1/%2/%3/%4")
-  .arg(GITHUB_USER)
+      .arg(GITHUB_USER)
       .arg(GITHUB_REPO)
       .arg(GITHUB_BRANCH)
       .arg(relativePath);
@@ -107,13 +107,13 @@ QString AppDataManager::assetUrl(const QString& relativePath) {
 bool AppDataManager::ensureFileExists(const QString& relativePath) {
   QString localPath = QDir(appFolderPath()).filePath(relativePath);
   if (QFile::exists(localPath)) {
-    return true; // zaten var
+    return true;  // zaten var
   }
 
   Logger::instance().fsWarning("File missing, will try to download: " +
                                relativePath);
 
-          // GitHub'dan indir
+  // GitHub'dan indir
   QNetworkAccessManager mgr;
   QNetworkRequest req(QUrl(assetUrl(relativePath)));
   QNetworkReply* reply = mgr.get(req);
@@ -126,13 +126,13 @@ bool AppDataManager::ensureFileExists(const QString& relativePath) {
     Logger::instance().fsError("Cannot download " + relativePath + ": " +
                                reply->errorString());
     reply->deleteLater();
-    return false; // internet yok veya dosya bulunamadı
+    return false;  // internet yok veya dosya bulunamadı
   }
 
   QByteArray data = reply->readAll();
   reply->deleteLater();
 
-          // Klasörü oluştur
+  // Klasörü oluştur
   QDir().mkpath(QFileInfo(localPath).absolutePath());
 
   QFile f(localPath);
@@ -149,10 +149,8 @@ bool AppDataManager::ensureFileExists(const QString& relativePath) {
 
 bool AppDataManager::ensureDefaultAssets() {
   // QSS dosyaları
-  if (!ensureFileExists("themes/dark.qss"))
-    return false;
-  if (!ensureFileExists("themes/light.qss"))
-    return false;
+  if (!ensureFileExists("themes/dark.qss")) return false;
+  if (!ensureFileExists("themes/light.qss")) return false;
 
   return true;
 }

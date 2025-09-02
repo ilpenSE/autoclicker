@@ -16,6 +16,10 @@
         <translation>Cancel</translation>
     </message>
     <message>
+        <source>ok</source>
+        <translation>OK</translation>
+    </message>
+    <message>
         <source>action type</source>
         <translation>Action Type</translation>
     </message>
@@ -128,8 +132,8 @@
         <translation>Finish Editing</translation>
     </message>
     <message>
-        <source>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</source>
-        <translation>Drag and drop rows to reorder actions. Click 'Finish Editing' when done.</translation>
+        <source>Drag and drop rows to reorder actions. Click &apos;Finish Editing&apos; when done.</source>
+        <translation>Drag and drop rows to reorder actions. Click &apos;Finish Editing&apos; when done.</translation>
     </message>
     <message>
         <source>delete action</source>
@@ -367,7 +371,6 @@
         <source>Stops the key capture</source>
         <translation>Stops the key capture</translation>
     </message>
-    <!-- Macro Validation Error Messages -->
     <message>
         <source>Warning: %1th action repeats infinitely, following actions will never execute.</source>
         <translation>Warning: %1th action repeats infinitely, following actions will never execute.</translation>
@@ -377,12 +380,12 @@
         <translation>Warning: Multiple consecutive actions with infinite repeat.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</source>
-        <translation>Warning: Action %1 has negative interval (%2ms). Interval must be >= 0.</translation>
+        <source>Warning: Action %1 has negative interval (%2ms). Interval must be &gt;= 0.</source>
+        <translation>Warning: Action %1 has negative interval (%2ms). Interval must be &gt;= 0.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</source>
-        <translation>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be >= 0.</translation>
+        <source>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be &gt;= 0.</source>
+        <translation>Warning: Action %1 has negative hold duration (%2ms). Hold duration must be &gt;= 0.</translation>
     </message>
     <message>
         <source>Warning: Action %1 has hold duration but click type is CLICK. Hold duration is only meaningful for HOLD actions.</source>
@@ -397,16 +400,16 @@
         <translation>Warning: Action %1 has invalid click count (%2). Click count must be positive.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</source>
-        <translation>Warning: Action %1 is HOVER type but has click count > 1. HOVER actions should have click count = 1.</translation>
+        <source>Warning: Action %1 is HOVER type but has click count &gt; 1. HOVER actions should have click count = 1.</source>
+        <translation>Warning: Action %1 is HOVER type but has click count &gt; 1. HOVER actions should have click count = 1.</translation>
     </message>
     <message>
         <source>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</source>
         <translation>Warning: Action %1 is mouse action but has no position specified and current_pos is false.</translation>
     </message>
     <message>
-        <source>Warning: Action %1 has invalid position format. Expected 'x,y' format.</source>
-        <translation>Warning: Action %1 has invalid position format. Expected 'x,y' format.</translation>
+        <source>Warning: Action %1 has invalid position format. Expected &apos;x,y&apos; format.</source>
+        <translation>Warning: Action %1 has invalid position format. Expected &apos;x,y&apos; format.</translation>
     </message>
     <message>
         <source>Warning: Action %1 has invalid position coordinates. Must be valid integers.</source>
@@ -435,6 +438,130 @@
     <message>
         <source>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</source>
         <translation>Warning: Action %1 has very large click count (%2). This might cause unexpected behavior.</translation>
+    </message>
+    <message>
+        <source>Save failed: %1.</source>
+        <translation>Save failed: %1.</translation>
+    </message>
+    <message>
+        <source>Action order updated. Don&apos;t forget to save your changes!</source>
+        <translation>Action order updated. Don&apos;t forget to save your changes!</translation>
+    </message>
+    <message>
+        <source>No actions to reorder</source>
+        <translation>No actions to reorder</translation>
+    </message>
+    <message>
+        <source>Use UP/DOWN arrows to move actions, select different rows to continue reordering. Click &apos;Confirm Order&apos; to save changes or ESC to cancel</source>
+        <translation>Use UP/DOWN arrows to move actions, select different rows to continue reordering. Click &apos;Confirm Order&apos; to save changes or ESC to cancel</translation>
+    </message>
+    <message>
+        <source>Confirm Order</source>
+        <translation>Confirm Order</translation>
+    </message>
+    <message>
+        <source>Selected row %1. Use UP/DOWN arrows to move, select other rows to continue, &apos;Confirm Order&apos; to save or ESC to cancel</source>
+        <translation>Selected row %1. Use UP/DOWN arrows to move, select other rows to continue, &apos;Confirm Order&apos; to save or ESC to cancel</translation>
+    </message>
+    <message>
+        <source>Reorder cancelled, changes discarded</source>
+        <translation>Reorder cancelled, changes discarded</translation>
+    </message>
+    <message>
+        <source>Repeat value isn&apos;t an integer.</source>
+        <translation>Repeat value isn&apos;t an integer.</translation>
+    </message>
+    <message>
+        <source>Interval value isn&apos;t an integer.</source>
+        <translation>Interval value isn&apos;t an integer.</translation>
+    </message>
+    <message>
+        <source>Macro name cannot be empty.</source>
+        <translation>Macro name cannot be empty.</translation>
+    </message>
+    <message>
+        <source>Macro name length must be between 1 and 20 characters.</source>
+        <translation>Macro name length must be between 1 and 20 characters.</translation>
+    </message>
+    <message>
+        <source>Macro description cannot be empty.</source>
+        <translation>Macro description cannot be empty.</translation>
+    </message>
+    <message>
+        <source>Macro description length must be between 1 and 100 characters.</source>
+        <translation>Macro description length must be between 1 and 100 characters.</translation>
+    </message>
+    <message>
+        <source>Failed to add macro: %1</source>
+        <translation>Failed to add macro: %1</translation>
+    </message>
+    <message>
+        <source>Failed to update macro: %1</source>
+        <translation>Failed to update macro: %1</translation>
+    </message>
+    <message>
+        <source>Failed to delete macro: %1</source>
+        <translation>Failed to delete macro: %1</translation>
+    </message>
+    <message>
+        <source>Failed to add action: %1</source>
+        <translation>Failed to add action: %1</translation>
+    </message>
+    <message>
+        <source>Failed to update action: %1</source>
+        <translation>Failed to update action: %1</translation>
+    </message>
+    <message>
+        <source>Failed to delete action: %1</source>
+        <translation>Failed to delete action: %1</translation>
+    </message>
+    <message>
+        <source>Invalid action type.</source>
+        <translation>Invalid action type.</translation>
+    </message>
+    <message>
+        <source>Invalid click type.</source>
+        <translation>Invalid click type.</translation>
+    </message>
+    <message>
+        <source>Repeat must be &gt;= 0.</source>
+        <translation>Repeat must be &gt;= 0.</translation>
+    </message>
+    <message>
+        <source>Interval must be &gt;= 0.</source>
+        <translation>Interval must be &gt;= 0.</translation>
+    </message>
+    <message>
+        <source>Hold duration must be &gt;= 0.</source>
+        <translation>Hold duration must be &gt;= 0.</translation>
+    </message>
+    <message>
+        <source>Click count must be &gt; 0.</source>
+        <translation>Click count must be &gt; 0.</translation>
+    </message>
+    <message>
+        <source>Mouse button must be &gt;= 0.</source>
+        <translation>Mouse button must be &gt;= 0.</translation>
+    </message>
+    <message>
+        <source>Invalid position format.</source>
+        <translation>Invalid position format.</translation>
+    </message>
+    <message>
+        <source>Invalid position coordinates.</source>
+        <translation>Invalid position coordinates.</translation>
+    </message>
+    <message>
+        <source>Action is mouse type but has no position and current_pos is false.</source>
+        <translation>Action is mouse type but has no position and current_pos is false.</translation>
+    </message>
+    <message>
+        <source>Action is keyboard type but has no key.</source>
+        <translation>Action is keyboard type but has no key.</translation>
+    </message>
+    <message>
+        <source>Cannot load patch notes.</source>
+        <translation>Cannot load patch notes.</translation>
     </message>
 </context>
 </TS>

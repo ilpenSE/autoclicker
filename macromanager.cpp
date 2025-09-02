@@ -57,11 +57,11 @@ bool MacroManager::isOpen() const { return m_db.isOpen(); }
 bool MacroManager::ensureSchema(QString* error) {
   QSqlQuery q(m_db);
 
-          // Enable foreign keys
+  // Enable foreign keys
   if (!q.exec("PRAGMA foreign_keys = ON;"))
     return execQuery(q, "PRAGMA", error);
 
-          // Check if tables exist and validate their schemas
+  // Check if tables exist and validate their schemas
   if (!validateAndCreateMacrosTable(error)) return false;
   if (!validateAndCreateActionsTable(error)) return false;
 
@@ -101,16 +101,16 @@ bool MacroManager::ensureDefaultMacro(QString* error) {
       " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
   insA.addBindValue(DEFAULT_MACRO_ID);
   insA.addBindValue(0);
-  insA.addBindValue("mouse"); // action type
-  insA.addBindValue("CLICK"); // click type
-  insA.addBindValue(0); // repeat
-  insA.addBindValue("0, 0"); // position
-  insA.addBindValue(1); // current_pos
-  insA.addBindValue(100); // interval
-  insA.addBindValue(1000); // hold_duration
-  insA.addBindValue(1); // click_count
-  insA.addBindValue("LEFT"); // mouse button
-  insA.addBindValue("A"); // key_name
+  insA.addBindValue("mouse");  // action type
+  insA.addBindValue("CLICK");  // click type
+  insA.addBindValue(0);        // repeat
+  insA.addBindValue("0, 0");   // position
+  insA.addBindValue(1);        // current_pos
+  insA.addBindValue(100);      // interval
+  insA.addBindValue(1000);     // hold_duration
+  insA.addBindValue(1);        // click_count
+  insA.addBindValue("LEFT");   // mouse button
+  insA.addBindValue("A");      // key_name
   if (!insA.exec()) {
     m_db.rollback();
     return execQuery(insA, "insert DEFAULT Action", error);
@@ -134,7 +134,8 @@ bool MacroManager::validateAndCreateMacrosTable(QString* error) {
   QSqlQuery q(m_db);
 
   // Check if Macros table exists
-  if (!q.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='Macros'")) {
+  if (!q.exec("SELECT name FROM sqlite_master WHERE type='table' AND "
+              "name='Macros'")) {
     return execQuery(q, "check Macros table", error);
   }
 
@@ -164,7 +165,7 @@ bool MacroManager::validateAndCreateMacrosTable(QString* error) {
   QStringList actualColumns;
 
   while (q.next()) {
-    actualColumns.append(q.value(1).toString()); // column name
+    actualColumns.append(q.value(1).toString());  // column name
   }
   q.finish();
 
@@ -189,7 +190,8 @@ bool MacroManager::validateAndCreateActionsTable(QString* error) {
   QSqlQuery q(m_db);
 
   // Check if MacroActions table exists
-  if (!q.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='MacroActions'")) {
+  if (!q.exec("SELECT name FROM sqlite_master WHERE type='table' AND "
+              "name='MacroActions'")) {
     return execQuery(q, "check MacroActions table", error);
   }
 
@@ -215,7 +217,8 @@ bool MacroManager::validateAndCreateActionsTable(QString* error) {
         " PRIMARY KEY(macro_id, \"order\"),"
         " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
         ");";
-    if (!q.exec(createActions)) return execQuery(q, "create MacroActions", error);
+    if (!q.exec(createActions))
+      return execQuery(q, "create MacroActions", error);
     Logger::instance().mInfo("Created new MacroActions table");
     return true;
   }
@@ -226,10 +229,9 @@ bool MacroManager::validateAndCreateActionsTable(QString* error) {
   }
 
   QStringList expectedColumns = {
-      "macro_id", "order", "action_type", "click_type", "repeat",
-      "position", "current_position", "interval", "hold_duration",
-      "click_count", "mouse_button", "key_name"
-  };
+      "macro_id",      "order",       "action_type",      "click_type",
+      "repeat",        "position",    "current_position", "interval",
+      "hold_duration", "click_count", "mouse_button",     "key_name"};
 
   QStringList actualColumns;
   QSet<QString> actualColumnSet;
@@ -263,7 +265,8 @@ bool MacroManager::validateAndCreateActionsTable(QString* error) {
 
   // Recreate table if schema doesn't match
   if (hasRemovedColumns || hasMissingColumns) {
-    Logger::instance().mWarning("MacroActions table schema mismatch - recreating");
+    Logger::instance().mWarning(
+        "MacroActions table schema mismatch - recreating");
     return recreateActionsTable(error);
   }
 
@@ -329,14 +332,16 @@ bool MacroManager::recreateMacrosTable(QString* error) {
 
 bool MacroManager::recreateActionsTable(QString* error) {
   if (!m_db.transaction()) {
-    if (error) *error = "Failed to start transaction for MacroActions recreation";
+    if (error)
+      *error = "Failed to start transaction for MacroActions recreation";
     return false;
   }
 
   QSqlQuery q(m_db);
 
   // Backup existing data with column mapping
-  QString backupQuery = "CREATE TEMP TABLE actions_backup AS SELECT "
+  QString backupQuery =
+      "CREATE TEMP TABLE actions_backup AS SELECT "
       "macro_id, \"order\", action_type, click_type, repeat, "
       "position, current_position, interval, "
       "hold_duration, click_count, mouse_button, key_name "
@@ -378,7 +383,8 @@ bool MacroManager::recreateActionsTable(QString* error) {
   }
 
   // Restore data
-  QString restoreQuery = "INSERT INTO MacroActions ("
+  QString restoreQuery =
+      "INSERT INTO MacroActions ("
       "macro_id, \"order\", action_type, click_type, repeat, "
       "position, current_position, interval, "
       "hold_duration, click_count, mouse_button, key_name) "
@@ -407,7 +413,6 @@ bool MacroManager::recreateActionsTable(QString* error) {
   Logger::instance().mInfo("Successfully recreated MacroActions table");
   return true;
 }
-
 
 // ===== Basic Validation =====
 bool MacroManager::validateMacroName(const QString& name,
@@ -446,8 +451,7 @@ bool MacroManager::validateHotkey(const QString& hotkey, QString* error) const {
   // Examples allowed: "F7", "Shift + F6", "Ctrl + Alt + A"
   static QRegularExpression rx(
       R"(^\s*(?:(?:Ctrl|Shift|Alt)\s*\+\s*){0,3}(?:F([1-9]|1[0-9]|2[0-4])|[A-Z0-9]|Space|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Up|Down|Left|Right)\s*$)",
-      QRegularExpression::CaseInsensitiveOption
-      );
+      QRegularExpression::CaseInsensitiveOption);
 
   if (!rx.match(hotkey).hasMatch()) {
     if (error) *error = "Invalid hotkey!";
@@ -633,7 +637,8 @@ bool MacroManager::deleteMacro(int id, QString* error) {
 }
 // MacroManager'ın cpp dosyasına ekleyin:
 
-bool MacroManager::updateMacroName(int macroId, const QString& newName, QString* error) {
+bool MacroManager::updateMacroName(int macroId, const QString& newName,
+                                   QString* error) {
   if (macroId == DEFAULT_MACRO_ID) {
     if (error) *error = "DEFAULT cannot be edited.";
     return false;
@@ -664,7 +669,9 @@ bool MacroManager::updateMacroName(int macroId, const QString& newName, QString*
   return true;
 }
 
-bool MacroManager::updateMacroDescription(int macroId, const QString& newDescription, QString* error) {
+bool MacroManager::updateMacroDescription(int macroId,
+                                          const QString& newDescription,
+                                          QString* error) {
   if (macroId == DEFAULT_MACRO_ID) {
     if (error) *error = "DEFAULT cannot be edited.";
     return false;
@@ -685,7 +692,8 @@ bool MacroManager::updateMacroDescription(int macroId, const QString& newDescrip
   return true;
 }
 
-bool MacroManager::updateMacroHotkey(int macroId, const QString& newHotkey, QString* error) {
+bool MacroManager::updateMacroHotkey(int macroId, const QString& newHotkey,
+                                     QString* error) {
   if (macroId == DEFAULT_MACRO_ID) {
     if (error) *error = "DEFAULT cannot be edited.";
     return false;

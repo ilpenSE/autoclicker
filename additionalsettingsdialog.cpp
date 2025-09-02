@@ -1,14 +1,14 @@
 #include "additionalsettingsdialog.h"
 
 #include <QCursor>
-#include <QRegularExpression>
 #include <QKeyEvent>
+#include <QRegularExpression>
 #include <QTimer>
 
 #include "LoggerStream.h"
 #include "languagemanager.h"
-#include "ui_additionalsettingsdialog.h"
 #include "thememanager.h"
+#include "ui_additionalsettingsdialog.h"
 
 AdditionalSettingsDialog::AdditionalSettingsDialog(const MacroAction& action,
                                                    QWidget* parent)
@@ -33,7 +33,8 @@ AdditionalSettingsDialog::~AdditionalSettingsDialog() { delete ui; }
 void AdditionalSettingsDialog::setupUI() {
   connect(ui->btnRecordPos, &QPushButton::clicked, this, [this]() {
     m_recordingPos = true;
-    ui->labelPosInfo->setText(trans("Cursor tracking started, click Ctrl + S to stop."));
+    ui->labelPosInfo->setText(
+        trans("Cursor tracking started, click Ctrl + S to stop."));
     ui->labelPosInfo->setVisible(true);
   });
 
@@ -44,17 +45,15 @@ void AdditionalSettingsDialog::setupUI() {
 }
 
 void AdditionalSettingsDialog::keyPressEvent(QKeyEvent* event) {
-  if (m_recordingPos &&
-      (event->modifiers() & Qt::ControlModifier) &&
+  if (m_recordingPos && (event->modifiers() & Qt::ControlModifier) &&
       event->key() == Qt::Key_S) {
     QPoint pos = QCursor::pos();
     ui->spinBoxX->setValue(pos.x());
     ui->spinBoxY->setValue(pos.y());
     m_recordingPos = false;
     ui->labelPosInfo->setText(trans("Cursor Position set!"));
-    QTimer::singleShot(1000, this, [this](){
-      ui->labelPosInfo->setVisible(false);
-    });
+    QTimer::singleShot(1000, this,
+                       [this]() { ui->labelPosInfo->setVisible(false); });
     return;
   }
   QDialog::keyPressEvent(event);
@@ -155,21 +154,26 @@ void AdditionalSettingsDialog::loadLanguage() {
   // Tooltip'ler
   ui->spinBoxX->setToolTip(trans("X coordinate"));
   ui->spinBoxY->setToolTip(trans("Y coordinate"));
-  ui->checkBoxCurrentPos->setToolTip(trans("Use current mouse cursor position"));
+  ui->checkBoxCurrentPos->setToolTip(
+      trans("Use current mouse cursor position"));
   ui->spinBoxHoldDuration->setToolTip(
       trans("How long to hold the mouse button (0 = no hold)"));
   ui->spinBoxClickCount->setToolTip(trans("Number of clicks to perform"));
   ui->lineEditKeyName->setToolTip(trans("Key to press (for KEY action type)"));
   ui->btnRecordPos->setToolTip(trans("Starts recording cursor position"));
   ui->btnSelectKey->setToolTip(trans("Stops the key capture"));
+
+  QPushButton* okButton = ui->buttonBox->button(QDialogButtonBox::Ok);
+  QPushButton* cancelButton = ui->buttonBox->button(QDialogButtonBox::Cancel);
+
+  if (okButton)
+    okButton->setText(trans("ok"));
+  if (cancelButton)
+    cancelButton->setText(trans("cancel"));
 }
 
 // DYNAMIC ICONS
 void AdditionalSettingsDialog::onThemeChanged() {
-  // This slot is called when theme changes
-  // Icons are automatically updated by ThemeManager
-  thinfo() << "Theme changed, icons updated automatically";
-
   refreshIcons();
 }
 
@@ -189,18 +193,16 @@ void AdditionalSettingsDialog::setupDynamicIcons() {
   // select key
   if (ui->btnSelectKey) {
     ThemeManager::instance().setupDynamicButton(
-        ui->btnSelectKey, iconsPath + "/select.svg", QSize(16,16));
+        ui->btnSelectKey, iconsPath + "/select.svg", QSize(16, 16));
   }
 
   thinfo() << "Dynamic icons setup completed";
 }
 
-void AdditionalSettingsDialog::on_btnSelectKey_clicked()
-{
+void AdditionalSettingsDialog::on_btnSelectKey_clicked() {
   if (ui->lineEditKeyName->isCapturing()) {
     // Capture modundaysa, hotkey'i tamamla
     ui->lineEditKeyName->stopCapture();
   }
   ui->lineEditKeyName->clearFocus();  // fokus kalksın
 }
-

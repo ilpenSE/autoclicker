@@ -35,7 +35,6 @@ class ThemeManager : public QObject {
   QPixmap coloredPixmap(const QString& svgPath, const QColor& color,
                         const QSize& size = QSize(32, 32));
   void resolveVars(QString* qssContent) const;
-  void applyQssColors(QWidget* widget);
 
   // New dynamic icon functions
   QIcon createDynamicIcon(const QString& svgPath,

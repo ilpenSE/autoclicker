@@ -33,7 +33,9 @@ int main(int argc, char *argv[]) {
   }
   if (!AppDataManager::instance().ensureDefaultAssets()) {
     lnerr() << "(From main) Default assets cannot be downloaded.";
-    QMessageBox::critical(nullptr, "Error", "Default assets cannot be downloaded. Check your internet connection.");
+    QMessageBox::critical(
+        nullptr, "Error",
+        "Default assets cannot be downloaded. Check your internet connection.");
     return -1;
   }
 
@@ -99,7 +101,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Theme dosyası kontrolü
-  QString themesPath = AppDataManager::instance().appFolderPath() + "/themes.json";
+  QString themesPath =
+      AppDataManager::instance().appFolderPath() + "/themes.json";
 
   bool themesOk = false;
   QJsonObject themes =
