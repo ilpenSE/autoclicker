@@ -3,6 +3,7 @@
 C++ ile yazıldı, Qt kullanılarak oluşturuldu ve Fluent UI ile modernleştirildi.
 
 Written in C++, created with Qt, modernized with Fluent UI.
+
 ---
 
 ## Overview / Genel Bakış
