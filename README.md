@@ -2,6 +2,7 @@
 
 C++ ile yazıldı, Qt kullanılarak oluşturuldu ve Fluent UI ile modernleştirildi.
 
+Written in C++, created with Qt, modernized with Fluent UI.
 ---
 
 ## Overview / Genel Bakış
@@ -12,20 +13,36 @@ All user data, macros, themes, and settings are stored in your **AppData/Roaming
 
 ## Screenshots / Ekran Görüntüleri
 ### English UI
+Main Window
+
 <img width="901" height="627" alt="ss1_en" src="https://github.com/user-attachments/assets/97b02017-7251-463f-96db-bbefc8ad65f6" />
+
+Macro Selection Window
 
 <img width="900" height="630" alt="ss2_en" src="https://github.com/user-attachments/assets/d1e585b6-6d68-4c1c-84b8-7ef1d32fb057" />
 
+Settings Window
+
 <img width="902" height="628" alt="ss3_en" src="https://github.com/user-attachments/assets/48f1d038-37f7-4b7e-8652-84727f5be491" />
+
+About Window
 
 <img width="899" height="627" alt="ss4_en" src="https://github.com/user-attachments/assets/fca9a37b-692d-4865-b16c-0f4b8d52f09a" />
 
 ### Türkçe Arayüz
+Ana Menü
+
 <img width="901" height="633" alt="ss1_tr" src="https://github.com/user-attachments/assets/38cc4a9c-a753-4805-b031-89da2ec38943" />
+
+Makro Seçim Ekranı
 
 <img width="901" height="626" alt="ss2_tr" src="https://github.com/user-attachments/assets/091ba2d1-b598-4c20-a446-2bba896949cf" />
 
+Ayarlar Menüsü
+
 <img width="899" height="628" alt="ss3_tr" src="https://github.com/user-attachments/assets/87cecd75-ed26-41fa-91a8-0d9e0241da2b" />
+
+Hakkında Menüsü
 
 <img width="899" height="627" alt="ss4_tr" src="https://github.com/user-attachments/assets/81f0e32c-127a-4e57-b9d6-c2b300189c91" />
 
@@ -34,9 +51,12 @@ All user data, macros, themes, and settings are stored in your **AppData/Roaming
 ## Features / Özellikler
 
 - **Customizable Themes / Özelleştirilebilir Temalar**  
+  - Dark, Light and your custom themes by creating your `.qss` file.
   - Dark, Light ve kendi `.qss` dosyanızla oluşturabileceğiniz özel temalar.
 - **Languages / Diller**  
-  - English, Turkish, German, Italian, French, Russian. Her kullanıcı kendi dilini seçebilir.
+  - English, Turkish, German, Italian, French.
+  - Every user can select them language
+  - Her kullanıcı kendi dilini seçebilir.
 - **Macros / Makrolar**  
   - Fully customizable mouse and keyboard actions: click, hold, hover.  
   - Unlimited actions per macro.  
@@ -53,10 +73,11 @@ AppData/Roaming/AutoClicker2
 ├─ logs/
 │  └─ 12.08.2025-13:00:00.log
 ├─ themes/
-│  ├─ dark.css
-│  ├─ light.css
-│  └─ mytheme.css
+│  ├─ dark.qss
+│  ├─ light.qss
+│  └─ mytheme.qss
 ├─ settings.json
+├─ themes.json
 └─ macros.sqlite
 ```
 
