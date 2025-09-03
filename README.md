@@ -116,6 +116,8 @@ AppData/Roaming/AutoClicker2
 
 ## About 📞
 
+For contribution: [CONTRIBUTING.md](CONTRIBUTING.md)
+
 For your suggestions: lastplayer8945@gmail.com
 
 [Instagram](https://instagram.com/ilpen.25)
@@ -225,6 +227,8 @@ AppData/Roaming/AutoClicker2
 - Güncelleme yoksa direkt ana uygulama açılır.
 
 ## 📞 Hakkında
+
+Destekler için: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Önerileriniz için: lastplayer8945@gmail.com
 
