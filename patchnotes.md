@@ -35,6 +35,9 @@ Written in C++ using Qt, modernized with Fluent UI.
 - If an update is available, it shows a progress bar and downloads & runs the new installer.
 - If no update is available, it directly launches the main application.
 
+### OTHER
+- The old update checker, JSON controller, and repair tool are still included in this version.
+
 ## Türkçe
 C++ ile yazıldı, Qt kullanılarak oluşturuldu, Fluent UI ile modernleştirildi.
 
