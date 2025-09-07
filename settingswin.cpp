@@ -10,6 +10,7 @@
 #include "thememanager.h"
 #include "ui_settingswin.h"
 #include "consts.h"
+#include "instances.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -49,19 +50,19 @@ SettingsWin::SettingsWin(const QJsonObject& settings, QWidget* parent)
   langs << "Italiano";
   ui->langBox->addItems(langs);
   ui->langBox->setCurrentIndex(
-      static_cast<int>(LanguageManager::instance().getCurrentLanguage()));
+      static_cast<int>(_langman().getCurrentLanguage()));
 
   // Mevcut dili doğru şekilde ayarla
-  Language currentLang = LanguageManager::instance().getCurrentLanguage();
+  Language currentLang = _langman().getCurrentLanguage();
   ui->langBox->setCurrentIndex(static_cast<int>(currentLang));
 
   // theme box ayarlaması
   QString currentThemeFile = getSetting("Theme").toString();
   QString visibleThemeName =
-      ThemeManager::instance().getVisibleName(currentThemeFile);
+      _themesman().getVisibleName(currentThemeFile);
 
   ui->themeBox->clear();
-  QStringList availableThemes = ThemeManager::instance().availableThemes();
+  QStringList availableThemes = _themesman().availableThemes();
   ui->themeBox->addItems(availableThemes);
 
   int themeIndex = ui->themeBox->findText(visibleThemeName);
@@ -89,18 +90,18 @@ void SettingsWin::setupDynamicIcons() {
   // Setup QActions with dynamic icons
   // save
   if (ui->btnSave) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnSave, iconsPath + "/save.svg", QSize(24, 24));
   }
   // discard
   if (ui->btnDiscard) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnDiscard, iconsPath + "/cancel.svg", QSize(24, 24));
   }
   // select hotkey icon btn
   if (ui->btnSelectHotkey) {
     ui->btnSelectHotkey->setProperty("iconOnly", true);
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnSelectHotkey, iconsPath + "/select.svg", QSize(24, 24));
   }
 
@@ -109,7 +110,7 @@ void SettingsWin::setupDynamicIcons() {
 
 void SettingsWin::onThemeChanged() { refreshIcons(); }
 
-void SettingsWin::refreshIcons() { ThemeManager::instance().refreshAllIcons(); }
+void SettingsWin::refreshIcons() { _themesman().refreshAllIcons(); }
 
 void SettingsWin::onHotkeyReady(const QString& hotkey) {
   hsinfo() << "Hotkey ready: " + hotkey;
@@ -166,16 +167,16 @@ void SettingsWin::on_btnSave_clicked() {
   // language değerini kaydet
   Language selectedLang = static_cast<Language>(ui->langBox->currentIndex());
   QString selectedLocale =
-      LanguageManager::instance().languageToLocale(selectedLang);
+      _langman().languageToLocale(selectedLang);
 
-  LanguageManager::instance().changeLanguage(selectedLang);
+  _langman().changeLanguage(selectedLang);
   m_settings["Language"] = selectedLocale;
 
   // theme değerini kaydet
   QString themeVisibleName = ui->themeBox->currentText();
   QString themeFileName =
-      ThemeManager::instance().getFileName(themeVisibleName);
-  if (ThemeManager::instance().applyTheme(themeVisibleName)) {
+      _themesman().getFileName(themeVisibleName);
+  if (_themesman().applyTheme(themeVisibleName)) {
     m_settings["Theme"] = themeFileName;
     thinfo() << "Theme changed to " << themeVisibleName << " (" << themeFileName
              << ".qss)";
@@ -210,35 +211,9 @@ void SettingsWin::on_btnDiscard_clicked() {
   // CANCEL
   reject();
 }
-
+#include "appdatamanager.h"
 void SettingsWin::loadPatchNotes() {
-  QString relativePath = "patchnotes.md";
-  QString urlStr = QString("https://raw.githubusercontent.com/%1/%2/%3/%4")
-                       .arg(GITHUB_USER)
-                       .arg(GITHUB_REPO)
-                       .arg("external_assets")
-                       .arg(relativePath);
-
-  QUrl url(urlStr);
-  QNetworkAccessManager manager;
-  QNetworkRequest request(url);
-
-  QNetworkReply* reply = manager.get(request);
-
-  QEventLoop loop;
-  QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-  loop.exec();
-
-  if (reply->error() != QNetworkReply::NoError) {
-    warn() << "Cannot download patch notes:" << reply->errorString();
-    ui->textPatchNotes->setMarkdown(trans("Cannot load patch notes."));
-    reply->deleteLater();
-    return;
-  }
-
-  QByteArray data = reply->readAll();
-  reply->deleteLater();
-
   // Markdown olarak QTextEdit'e yaz
-  ui->textPatchNotes->setMarkdown(QString::fromUtf8(data));
+  QString notes = _appdataman().getPatchNotes();
+  ui->textPatchNotes->setMarkdown(notes == "Cannot load patch notes." ? trans(notes) : notes);
 }

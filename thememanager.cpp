@@ -16,7 +16,7 @@
 #include "LoggerStream.h"
 #include "appdatamanager.h"
 #include "logger.h"
-// Existing global variables
+
 QMap<QString, QString> themeMap;
 QMap<QString, QString> reversedThemeMap;
 
@@ -25,7 +25,6 @@ ThemeManager::ThemeManager(QObject* parent) : QObject(parent) {
   reversedThemeMap = reverseThemeMap();
 }
 
-// Existing functions implementation...
 QString ThemeManager::themesDirPath() const {
   QString path = AppDataManager::instance().appFolderPath();
   QDir dir(path + "/themes");

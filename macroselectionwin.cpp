@@ -12,7 +12,7 @@
 #include "macromanager.h"
 #include "thememanager.h"
 #include "ui_macroselectionwin.h"
-
+#include "instances.h"
 MacroSelectionWin::MacroSelectionWin(QVector<Macro>& macros, int activeMacroId,
                                      QWidget* parent)
     : QDialog(parent),
@@ -63,22 +63,22 @@ void MacroSelectionWin::setupDynamicIcons() {
   // Setup QActions with dynamic icons
   // create
   if (ui->btnCreate) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnCreate, iconsPath + "/add.svg", QSize(24, 24));
   }
   // delete
   if (ui->btnDelete) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnDelete, iconsPath + "/delete.svg", QSize(24, 24));
   }
   // cancel
   if (ui->btnCancel) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnCancel, iconsPath + "/cancel.svg", QSize(24, 24));
   }
   // select
   if (ui->btnSelect) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnSelect, iconsPath + "/select.svg", QSize(24, 24));
   }
 
@@ -88,7 +88,7 @@ void MacroSelectionWin::setupDynamicIcons() {
 void MacroSelectionWin::onThemeChanged() { refreshIcons(); }
 
 void MacroSelectionWin::refreshIcons() {
-  ThemeManager::instance().refreshAllIcons();
+  _themesman().refreshAllIcons();
 }
 
 void MacroSelectionWin::addMacro(Macro macro, bool isSelected) {
@@ -157,7 +157,7 @@ void MacroSelectionWin::onItemChanged(QTableWidgetItem* item) {
     // SQL güncelleme
     QString error;
     bool success =
-        MacroManager::instance().updateMacroName(macro.id, newValue, &error);
+        _macroman().updateMacroName(macro.id, newValue, &error);
 
     if (!success) {
       // Hata varsa eski değere geri dön
@@ -180,7 +180,7 @@ void MacroSelectionWin::onItemChanged(QTableWidgetItem* item) {
 
     // SQL güncelleme
     QString error;
-    bool success = MacroManager::instance().updateMacroDescription(
+    bool success = _macroman().updateMacroDescription(
         macro.id, newValue, &error);
 
     if (!success) {
@@ -223,7 +223,7 @@ void MacroSelectionWin::onHotkeyReady(const QString& hotkey) {
   // SQL güncelleme
   QString error;
   bool success =
-      MacroManager::instance().updateMacroHotkey(macro.id, hotkey, &error);
+      _macroman().updateMacroHotkey(macro.id, hotkey, &error);
 
   if (!success) {
     // Hata varsa eski değere geri dön
@@ -306,8 +306,8 @@ void MacroSelectionWin::on_btnDelete_clicked() {
 
   QString err;
   // SQL'dan sil
-  if (!MacroManager::instance().deleteMacro(macroToDelete.id, &err)) {
-    Logger::instance().mError(err);
+  if (!_macroman().deleteMacro(macroToDelete.id, &err)) {
+    merr() << err;
     QMessageBox::critical(this, trans("error"), trans(err));
     return;
   }
@@ -336,7 +336,7 @@ void MacroSelectionWin::on_btnCreate_clicked() {
 
   if (!ok) return;
 
-  int id = MacroManager::instance().createMacro(name, trans("No Description"),
+  int id = _macroman().createMacro(name, trans("No Description"),
                                                 "DEF", &err);
 
   if (!err.isEmpty()) {
@@ -345,7 +345,7 @@ void MacroSelectionWin::on_btnCreate_clicked() {
 
   if (id > 0) {
     // oluşturulan makroyu al
-    std::optional<Macro> qmacro = MacroManager::instance().getMacroById(id);
+    std::optional<Macro> qmacro = _macroman().getMacroById(id);
     Macro macro;
     if (qmacro.has_value()) {
       macro = qmacro.value();

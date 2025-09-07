@@ -7,9 +7,6 @@
 #include <QJsonDocument>
 #include <QObject>
 #include <QStandardPaths>
-
-#include "logger.h"
-
 /*
  * singleton yapısı, normal classlardan farkı bu, program boyunca çalışır
  * ve aşağıdaki ayarlar sayesinde kopyalanamaz. Sadece 1 tane vardır.
@@ -36,23 +33,16 @@ class AppDataManager : public QObject {
 
   // assets
   QString assetUrl(const QString& relativePath);
-  bool ensureFileExists(const QString& relativePath);
   bool ensureDefaultAssets();
+  QString getPatchNotes();
+
+  bool saveJson(const QString& filepath, const QJsonObject& obj);
 
  private:
   explicit AppDataManager(QObject* parent = nullptr) : QObject(parent) {}
 
-  bool saveSettingsJson(const QJsonObject& obj) {
-    QFile file(settingsFilePath());
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-      qWarning() << "settings.json yazılamadı";
-      return false;
-    }
-    QJsonDocument doc(obj);
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-    return true;
-  }
+  QString m_patchnotesmd;
+  bool downloadFile(const QString& relpath, const QString& customLocalPath = "");
 
   // Copy ve assign engelle
   AppDataManager(const AppDataManager&) = delete;

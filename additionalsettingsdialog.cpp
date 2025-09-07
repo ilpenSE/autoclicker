@@ -9,6 +9,7 @@
 #include "languagemanager.h"
 #include "thememanager.h"
 #include "ui_additionalsettingsdialog.h"
+#include "instances.h"
 
 AdditionalSettingsDialog::AdditionalSettingsDialog(const MacroAction& action,
                                                    QWidget* parent)
@@ -179,7 +180,7 @@ void AdditionalSettingsDialog::onThemeChanged() {
 
 void AdditionalSettingsDialog::refreshIcons() {
   // Force refresh all icons if needed
-  ThemeManager::instance().refreshAllIcons();
+  _themesman().refreshAllIcons();
 }
 void AdditionalSettingsDialog::setupDynamicIcons() {
   // Use assets/icons from the project directory
@@ -187,12 +188,12 @@ void AdditionalSettingsDialog::setupDynamicIcons() {
 
   // record cursor pos
   if (ui->btnRecordPos) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnRecordPos, iconsPath + "/cursor.svg", QSize(16, 16));
   }
   // select key
   if (ui->btnSelectKey) {
-    ThemeManager::instance().setupDynamicButton(
+    _themesman().setupDynamicButton(
         ui->btnSelectKey, iconsPath + "/select.svg", QSize(16, 16));
   }
 

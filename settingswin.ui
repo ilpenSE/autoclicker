@@ -140,7 +140,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <item>
       <widget class="QLabel" name="labelVersion">
        <property name="text">
-        <string>v2.0-beta1</string>
+        <string>v2.0-beta2</string>
        </property>
       </widget>
      </item>

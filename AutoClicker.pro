@@ -18,6 +18,7 @@ SOURCES += \
     additionalsettingsdialog.cpp \
     appdatamanager.cpp \
     clickengine.cpp \
+    etagcontroller.cpp \
     hotkeylineedit.cpp \
     hotkeyservice.cpp \
     iconutils.cpp \
@@ -39,9 +40,11 @@ HEADERS += \
     appdatamanager.h \
     clickengine.h \
     consts.h \
+    etagcontroller.h \
     hotkeylineedit.h \
     hotkeyservice.h \
     iconutils.h \
+    instances.h \
     languagemanager.h \
     logger.h \
     macromanager.h \

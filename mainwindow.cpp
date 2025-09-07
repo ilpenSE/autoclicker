@@ -24,6 +24,8 @@
 #include "settingswin.h"
 #include "thememanager.h"
 #include "ui_mainwindow.h"
+#include "instances.h"
+
 MainWindow::MainWindow(const QJsonObject& settings,
                        const QVector<Macro>& macros, QWidget* parent)
     : QMainWindow(parent),
@@ -38,12 +40,12 @@ MainWindow::MainWindow(const QJsonObject& settings,
 
   // aktif makroyu ayarla
   auto macroQuery =
-      MacroManager::instance().getMacroById(getSetting("ActiveMacro").toInt(1));
+      _macroman().getMacroById(getSetting("ActiveMacro").toInt(1));
   if (macroQuery.has_value()) {
     activeMacro = macroQuery.value();
   } else {
     // Fallback: İlk makroyu al veya default bir makro oluştur
-    auto allMacros = MacroManager::instance().getAllMacros();
+    auto allMacros = _macroman().getAllMacros();
     if (!allMacros.isEmpty()) {
       activeMacro = allMacros.first();
     } else {
@@ -178,7 +180,7 @@ void MainWindow::setActiveMacro(int id) {
   m_actionsModified = false;
   m_pendingActions.clear();
 
-  auto macro = MacroManager::instance().getMacroById(id);
+  auto macro = _macroman().getMacroById(id);
   if (macro.has_value()) {
     QString activeMacroName = macro->name;
     ui->actionActiveMacro->setText(
@@ -191,7 +193,7 @@ void MainWindow::setActiveMacro(int id) {
     serr() << "(MainWindow) Active macro not found with ID: " << id;
     // Fallback to first macro or default
     if (!m_macros.isEmpty()) {
-      auto fallbackMacro = MacroManager::instance().getMacroById(1);
+      auto fallbackMacro = _macroman().getMacroById(1);
       if (fallbackMacro.has_value()) {
         activeMacro = fallbackMacro.value();
         id = activeMacro.id;
@@ -203,7 +205,7 @@ void MainWindow::setActiveMacro(int id) {
   }
 
   ui->actionsTable->setRowCount(0);
-  QVector<MacroAction> acts = MacroManager::instance().getActions(id);
+  QVector<MacroAction> acts = _macroman().getActions(id);
   for (const MacroAction& act : acts) {
     addActionToTable(act);
   }
@@ -221,22 +223,22 @@ void MainWindow::setupDynamicIcons() {
   // Setup QActions with dynamic icons
   // active macro
   if (ui->actionActiveMacro) {
-    ThemeManager::instance().setupDynamicAction(
+    _themesman().setupDynamicAction(
         ui->actionActiveMacro, iconsPath + "/select.svg", QSize(24, 24));
   }
   // settings
   if (ui->actionSettings) {
-    ThemeManager::instance().setupDynamicAction(
+    _themesman().setupDynamicAction(
         ui->actionSettings, iconsPath + "/settings.svg", QSize(24, 24));
   }
   // save
   if (ui->actionSave) {
-    ThemeManager::instance().setupDynamicAction(
+    _themesman().setupDynamicAction(
         ui->actionSave, iconsPath + "/save.svg", QSize(24, 24));
   }
   // about
   if (ui->actionAbout) {
-    ThemeManager::instance().setupDynamicAction(
+    _themesman().setupDynamicAction(
         ui->actionAbout, iconsPath + "/info.svg", QSize(24, 24));
   }
 
@@ -247,7 +249,7 @@ void MainWindow::onThemeChanged() { refreshIcons(); }
 
 void MainWindow::refreshIcons() {
   // Force refresh all icons if needed
-  ThemeManager::instance().refreshAllIcons();
+  _themesman().refreshAllIcons();
 }
 
 void MainWindow::addActionToTable(MacroAction a) {
@@ -564,7 +566,7 @@ MacroAction MainWindow::getActionFromRow(int row) {
   } else {
     // Database'den al
     QVector<MacroAction> dbActions =
-        MacroManager::instance().getActions(activeMacro.id);
+        _macroman().getActions(activeMacro.id);
     if (row < dbActions.size()) {
       a = dbActions[row];
     } else {
@@ -659,7 +661,7 @@ void MainWindow::setSetting(const QString& key, const QJsonValue& value) {
 
 void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
   QString err;
-  if (!MacroManager::instance().setActionsForMacro(macroId, actions, &err)) {
+  if (!_macroman().setActionsForMacro(macroId, actions, &err)) {
     merr() << err;
     QMessageBox::critical(this, tr("error"), err);
   }
@@ -668,7 +670,7 @@ void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
 void MainWindow::markRowAsModified(int row) {
   // İlk kez değişiklik yapılıyorsa pending actions'ı yükle
   if (!m_actionsModified) {
-    m_pendingActions = MacroManager::instance().getActions(activeMacro.id);
+    m_pendingActions = _macroman().getActions(activeMacro.id);
     m_actionsModified = true;
   }
 
@@ -688,7 +690,7 @@ void MainWindow::markRowAsModified(int row) {
 void MainWindow::showAdditionalSettings(int row) {
   // pending yoksa bir kere yükle
   if (!m_actionsModified) {
-    m_pendingActions = MacroManager::instance().getActions(activeMacro.id);
+    m_pendingActions = _macroman().getActions(activeMacro.id);
     m_actionsModified = true;
   }
   if (row < 0 || row >= m_pendingActions.size()) return;
@@ -803,8 +805,8 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
 }
 
 MainWindow::~MainWindow() {
-  QString settingsPath = AppDataManager::instance().settingsFilePath();
-  if (SettingsManager::instance().saveSettings(settingsPath, m_settings)) {
+  QString settingsPath = _appdataman().settingsFilePath();
+  if (_settingsman().saveSettings(settingsPath, m_settings)) {
     sinfo() << "The settings file has been synchronized with the UI.";
   } else {
     serr() << "Failed to synchronize the settings file with the UI.”";
@@ -825,12 +827,12 @@ void MainWindow::on_actionSettings_triggered() {
     // Ayarları güncelle
     m_settings = updatedSettings;
 
-    SettingsManager::instance().saveSettings(
-        AppDataManager::instance().settingsFilePath(), updatedSettings);
+    _settingsman().saveSettings(
+        _appdataman().settingsFilePath(), updatedSettings);
 
     // UI güncellemeleri
     // aktif makro
-    std::optional<Macro> query = MacroManager::instance().getMacroById(
+    std::optional<Macro> query = _macroman().getMacroById(
         m_settings["ActiveMacro"].toInt(1));
     Macro activeMacro;
     if (query.has_value()) {
@@ -857,7 +859,7 @@ void MainWindow::on_actionSettings_triggered() {
 }
 
 void MainWindow::refreshMacros() {
-  m_macros = MacroManager::instance().getAllMacros();
+  m_macros = _macroman().getAllMacros();
   minfo() << "Macros refreshed. Count " << m_macros.size();
 }
 
@@ -910,7 +912,7 @@ void MainWindow::on_actionAbout_triggered() {
 void MainWindow::on_btnAddAction_clicked() {
   // Load current actions to memory if first modification
   if (!m_actionsModified) {
-    m_pendingActions = MacroManager::instance().getActions(activeMacro.id);
+    m_pendingActions = _macroman().getActions(activeMacro.id);
     m_actionsModified = true;
   }
 
@@ -1175,7 +1177,7 @@ void MainWindow::on_btnDeleteAction_clicked() {
 
   // Eğer ilk kez değişiklik yapılıyorsa, mevcut actions'ları memory'e yükle
   if (!m_actionsModified) {
-    m_pendingActions = MacroManager::instance().getActions(activeMacro.id);
+    m_pendingActions = _macroman().getActions(activeMacro.id);
     m_actionsModified = true;
   }
 
@@ -1213,7 +1215,7 @@ void MainWindow::on_actionSave_triggered() {
   QString err;
   QVector<MacroAction> base =
       m_actionsModified ? m_pendingActions
-                        : MacroManager::instance().getActions(activeMacro.id);
+                        : _macroman().getActions(activeMacro.id);
 
   QVector<MacroAction> actionsToSave;
   actionsToSave.reserve(ui->actionsTable->rowCount());
@@ -1276,11 +1278,11 @@ void MainWindow::on_actionSave_triggered() {
     actionsToSave.append(a);
   }
 
-  if (!MacroManager::instance().setActionsForMacro(activeMacro.id,
+  if (!_macroman().setActionsForMacro(activeMacro.id,
                                                    actionsToSave, &err)) {
     merr() << "Failed to save actions: " << err;
     showmsg(tr("Save failed: %1").arg(err), MessageType::ERR);
-    MacroManager::instance().normalizeOrders(activeMacro.id, nullptr);
+    _macroman().normalizeOrders(activeMacro.id, nullptr);
     return;
   }
 
