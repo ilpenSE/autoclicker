@@ -16,6 +16,8 @@
 ![Italian](https://img.shields.io/badge/Italiano-✓-green)
 ![French](https://img.shields.io/badge/Français-✓-lightblue)
 
+THIS PROJECT IS NO LONGER IN DEVELOPMENT! MAYBE IN FUTURE, I'LL MAKE NEW VERSIONS BUT NOW IT'S OVER.
+
 Written in C++, created with Qt, modernized with Fluent UI.
 
 ## Overview 📋
