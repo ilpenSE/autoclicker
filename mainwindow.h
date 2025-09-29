@@ -11,7 +11,6 @@
 #include "clickengine.h"
 #include "hotkeyservice.h"
 #include "macromanager.h"
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -62,11 +61,19 @@ class MainWindow : public QMainWindow {
   void on_btnEditAction_clicked();
   void onReorderCellClicked(int row, int column);
 
+  void loadVisibleActions();
+  void updateVisibleRange();
+
  protected:
   void resizeEvent(QResizeEvent* event) override;
   bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
+  QVector<MacroAction> m_allActions;
+  int m_visibleStartIndex = 0;
+  int m_visibleEndIndex = 0;
+  static const int VISIBLE_ROW_COUNT = 50; // Aynı anda gösterilecek satır sayısı
+
   void showmsg(QString str, MessageType t = MessageType::INFO);
 
   QVector<MacroAction>
@@ -94,6 +101,8 @@ class MainWindow : public QMainWindow {
   bool m_reorderOriginalLabelVisible = false;
 
   void showMoveAnimation(int fromRow, int toRow);
+
+  QWidget* wrapInCell(QWidget* child, int row, int col);
 
   QJsonObject m_settings;
   QVector<Macro> m_macros;

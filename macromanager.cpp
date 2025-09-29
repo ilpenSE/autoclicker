@@ -11,23 +11,96 @@
 #include <QVariant>
 
 #include "appdatamanager.h"
-#include "logger.h"
+#include "LoggerStream.h"
+#include "transactionguard.h"
 
 static const int DEFAULT_MACRO_ID = 1;
+static const char* CREATE_MACROS_SQL =
+    "CREATE TABLE Macros ("
+    " id INTEGER PRIMARY KEY,"
+    " name TEXT NOT NULL UNIQUE,"
+    " description TEXT NOT NULL,"
+    " hotkey TEXT NOT NULL"
+    ");";
 
-MacroManager& MacroManager::instance() {
-  static MacroManager inst;
-  return inst;
+static const char* CREATE_ACTIONS_SQL =
+    "CREATE TABLE MacroActions ("
+    " macro_id INTEGER NOT NULL,"
+    " \"order\" INTEGER NOT NULL,"
+    " action_type TEXT NOT NULL,"
+    " click_type TEXT NOT NULL,"
+    " repeat INTEGER NOT NULL,"
+    " position TEXT NULL,"
+    " current_position INTEGER NOT NULL,"
+    " interval INTEGER NOT NULL,"
+    " hold_duration INTEGER NULL,"
+    " click_count INTEGER NOT NULL,"
+    " mouse_button TEXT NULL,"
+    " key_name TEXT NULL,"
+    " PRIMARY KEY(macro_id, \"order\"),"
+    " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
+    ");";
+// QUERY BIND HELPERS
+static inline void addBindOptional(QSqlQuery& q, const std::optional<QString>& v) {
+  if (v.has_value()) q.addBindValue(v.value());
+  else q.addBindValue(QVariant()); // explicit NULL
 }
 
-MacroManager::MacroManager(QObject* parent) : QObject(parent) {}
+static inline void addBindOptional(QSqlQuery& q, const std::optional<int>& v) {
+  if (v.has_value()) q.addBindValue(v.value());
+  else q.addBindValue(QVariant());
+}
+
+static inline void bindActionToQuery(QSqlQuery& q, const MacroAction& a, bool includeKeys = false) {
+  if (includeKeys) {
+    q.addBindValue(a.macro_id);
+    q.addBindValue(a.order);
+  }
+
+  q.addBindValue(a.macro_id);
+  q.addBindValue(a.order);
+  q.addBindValue(actionTypeToStr(a.action_type));
+  q.addBindValue(clickTypeToStr(a.click_type));
+  q.addBindValue(a.repeat);
+  addBindOptional(q, a.position);
+  if (a.current_pos.has_value()) q.addBindValue(a.current_pos.value() ? 1 : 0);
+  else q.addBindValue(QVariant());
+  q.addBindValue(a.interval);
+  addBindOptional(q, a.hold_duration);
+  q.addBindValue(a.click_count);
+  if (a.action_type == ActionType::KEYBOARD || !a.mouse_button.has_value())
+    q.addBindValue(QVariant());
+  else
+    q.addBindValue(mouseButtonToStr(a.mouse_button.value()));
+  addBindOptional(q, a.key_name);
+}
+
+static inline void bindMacroToQuery(QSqlQuery& q, const Macro& m, bool includeId = false) {
+  if (includeId) {
+    q.addBindValue(m.id);
+  }
+
+  q.addBindValue(m.name);
+  q.addBindValue(m.description);
+  q.addBindValue(m.hotkey);
+}
+
+bool MacroManager::updateOrder(int macroId, int oldOrder, int newOrder,
+                               const char* step, QString* error) {
+  QSqlQuery q(m_db);
+  q.prepare("UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
+  q.addBindValue(newOrder);
+  q.addBindValue(macroId);
+  q.addBindValue(oldOrder);
+
+  if (!q.exec()) {
+    return execQuery(q, step, error);
+  }
+  return true;
+}
 
 QString MacroManager::dbPath() const {
   const auto base = AppDataManager::instance().appFolderPath();
-  // const auto base =
-  // QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-  // AppDataLocation -> %APPDATA%/AutoClicker2 (Windows),
-  // ~/.local/share/AutoClicker2 (Linux)
   QDir().mkpath(base);
   return QDir(base).filePath("macros.sqlite");
 }
@@ -38,15 +111,15 @@ bool MacroManager::init() {
   const QString path = dbPath();
   m_db = QSqlDatabase::addDatabase("QSQLITE", "macros_conn");
   m_db.setDatabaseName(path);
-  if (!m_db.open()) return false;
+  if (!isOpen()) return false;
 
   QString err;
   if (!ensureSchema(&err)) {
-    Logger::instance().mWarning("ensureSchema failed:" + err);
+    mwrn() << err;
     return false;
   }
   if (!ensureDefaultMacro(&err)) {
-    Logger::instance().mError("ensureDefaultMacro failed:" + err);
+    merr() << err;
     return false;
   }
   return true;
@@ -69,6 +142,9 @@ bool MacroManager::ensureSchema(QString* error) {
 }
 
 bool MacroManager::ensureDefaultMacro(QString* error) {
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) return false;
+
   QSqlQuery q(m_db);
   if (!q.exec("SELECT COUNT(*) FROM Macros;"))
     return execQuery(q, "count Macros", error);
@@ -76,18 +152,11 @@ bool MacroManager::ensureDefaultMacro(QString* error) {
   if (q.next()) cnt = q.value(0).toInt();
   if (cnt > 0) return true;
 
-  // Insert DEFAULT macro and single default action inside a transaction
-  if (!m_db.transaction()) return false;
-
   QSqlQuery insM(m_db);
   insM.prepare(
       "INSERT INTO Macros(id, name, description, hotkey) VALUES(?, ?, ?, ?)");
-  insM.addBindValue(DEFAULT_MACRO_ID);
-  insM.addBindValue("DEFAULT");
-  insM.addBindValue("The defaults.");
-  insM.addBindValue("DEF");
+  bindMacroToQuery(insM, defaultMacro, true);
   if (!insM.exec()) {
-    m_db.rollback();
     return execQuery(insM, "insert DEFAULT Macro", error);
   }
 
@@ -99,28 +168,12 @@ bool MacroManager::ensureDefaultMacro(QString* error) {
       " interval, hold_duration, click_count, mouse_button, "
       "key_name)"
       " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-  insA.addBindValue(DEFAULT_MACRO_ID);
-  insA.addBindValue(0);
-  insA.addBindValue("mouse");  // action type
-  insA.addBindValue("CLICK");  // click type
-  insA.addBindValue(0);        // repeat
-  insA.addBindValue("0, 0");   // position
-  insA.addBindValue(1);        // current_pos
-  insA.addBindValue(100);      // interval
-  insA.addBindValue(1000);     // hold_duration
-  insA.addBindValue(1);        // click_count
-  insA.addBindValue("LEFT");   // mouse button
-  insA.addBindValue("A");      // key_name
+  bindActionToQuery(insA, defaultAction, true);
   if (!insA.exec()) {
-    m_db.rollback();
     return execQuery(insA, "insert DEFAULT Action", error);
   }
 
-  if (!m_db.commit()) {
-    m_db.rollback();
-    return false;
-  }
-  return true;
+  return tx.commit();
 }
 
 bool MacroManager::execQuery(QSqlQuery& q, const char* ctx,
@@ -144,15 +197,8 @@ bool MacroManager::validateAndCreateMacrosTable(QString* error) {
 
   if (!tableExists) {
     // Create new table
-    const char* createMacros =
-        "CREATE TABLE Macros ("
-        " id INTEGER PRIMARY KEY,"
-        " name TEXT NOT NULL UNIQUE,"
-        " description TEXT NOT NULL,"
-        " hotkey TEXT NOT NULL"
-        ");";
-    if (!q.exec(createMacros)) return execQuery(q, "create Macros", error);
-    Logger::instance().mInfo("Created new Macros table");
+    if (!q.exec(CREATE_MACROS_SQL)) return execQuery(q, "create Macros", error);
+    minfo() << "Created new Macros table";
     return true;
   }
 
@@ -171,18 +217,18 @@ bool MacroManager::validateAndCreateMacrosTable(QString* error) {
 
   // Check if schema matches
   if (actualColumns.size() != expectedColumns.size()) {
-    Logger::instance().mWarning("Macros table schema mismatch - recreating");
+    mwrn() << "Macros table schema mismatch - recreating";
     return recreateMacrosTable(error);
   }
 
   for (const QString& col : expectedColumns) {
     if (!actualColumns.contains(col)) {
-      Logger::instance().mWarning("Missing column in Macros: " + col);
+      mwrn() << "Missing column in Macros: " + col;
       return recreateMacrosTable(error);
     }
   }
 
-  Logger::instance().mInfo("Macros table schema validated");
+  minfo() << "Macros table schema validated";
   return true;
 }
 
@@ -200,26 +246,9 @@ bool MacroManager::validateAndCreateActionsTable(QString* error) {
 
   if (!tableExists) {
     // Create new table
-    const char* createActions =
-        "CREATE TABLE MacroActions ("
-        " macro_id INTEGER NOT NULL,"
-        " \"order\" INTEGER NOT NULL,"
-        " action_type TEXT NOT NULL,"
-        " click_type TEXT NOT NULL,"
-        " repeat INTEGER NOT NULL,"
-        " position TEXT NULL,"
-        " current_position INTEGER NOT NULL,"
-        " interval INTEGER NOT NULL,"
-        " hold_duration INTEGER NULL,"
-        " click_count INTEGER NOT NULL,"
-        " mouse_button TEXT NULL,"
-        " key_name TEXT NULL,"
-        " PRIMARY KEY(macro_id, \"order\"),"
-        " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
-        ");";
-    if (!q.exec(createActions))
+    if (!q.exec(CREATE_ACTIONS_SQL))
       return execQuery(q, "create MacroActions", error);
-    Logger::instance().mInfo("Created new MacroActions table");
+    minfo() << "Created new MacroActions table";
     return true;
   }
 
@@ -243,40 +272,29 @@ bool MacroManager::validateAndCreateActionsTable(QString* error) {
   }
   q.finish();
 
-  // Check for removed columns (like hover_duration)
-  QStringList removedColumns = {"hover_duration"};
-  bool hasRemovedColumns = false;
-
-  for (const QString& removedCol : removedColumns) {
-    if (actualColumnSet.contains(removedCol)) {
-      Logger::instance().mWarning("Found deprecated column: " + removedCol);
-      hasRemovedColumns = true;
-    }
-  }
-
   // Check for missing expected columns
   bool hasMissingColumns = false;
   for (const QString& col : expectedColumns) {
     if (!actualColumnSet.contains(col)) {
-      Logger::instance().mWarning("Missing column in MacroActions: " + col);
+      mwrn() << "Missing column in MacroActions: " + col;
       hasMissingColumns = true;
     }
   }
 
   // Recreate table if schema doesn't match
-  if (hasRemovedColumns || hasMissingColumns) {
-    Logger::instance().mWarning(
-        "MacroActions table schema mismatch - recreating");
+  if (hasMissingColumns) {
+    mwrn() << "MacroActions table schema mismatch - recreating";
     return recreateActionsTable(error);
   }
 
-  Logger::instance().mInfo("MacroActions table schema validated");
+  minfo() << "MacroActions table schema validated";
   return true;
 }
 
 bool MacroManager::recreateMacrosTable(QString* error) {
-  if (!m_db.transaction()) {
-    if (error) *error = "Failed to start transaction for Macros recreation";
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+    if (error) *error = "Transaction guard failed!";
     return false;
   }
 
@@ -284,56 +302,38 @@ bool MacroManager::recreateMacrosTable(QString* error) {
 
   // Backup existing data
   if (!q.exec("CREATE TEMP TABLE macros_backup AS SELECT * FROM Macros")) {
-    m_db.rollback();
     return execQuery(q, "backup Macros", error);
   }
 
   // Drop old table
   if (!q.exec("DROP TABLE Macros")) {
-    m_db.rollback();
     return execQuery(q, "drop old Macros", error);
   }
 
   // Create new table
-  const char* createMacros =
-      "CREATE TABLE Macros ("
-      " id INTEGER PRIMARY KEY,"
-      " name TEXT NOT NULL UNIQUE,"
-      " description TEXT NOT NULL,"
-      " hotkey TEXT NOT NULL"
-      ");";
-  if (!q.exec(createMacros)) {
-    m_db.rollback();
+  if (!q.exec(CREATE_MACROS_SQL)) {
     return execQuery(q, "recreate Macros", error);
   }
 
   // Restore data
   if (!q.exec("INSERT INTO Macros (id, name, description, hotkey) "
               "SELECT id, name, description, hotkey FROM macros_backup")) {
-    m_db.rollback();
     return execQuery(q, "restore Macros data", error);
   }
 
   // Clean up
   if (!q.exec("DROP TABLE macros_backup")) {
-    m_db.rollback();
     return execQuery(q, "cleanup Macros backup", error);
   }
 
-  if (!m_db.commit()) {
-    m_db.rollback();
-    if (error) *error = "Failed to commit Macros recreation";
-    return false;
-  }
-
-  Logger::instance().mInfo("Successfully recreated Macros table");
-  return true;
+  minfo() << "Successfully recreated Macros table";
+  return tx.commit();
 }
 
 bool MacroManager::recreateActionsTable(QString* error) {
-  if (!m_db.transaction()) {
-    if (error)
-      *error = "Failed to start transaction for MacroActions recreation";
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+    if (error) *error = "Transaction guard failed!";
     return false;
   }
 
@@ -348,37 +348,16 @@ bool MacroManager::recreateActionsTable(QString* error) {
       "FROM MacroActions";
 
   if (!q.exec(backupQuery)) {
-    m_db.rollback();
     return execQuery(q, "backup MacroActions", error);
   }
 
   // Drop old table
   if (!q.exec("DROP TABLE MacroActions")) {
-    m_db.rollback();
     return execQuery(q, "drop old MacroActions", error);
   }
 
   // Create new table with correct schema
-  const char* createActions =
-      "CREATE TABLE MacroActions ("
-      " macro_id INTEGER NOT NULL,"
-      " \"order\" INTEGER NOT NULL,"
-      " action_type TEXT NOT NULL,"
-      " click_type TEXT NOT NULL,"
-      " repeat INTEGER NOT NULL,"
-      " position TEXT NULL,"
-      " current_position INTEGER NOT NULL,"
-      " interval INTEGER NOT NULL,"
-      " hold_duration INTEGER NULL,"
-      " click_count INTEGER NOT NULL,"
-      " mouse_button TEXT NULL,"
-      " key_name TEXT NULL,"
-      " PRIMARY KEY(macro_id, \"order\"),"
-      " FOREIGN KEY(macro_id) REFERENCES Macros(id) ON DELETE CASCADE"
-      ");";
-
-  if (!q.exec(createActions)) {
-    m_db.rollback();
+  if (!q.exec(CREATE_ACTIONS_SQL)) {
     return execQuery(q, "recreate MacroActions", error);
   }
 
@@ -394,24 +373,16 @@ bool MacroManager::recreateActionsTable(QString* error) {
       "FROM actions_backup";
 
   if (!q.exec(restoreQuery)) {
-    m_db.rollback();
     return execQuery(q, "restore MacroActions data", error);
   }
 
   // Clean up
   if (!q.exec("DROP TABLE actions_backup")) {
-    m_db.rollback();
     return execQuery(q, "cleanup MacroActions backup", error);
   }
 
-  if (!m_db.commit()) {
-    m_db.rollback();
-    if (error) *error = "Failed to commit MacroActions recreation";
-    return false;
-  }
-
-  Logger::instance().mInfo("Successfully recreated MacroActions table");
-  return true;
+  minfo() << "Successfully recreated MacroActions table";
+  return tx.commit();
 }
 
 // ===== Basic Validation =====
@@ -581,25 +552,33 @@ std::optional<Macro> MacroManager::getMacroByName(const QString& name) const {
   return m;
 }
 
-int MacroManager::createMacro(const QString& name, const QString& description,
-                              const QString& hotkey, QString* error) {
-  if (!validateMacroName(name, error) ||
-      !validateMacroDescription(description, error) ||
-      !validateHotkey(hotkey, error))
+int MacroManager::createMacro(const Macro& m, QString* error) {
+  if (!validateMacroName(m.name, error) ||
+      !validateMacroDescription(m.description, error) ||
+      !validateHotkey(m.hotkey, error))
     return -1;
 
-  if (existsMacro(name)) {
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+    if (error) *error = "Transaction guard failed!";
+    return -1;
+  }
+
+  if (existsMacro(m.name)) {
     if (error) *error = "A macro with this name exists!";
     return -1;
   }
 
   QSqlQuery q(m_db);
   q.prepare("INSERT INTO Macros(name, description, hotkey) VALUES(?,?,?)");
-  q.addBindValue(name);
-  q.addBindValue(description);
-  q.addBindValue(hotkey);
+  bindMacroToQuery(q, m);
   if (!q.exec()) {
     execQuery(q, "insert Macro", error);
+    return -1;
+  }
+
+  if (!tx.commit()) {
+    if (error) *error = "Create macro commit failed!";
     return -1;
   }
   return q.lastInsertId().toInt();
@@ -615,13 +594,21 @@ bool MacroManager::updateMacro(const Macro& m, QString* error) {
       !validateHotkey(m.hotkey, error))
     return false;
 
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+    if (error) *error = "Transaction failed!";
+    return false;
+  }
+
   QSqlQuery q(m_db);
   q.prepare("UPDATE Macros SET name=?, description=?, hotkey=? WHERE id=?");
   q.addBindValue(m.name);
   q.addBindValue(m.description);
   q.addBindValue(m.hotkey);
   q.addBindValue(m.id);
-  return q.exec();
+  if (!q.exec()) return execQuery(q, "update Macro", error);
+
+  return tx.commit();
 }
 
 bool MacroManager::deleteMacro(int id, QString* error) {
@@ -657,6 +644,8 @@ bool MacroManager::updateMacroName(int macroId, const QString& newName,
     if (error) *error = "A macro with this name exists!";
     return false;
   }
+
+  if (existsMacro(macroId))
 
   QSqlQuery q(m_db);
   q.prepare("UPDATE Macros SET name=? WHERE id=?");
@@ -717,13 +706,14 @@ bool MacroManager::updateMacroHotkey(int macroId, const QString& newHotkey,
 // ===== Actions CRUD =====
 QVector<MacroAction> MacroManager::getActions(int macroId) const {
   QVector<MacroAction> out;
+  static const QString sql =
+      "SELECT macro_id, \"order\", action_type, click_type, repeat, "
+      "position, current_position, interval, hold_duration, click_count, "
+      "mouse_button, key_name FROM MacroActions WHERE macro_id=? "
+      "ORDER BY \"order\" ASC";
+
   QSqlQuery q(m_db);
-  q.prepare(
-      "SELECT macro_id, \"order\", action_type, click_type, repeat, position, "
-      "current_position,"
-      " interval, hold_duration, click_count, mouse_button, "
-      "key_name "
-      "FROM MacroActions WHERE macro_id=? ORDER BY \"order\" ASC");
+  q.prepare(sql);
   q.addBindValue(macroId);
   if (!q.exec()) return out;
 
@@ -746,9 +736,9 @@ QVector<MacroAction> MacroManager::getActions(int macroId) const {
     QString strAct = q.value(2).toString();
     auto actOpt = strToActionType(strAct);
     if (!actOpt) {
-      Logger::instance().mError("Invalid action type: " + strAct +
+      merr() << "Invalid action type: " + strAct +
                                 " for macro " + QString::number(a.macro_id) +
-                                " order " + QString::number(a.order));
+                                " order " + QString::number(a.order);
       continue;
     }
     a.action_type = *actOpt;
@@ -756,9 +746,9 @@ QVector<MacroAction> MacroManager::getActions(int macroId) const {
     QString strClick = q.value(3).toString();
     auto clickOpt = strToClickType(strClick);
     if (!clickOpt) {
-      Logger::instance().mError("Invalid click type: " + strClick +
+      merr() << "Invalid click type: " + strClick +
                                 " for macro " + QString::number(a.macro_id) +
-                                " order " + QString::number(a.order));
+                                " order " + QString::number(a.order);
       continue;
     }
     a.click_type = *clickOpt;
@@ -774,152 +764,38 @@ QVector<MacroAction> MacroManager::getActions(int macroId) const {
   }
   return out;
 }
-bool MacroManager::addAction(const MacroAction& a, QString* error) {
-  // Create a copy for validation and auto-correction
-  MacroAction correctedAction = a;
+bool MacroManager::addAction(const MacroAction& action, QString* error) {
+  static const char* INSERT_SQL = R"(
+        INSERT INTO MacroActions (
+            macro_id, "order", action_type, click_type, repeat,
+            position, current_position, interval, hold_duration,
+            click_count, mouse_button, key_name
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    )";
 
-  // Auto-correct KEYBOARD actions
-  if (correctedAction.action_type == ActionType::KEYBOARD) {
-    correctedAction.mouse_button = std::nullopt;
-    if (correctedAction.click_type == ClickType::HOVER) {
-      correctedAction.click_type = ClickType::CLICK;
-    }
-    // Ensure key_name is set for keyboard actions
-    if (!correctedAction.key_name.has_value()) {
-      correctedAction.key_name = "A";  // Default key
-    }
-  }
-
-  if (!validateAction(correctedAction, error)) return false;
-
-  Logger::instance().mInfo(
-      QString("Adding action: macro_id=%1, action_type=%2")
-          .arg(correctedAction.macro_id)
-          .arg(actionTypeToStr(correctedAction.action_type)));
-
-  // Enhanced database state checking
-  if (!m_db.isOpen()) {
-    if (error) *error = "Database is not open";
-    return false;
-  }
-
-  // Check if already in transaction
-  if (m_db.driver()->hasFeature(QSqlDriver::Transactions)) {
-    // Force rollback any existing transaction to clean state
-    m_db.rollback();
-  }
-
-  if (!m_db.transaction()) {
-    if (error)
-      *error = QString("Transaction failed: %1").arg(m_db.lastError().text());
-    return false;
-  }
-
-  // Get next order number with explicit query finish
-  QSqlQuery maxQ(m_db);
-  maxQ.prepare(
-      "SELECT IFNULL(MAX(\"order\"), -1) + 1 FROM MacroActions WHERE "
-      "macro_id=?");
-  maxQ.addBindValue(correctedAction.macro_id);
-  if (!maxQ.exec() || !maxQ.next()) {
-    maxQ.finish();  // Explicitly finish query
-    m_db.rollback();
-    return execQuery(maxQ, "get max order", error);
-  }
-  int targetOrder = maxQ.value(0).toInt();
-  maxQ.finish();  // Explicitly finish query
-
-  Logger::instance().mInfo(QString("Auto-assigned order: %1").arg(targetOrder));
-
-  // Insert new action with prepared statement
   QSqlQuery insQ(m_db);
-  insQ.prepare(
-      "INSERT INTO MacroActions(macro_id, \"order\", action_type, click_type, "
-      "repeat, position, current_position, interval, hold_duration, "
-      "click_count, mouse_button, key_name) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-
-  insQ.addBindValue(correctedAction.macro_id);
-  insQ.addBindValue(targetOrder);
-  insQ.addBindValue(actionTypeToStr(correctedAction.action_type));
-  insQ.addBindValue(clickTypeToStr(correctedAction.click_type));
-  insQ.addBindValue(correctedAction.repeat);
-
-  // Handle NULL values explicitly
-  if (correctedAction.position.has_value()) {
-    insQ.addBindValue(correctedAction.position.value());
-  } else {
-    insQ.addBindValue(QVariant(QVariant::String));
+  if (!insQ.prepare(INSERT_SQL)) {
+    *error = "Failed to prepare insert: " + insQ.lastError().text();
+    return false;
   }
 
-  if (correctedAction.current_pos.has_value()) {
-    insQ.addBindValue(correctedAction.current_pos.value() ? 1 : 0);
-  } else {
-    insQ.addBindValue(QVariant(QVariant::Int));
-  }
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) { *error = "Transaction guard failed!"; return false; }
 
-  insQ.addBindValue(correctedAction.interval);
-
-  if (correctedAction.hold_duration.has_value()) {
-    insQ.addBindValue(correctedAction.hold_duration.value());
-  } else {
-    insQ.addBindValue(QVariant(QVariant::Int));
-  }
-
-  insQ.addBindValue(correctedAction.click_count);
-
-  // Explicit NULL handling for KEYBOARD actions
-  if (correctedAction.action_type == ActionType::KEYBOARD ||
-      !correctedAction.mouse_button.has_value()) {
-    insQ.addBindValue(QVariant(QVariant::String));  // Explicit NULL
-  } else {
-    insQ.addBindValue(mouseButtonToStr(correctedAction.mouse_button.value()));
-  }
-
-  if (correctedAction.key_name.has_value()) {
-    insQ.addBindValue(correctedAction.key_name.value());
-  } else {
-    insQ.addBindValue(QVariant(QVariant::String));
-  }
-
+  bindActionToQuery(insQ, action);
   if (!insQ.exec()) {
-    insQ.finish();
-    m_db.rollback();
-    return execQuery(insQ, "insert updated action", error);
-  }
-  insQ.finish();
-
-  // Commit with enhanced error checking
-  if (!m_db.commit()) {
-    if (error)
-      *error = QString("Commit failed: %1").arg(m_db.lastError().text());
+    *error = "Insert failed: " + insQ.lastError().text();
     return false;
   }
 
-  return true;
+  return tx.commit();
 }
-bool MacroManager::deleteAction(int macroId, int order, QString* error) {
-  // Basic input validation
-  if (macroId <= 0) {
-    if (error) *error = "Invalid macro ID";
-    return false;
-  }
 
-  if (order < 0) {
-    if (error) *error = "Invalid order";
-    return false;
-  }
-
-  // Ensure database is open
-  if (!m_db.isOpen()) {
-    if (error) *error = "Database is not open";
-    return false;
-  }
-
-  // Check if action exists before attempting to delete
+bool MacroManager::existsAction(int macro_id, int order, QString* error) {
   QSqlQuery checkQ(m_db);
   checkQ.prepare(
       "SELECT COUNT(*) FROM MacroActions WHERE macro_id=? AND \"order\"=?");
-  checkQ.addBindValue(macroId);
+  checkQ.addBindValue(macro_id);
   checkQ.addBindValue(order);
 
   if (!checkQ.exec()) {
@@ -935,25 +811,27 @@ bool MacroManager::deleteAction(int macroId, int order, QString* error) {
   }
   checkQ.finish();
 
-  if (!actionExists) {
-    if (error)
-      *error = QString("Action not found at order %1 for macro %2")
-                   .arg(order)
-                   .arg(macroId);
+  return actionExists;
+}
+
+bool MacroManager::deleteAction(int macroId, int order, QString* error) {
+  // Basic input validation
+  if (macroId <= 0) {
+    if (error) *error = "Invalid macro ID";
     return false;
   }
 
-  // Start clean transaction
-  if (m_db.driver()->hasFeature(QSqlDriver::Transactions)) {
-    m_db.rollback();  // Clean any existing transaction
-  }
-
-  if (!m_db.transaction()) {
-    if (error)
-      *error = QString("Failed to start transaction: %1")
-                   .arg(m_db.lastError().text());
+  if (order < 0) {
+    if (error) *error = "Invalid order";
     return false;
   }
+
+  // Start transaction
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+      if (error) *error = "Transaction guard failed!";
+      return false;
+    }
 
   // Delete the specific action
   QSqlQuery delQ(m_db);
@@ -965,7 +843,6 @@ bool MacroManager::deleteAction(int macroId, int order, QString* error) {
     QString deleteError =
         QString("Failed to delete action: %1").arg(delQ.lastError().text());
     delQ.finish();
-    m_db.rollback();
     if (error) *error = deleteError;
     return false;
   }
@@ -983,26 +860,12 @@ bool MacroManager::deleteAction(int macroId, int order, QString* error) {
     QString shiftError = QString("Failed to shift action orders: %1")
                              .arg(shiftQ.lastError().text());
     shiftQ.finish();
-    m_db.rollback();
     if (error) *error = shiftError;
     return false;
   }
   shiftQ.finish();
 
-  // Commit transaction
-  if (!m_db.commit()) {
-    QString commitError = QString("Failed to commit delete transaction: %1")
-                              .arg(m_db.lastError().text());
-    if (error) *error = commitError;
-    Logger::instance().mError("Delete action commit failed: " + commitError);
-    return false;
-  }
-
-  Logger::instance().mInfo(
-      QString("Successfully deleted action at order %1 from macro %2")
-          .arg(order)
-          .arg(macroId));
-  return true;
+  return tx.commit();
 }
 bool MacroManager::moveActionUp(int macroId, int order, QString* error) {
   if (order <= 0) {
@@ -1018,8 +881,12 @@ bool MacroManager::moveActionDown(int macroId, int order, QString* error) {
   QSqlQuery maxQ(m_db);
   maxQ.prepare("SELECT MAX(\"order\") FROM MacroActions WHERE macro_id=?");
   maxQ.addBindValue(macroId);
-  if (!maxQ.exec() || !maxQ.next()) {
+  if (!maxQ.exec()) {
     return execQuery(maxQ, "get max order", error);
+  }
+  if (!maxQ.next()) {
+    if (error) *error = "No actions found for this macro";
+    return false;
   }
   int maxOrder = maxQ.value(0).toInt();
 
@@ -1033,75 +900,26 @@ bool MacroManager::moveActionDown(int macroId, int order, QString* error) {
 // İki action'ın yerlerini değiştir
 bool MacroManager::swapActions(int macroId, int order1, int order2,
                                QString* error) {
-  if (!m_db.transaction()) {
-    if (error) *error = "Transaction failed";
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+    if (error) *error = "Transaction guard failed!";
     return false;
   }
 
-  // Geçici order kullanarak swap yap (-1000 gibi)
-  const int tempOrder = -1000;
+  if (!updateOrder(macroId, order1, tempOrder, "move to temp", error)) return false;
+  if (!updateOrder(macroId, order2, order1, "move second", error)) return false;
+  if (!updateOrder(macroId, tempOrder, order2, "move from temp", error)) return false;
 
-  QSqlQuery q(m_db);
-
-  // İlk action'ı geçici order'a taşı
-  q.prepare(
-      "UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
-  q.addBindValue(tempOrder);
-  q.addBindValue(macroId);
-  q.addBindValue(order1);
-  if (!q.exec()) {
-    m_db.rollback();
-    return execQuery(q, "move to temp", error);
-  }
-
-  // İkinci action'ı birincinin yerine taşı
-  q.prepare(
-      "UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
-  q.addBindValue(order1);
-  q.addBindValue(macroId);
-  q.addBindValue(order2);
-  if (!q.exec()) {
-    m_db.rollback();
-    return execQuery(q, "move second", error);
-  }
-
-  // Geçici action'ı ikincinin yerine taşı
-  q.prepare(
-      "UPDATE MacroActions SET \"order\"=? WHERE macro_id=? AND \"order\"=?");
-  q.addBindValue(order2);
-  q.addBindValue(macroId);
-  q.addBindValue(tempOrder);
-  if (!q.exec()) {
-    m_db.rollback();
-    return execQuery(q, "move from temp", error);
-  }
-
-  if (!m_db.commit()) {
-    m_db.rollback();
-    if (error) *error = "Commit failed";
-    return false;
-  }
-
-  return true;
+  return tx.commit();
 }
-#include <QSqlDriver>
 
 bool MacroManager::updateAction(int macroId, int oldOrder,
                                 const MacroAction& newAction, QString* error) {
   if (!validateAction(newAction, error)) return false;
 
-  // Ensure database is open
-  if (!m_db.isOpen()) {
-    if (error) *error = "Database is not open";
-    return false;
-  }
-
-  // Check if transaction is already active
-  bool wasInTransaction =
-      m_db.driver()->hasFeature(QSqlDriver::Transactions) && m_db.transaction();
-
-  if (!wasInTransaction) {
-    if (error) *error = "Failed to start transaction";
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) {
+    if (error) *error = "Transaction guard failed!";
     return false;
   }
 
@@ -1111,7 +929,6 @@ bool MacroManager::updateAction(int macroId, int oldOrder,
   delQ.addBindValue(macroId);
   delQ.addBindValue(oldOrder);
   if (!delQ.exec()) {
-    m_db.rollback();
     return execQuery(delQ, "delete old action", error);
   }
 
@@ -1123,190 +940,49 @@ bool MacroManager::updateAction(int macroId, int oldOrder,
       " interval, hold_duration, click_count, mouse_button, "
       "key_name)"
       " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-
-  insQ.addBindValue(newAction.macro_id);
-  insQ.addBindValue(newAction.order);
-  insQ.addBindValue(actionTypeToStr(newAction.action_type));
-  insQ.addBindValue(clickTypeToStr(newAction.click_type));
-  insQ.addBindValue(newAction.repeat);
-
-  // Handle optional fields properly
-  insQ.addBindValue(newAction.position.has_value()
-                        ? QVariant(newAction.position.value())
-                        : QVariant(QVariant::String));
-  insQ.addBindValue(newAction.current_pos.has_value()
-                        ? (newAction.current_pos.value() ? 1 : 0)
-                        : QVariant(QVariant::Int));
-  insQ.addBindValue(newAction.interval);
-  insQ.addBindValue(newAction.hold_duration.has_value()
-                        ? QVariant(newAction.hold_duration.value())
-                        : QVariant(QVariant::Int));
-  insQ.addBindValue(newAction.click_count);
-
-  // Proper MouseButton handling - ensure NULL for KEYBOARD actions
-  if (newAction.action_type == ActionType::KEYBOARD ||
-      !newAction.mouse_button.has_value()) {
-    insQ.addBindValue(QVariant(QVariant::String));  // NULL
-  } else {
-    insQ.addBindValue(mouseButtonToStr(newAction.mouse_button.value()));
-  }
-
-  insQ.addBindValue(newAction.key_name.has_value()
-                        ? QVariant(newAction.key_name.value())
-                        : QVariant(QVariant::String));
+  bindActionToQuery(insQ, newAction, true);
 
   if (!insQ.exec()) {
-    m_db.rollback();
     return execQuery(insQ, "insert updated action", error);
   }
 
-  // Commit with error checking
-  if (!m_db.commit()) {
-    m_db.rollback();
-    if (error)
-      *error = QString("Commit failed: %1").arg(m_db.lastError().text());
-    return false;
-  }
-
-  return true;
+  return tx.commit();
 }
 
 bool MacroManager::setActionsForMacro(int macroId,
                                       const QVector<MacroAction>& actions,
                                       QString* error) {
-  if (!m_db.isOpen()) {
-    if (error) *error = "Database is not open";
+  TransactionGuard tx(m_db);
+  if (!tx.ok()) { *error = "Transaction guard failed!"; return false; }
+
+  // eski aksiyonları sil
+  QSqlQuery delQ(m_db);
+  delQ.prepare("DELETE FROM MacroActions WHERE macro_id = ?");
+  delQ.addBindValue(macroId);
+  if (!delQ.exec()) {
+    merr() << "Failed to delete old actions: " << delQ.lastError().text();
     return false;
   }
 
-  Logger::instance().mInfo(
-      QString("setActionsForMacro called for macro %1 with %2 actions")
-          .arg(macroId)
-          .arg(actions.size()));
+  // Yeni aksiyonları ekle
+  QSqlQuery insQ(m_db);
+  insQ.prepare(R"(
+        INSERT INTO MacroActions (
+            macro_id, "order", action_type, click_type, repeat,
+            position, current_position, interval, hold_duration,
+            click_count, mouse_button, key_name
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    )");
 
-  if (m_db.driver()->hasFeature(QSqlDriver::Transactions)) {
-    m_db.rollback();
-  }
-
-  QThread::msleep(1);
-
-  for (int i = 0; i < actions.size(); ++i) {
-    const auto& action = actions[i];
-    MacroAction validationAction = action;
-    validationAction.macro_id = macroId;
-
-    Logger::instance().mInfo(QString("Action %1: type=%2, click=%3")
-                                 .arg(i)
-                                 .arg(actionTypeToStr(action.action_type))
-                                 .arg(clickTypeToStr(action.click_type)));
-
-    if (!validateAction(validationAction, error)) {
-      Logger::instance().mError(QString("Validation failed for action %1: %2")
-                                    .arg(i)
-                                    .arg(error ? *error : "unknown"));
+  for (const auto& a : actions) {
+    bindActionToQuery(insQ, a);
+    if (!insQ.exec()) {
+      merr() << "Insert failed: " << insQ.lastError().text();
       return false;
     }
   }
 
-  if (!m_db.transaction()) {
-    if (error)
-      *error =
-          QString("Transaction begin failed: %1").arg(m_db.lastError().text());
-    Logger::instance().mError("Transaction begin failed");
-    return false;
-  }
-
-  // Önce tüm eski action'ları sil
-  QSqlQuery delQ(m_db);
-  delQ.prepare("DELETE FROM MacroActions WHERE macro_id=?");
-  delQ.addBindValue(macroId);
-  if (!delQ.exec()) {
-    m_db.rollback();
-    Logger::instance().mError(
-        QString("Delete failed: %1").arg(delQ.lastError().text()));
-    return execQuery(delQ, "delete old actions", error);
-  }
-
-  Logger::instance().mInfo(QString("Deleted old actions, affected rows: %1")
-                               .arg(delQ.numRowsAffected()));
-
-  // Yeni action'ları ekle
-  for (int i = 0; i < actions.size(); ++i) {
-    const auto& action = actions[i];
-
-    QSqlQuery insQ(m_db);
-    insQ.prepare(
-        "INSERT INTO MacroActions(macro_id, \"order\", action_type, "
-        "click_type, "
-        "repeat, position, current_position, interval, hold_duration, "
-        "click_count, mouse_button, key_name) "
-        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
-
-    insQ.addBindValue(macroId);
-    insQ.addBindValue(action.order);
-    insQ.addBindValue(actionTypeToStr(action.action_type));
-    insQ.addBindValue(clickTypeToStr(action.click_type));
-    insQ.addBindValue(action.repeat);
-
-    if (action.position.has_value()) {
-      insQ.addBindValue(action.position.value());
-    } else {
-      insQ.addBindValue(QVariant(QVariant::String));
-    }
-
-    if (action.current_pos.has_value()) {
-      insQ.addBindValue(action.current_pos.value() ? 1 : 0);
-    } else {
-      insQ.addBindValue(QVariant(QVariant::Int));
-    }
-
-    insQ.addBindValue(action.interval);
-
-    if (action.hold_duration.has_value()) {
-      insQ.addBindValue(action.hold_duration.value());
-    } else {
-      insQ.addBindValue(QVariant(QVariant::Int));
-    }
-
-    insQ.addBindValue(action.click_count);
-
-    if (action.action_type == ActionType::KEYBOARD ||
-        !action.mouse_button.has_value()) {
-      insQ.addBindValue(QVariant(QVariant::String));
-    } else {
-      insQ.addBindValue(mouseButtonToStr(action.mouse_button.value()));
-    }
-
-    if (action.key_name.has_value()) {
-      insQ.addBindValue(action.key_name.value());
-    } else {
-      insQ.addBindValue(QVariant(QVariant::String));
-    }
-
-    if (!insQ.exec()) {
-      m_db.rollback();
-      Logger::instance().mError(QString("Insert failed for action %1: %2")
-                                    .arg(i)
-                                    .arg(insQ.lastError().text()));
-      return execQuery(insQ, "insert action", error);
-    }
-
-    Logger::instance().mInfo(QString("Inserted action %1: type=%2, click=%3")
-                                 .arg(i)
-                                 .arg(actionTypeToStr(action.action_type))
-                                 .arg(clickTypeToStr(action.click_type)));
-  }
-
-  if (!m_db.commit()) {
-    if (error)
-      *error = QString("Commit failed: %1").arg(m_db.lastError().text());
-    Logger::instance().mError(
-        QString("Commit failed: %1").arg(m_db.lastError().text()));
-    return false;
-  }
-
-  Logger::instance().mInfo("Transaction committed successfully");
-  return true;
+  return tx.commit();
 }
 bool MacroManager::normalizeOrders(int macroId, QString* error) {
   auto acts = getActions(macroId);

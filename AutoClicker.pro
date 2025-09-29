@@ -53,6 +53,7 @@ HEADERS += \
     settingsmanager.h \
     settingswin.h \
     thememanager.h \
+    transactionguard.h \
     versionmanager.h
 
 FORMS += \

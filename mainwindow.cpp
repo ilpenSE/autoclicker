@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QtSvg/QSvgRenderer>
+#include <QScrollBar>
 
 #include "Enums.h"
 #include "LoggerStream.h"
@@ -205,9 +206,15 @@ void MainWindow::setActiveMacro(int id) {
   }
 
   ui->actionsTable->setRowCount(0);
-  QVector<MacroAction> acts = _macroman().getActions(id);
-  for (const MacroAction& act : acts) {
-    addActionToTable(act);
+  m_allActions = _macroman().getActions(id);
+
+  // Sadece görünür alanı yükle
+  loadVisibleActions();
+
+  // Scroll event'i bağla
+  if (ui->actionsTable->verticalScrollBar()) {
+    connect(ui->actionsTable->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &MainWindow::updateVisibleRange);
   }
 
   // reset saved states
@@ -215,6 +222,42 @@ void MainWindow::setActiveMacro(int id) {
   m_modifiedRows.clear();
   m_actionsModified = false;
   m_pendingActions.clear();
+}
+
+void MainWindow::updateVisibleRange() {
+  if (m_allActions.isEmpty()) return;
+
+  // Mevcut scroll pozisyonunu al
+  QScrollBar* scrollBar = ui->actionsTable->verticalScrollBar();
+  if (!scrollBar) return;
+  int scrollValue = scrollBar->value();
+  int maxScroll = scrollBar->maximum();
+
+  // Toplam satır sayısı
+  int totalRows = m_allActions.size();
+
+  // Görünür alandaki ilk ve son satır indekslerini hesapla
+  int newStartIndex = (scrollValue * totalRows) / qMax(1, maxScroll);
+  int newEndIndex = qMin(newStartIndex + VISIBLE_ROW_COUNT, totalRows);
+
+  // Eğer görünür alan değişmemişse hiçbir şey yapma
+  if (newStartIndex == m_visibleStartIndex && newEndIndex == m_visibleEndIndex) {
+    return;
+  }
+
+  // Yeni aralığı kaydet
+  m_visibleStartIndex = newStartIndex;
+  m_visibleEndIndex = newEndIndex;
+
+  // Table'ı temizle ve yeni satırları ekle
+  ui->actionsTable->setUpdatesEnabled(false);
+  ui->actionsTable->setRowCount(0);
+
+  for (int i = m_visibleStartIndex; i < m_visibleEndIndex; ++i) {
+    addActionToTable(m_allActions[i]);
+  }
+
+  ui->actionsTable->setUpdatesEnabled(true);
 }
 
 void MainWindow::setupDynamicIcons() {
@@ -252,7 +295,16 @@ void MainWindow::refreshIcons() {
   _themesman().refreshAllIcons();
 }
 
+void MainWindow::loadVisibleActions() {
+  ui->actionsTable->setRowCount(qMin(VISIBLE_ROW_COUNT, m_allActions.size()));
+
+  for (int i = 0; i < qMin(VISIBLE_ROW_COUNT, m_allActions.size()); ++i) {
+    addActionToTable(m_allActions[i]);
+  }
+}
+
 void MainWindow::addActionToTable(MacroAction a) {
+  ui->actionsTable->blockSignals(true);
   int row = ui->actionsTable->rowCount();
   ui->actionsTable->insertRow(row);
 
@@ -262,77 +314,47 @@ void MainWindow::addActionToTable(MacroAction a) {
   ui->actionsTable->setItem(row, 0, noItem);
 
   // Action Type ComboBox
-  QWidget* actionTypeContainer = new QWidget();
-  QHBoxLayout* actionTypeLayout = new QHBoxLayout(actionTypeContainer);
-  actionTypeLayout->setContentsMargins(2, 2, 2, 2);
-  actionTypeLayout->setSpacing(0);
-
-  QComboBox* actionTypeCombo = createActionTypeComboBox(a.action_type);
-  actionTypeCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-  actionTypeLayout->addWidget(actionTypeCombo);
-
-  ui->actionsTable->setCellWidget(row, 1, actionTypeContainer);
+  auto* actionTypeCombo = createActionTypeComboBox(a.action_type);
+  wrapInCell(actionTypeCombo, row, 1);
 
   // Click Type ComboBox
-  QWidget* clickTypeContainer = new QWidget();
-  QHBoxLayout* clickTypeLayout = new QHBoxLayout(clickTypeContainer);
-  clickTypeLayout->setContentsMargins(2, 2, 2, 2);
-  clickTypeLayout->setSpacing(0);
-
   QComboBox* clickTypeCombo = createClickTypeComboBox(a.click_type);
-  clickTypeCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-  clickTypeLayout->addWidget(clickTypeCombo);
-
-  ui->actionsTable->setCellWidget(row, 2, clickTypeContainer);
+  wrapInCell(clickTypeCombo, row, 2);
 
   // Mouse Button ComboBox
-  QWidget* mouseButtonContainer = new QWidget();
-  QHBoxLayout* mouseButtonLayout = new QHBoxLayout(mouseButtonContainer);
-  mouseButtonLayout->setContentsMargins(2, 2, 2, 2);
-  mouseButtonLayout->setSpacing(0);
-
   std::optional<MouseButton> mouseButtonValue =
       (a.action_type == ActionType::KEYBOARD) ? std::nullopt : a.mouse_button;
-
   QComboBox* mouseButtonCombo = createMouseButtonComboBox(mouseButtonValue);
-  mouseButtonCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-  mouseButtonLayout->addWidget(mouseButtonCombo);
+  wrapInCell(mouseButtonCombo, row, 3);
 
-  ui->actionsTable->setCellWidget(row, 3, mouseButtonContainer);
-
-  // applyActionTypeConstraints'i en son çağır
   applyActionTypeConstraints(row, a.action_type);
 
+  // repeat
   QTableWidgetItem* repeatItem =
       new QTableWidgetItem(QString::number(a.repeat));
   repeatItem->setTextAlignment(Qt::AlignCenter);
   ui->actionsTable->setItem(row, 4, repeatItem);
 
+  // interval
   QTableWidgetItem* intervalItem =
       new QTableWidgetItem(QString::number(a.interval));
   intervalItem->setTextAlignment(Qt::AlignCenter);
   ui->actionsTable->setItem(row, 5, intervalItem);
 
   // Additional Settings button
-  QWidget* settingsContainer = new QWidget();
-  QHBoxLayout* settingsLayout = new QHBoxLayout(settingsContainer);
-  settingsLayout->setContentsMargins(1, 1, 1, 1);
-  settingsLayout->setSpacing(0);
-
   QPushButton* settingsBtn = new QPushButton("...");
   settingsBtn->setFixedSize(28, 28);
-  settingsBtn->setStyleSheet("font-weight: bold; margin: 0px; padding: 0px;");
+  // settingsBtn->setStyleSheet("font-weight: bold; margin: 0px; padding: 0px;");
   settingsBtn->setToolTip(tr("additionals tooltip"));
+  wrapInCell(settingsBtn, row, 6);
 
   connect(settingsBtn, &QPushButton::clicked, this,
           [this, row]() { showAdditionalSettings(row); });
 
-  settingsLayout->addWidget(settingsBtn, 0, Qt::AlignCenter);
-  settingsLayout->setAlignment(Qt::AlignCenter);
-  ui->actionsTable->setCellWidget(row, 6, settingsContainer);
-
   ui->actionsTable->setRowHeight(row, 32);
+  ui->actionsTable->blockSignals(false);
 }
+
 void MainWindow::updateActionFromTableRow(int row) {
   if (row < 0 || row >= ui->actionsTable->rowCount()) return;
 
@@ -512,7 +534,7 @@ QComboBox* MainWindow::createClickTypeComboBox(ClickType currentValue) {
         }
         QTimer::singleShot(100, this, [this]() { validateCurrentActions(); });
       },
-      Qt::QueuedConnection);  // QueuedConnection ekleyin
+      Qt::QueuedConnection);
 
   return comboBox;
 }
@@ -663,7 +685,7 @@ void MainWindow::saveActions(int macroId, const QVector<MacroAction>& actions) {
   QString err;
   if (!_macroman().setActionsForMacro(macroId, actions, &err)) {
     merr() << err;
-    QMessageBox::critical(this, tr("error"), err);
+    showmsg(err, MessageType::ERR);
   }
 }
 
@@ -1485,13 +1507,16 @@ void MainWindow::moveRowDown() {
 }
 
 void MainWindow::rebuildTableFromPendingActions() {
-  // Tabloyu temizle
-  ui->actionsTable->setRowCount(0);
+  ui->actionsTable->setUpdatesEnabled(false);
+  ui->actionsTable->blockSignals(true);
 
-  // Pending actions'dan tabloyu yeniden inşa et
-  for (const MacroAction& action : m_pendingActions) {
+  ui->actionsTable->setRowCount(0);
+  for (const MacroAction& action : std::as_const(m_pendingActions)) {
     addActionToTable(action);
   }
+
+  ui->actionsTable->blockSignals(false);
+  ui->actionsTable->setUpdatesEnabled(true);
 }
 
 void MainWindow::highlightReorderRow() {
@@ -1649,4 +1674,23 @@ void MainWindow::showMoveAnimation(int fromRow, int toRow) {
 
   // Son repaint
   ui->actionsTable->repaint();
+}
+
+QWidget* MainWindow::wrapInCell(QWidget* child, int row, int col) {
+  QWidget* container = new QWidget();
+  QHBoxLayout* layout = new QHBoxLayout(container);
+  layout->setContentsMargins(2, 2, 2, 2);
+  layout->setSpacing(0);
+  layout->addWidget(child);
+  layout->addWidget(child, 0, Qt::AlignCenter);  // AlignCenter ekleyin
+  layout->setAlignment(Qt::AlignCenter);         // Layout alignment'ı ekleyin
+
+  // row/col bilgisini property olarak sakla
+  container->setProperty("row", row);
+  container->setProperty("col", col);
+  child->setProperty("row", row);
+  child->setProperty("col", col);
+
+  ui->actionsTable->setCellWidget(row, col, container);
+  return container;
 }

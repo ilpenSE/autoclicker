@@ -6,7 +6,6 @@
 #include <QSqlDatabase>
 #include <QString>
 #include <QVector>
-#include <functional>
 #include <optional>
 
 #include "Enums.h"
@@ -59,7 +58,12 @@ inline bool operator!=(const MacroAction& lhs, const MacroAction& rhs) {
 class MacroManager final : public QObject {
   Q_OBJECT
  public:
-  static MacroManager& instance();  // Meyers Singleton
+  explicit MacroManager(QObject* parent = nullptr) : QObject(parent) {};
+
+  static MacroManager& instance() {
+    static MacroManager inst;
+    return inst;
+  }
 
   // init + schema
   bool init();
@@ -71,8 +75,7 @@ class MacroManager final : public QObject {
   bool existsMacro(const QString& name);
   std::optional<Macro> getMacroById(int id) const;
   std::optional<Macro> getMacroByName(const QString& name) const;
-  int createMacro(const QString& name, const QString& description,
-                  const QString& hotkey, QString* error = nullptr);
+  int createMacro(const Macro& m, QString* error = nullptr);
   bool updateMacro(const Macro& m, QString* error = nullptr);
   bool deleteMacro(int id, QString* error = nullptr);
   bool updateMacroName(int macroId, const QString& newName,
@@ -84,20 +87,24 @@ class MacroManager final : public QObject {
 
   // Actions
   QVector<MacroAction> getActions(int macroId) const;
+  bool existsAction(int macro_id, int order, QString* error = nullptr);
   bool addAction(const MacroAction& a, QString* error = nullptr);
   bool updateAction(int macroId, int oldOrder, const MacroAction& newAction,
                     QString* error);
   bool deleteAction(int macroId, int order, QString* error = nullptr);
   bool setActionsForMacro(int macroId, const QVector<MacroAction>& actions,
-                          QString* error = nullptr);  // transaction
+                          QString* error = nullptr);
+
   bool normalizeOrders(int macroId, QString* error = nullptr);
 
+  bool updateOrder(int macroId, int oldOrder, int newOrder,
+                                 const char* step, QString* error);
   bool moveActionUp(int macroId, int order, QString* error = nullptr);
   bool moveActionDown(int macroId, int order, QString* error = nullptr);
   bool swapActions(int macroId, int order1, int order2,
                    QString* error = nullptr);
 
-  // Basic Validation (existing)
+  // Basic Validation
   bool validateMacroName(const QString& name, QString* error = nullptr) const;
   bool validateMacroDescription(const QString& desc,
                                 QString* error = nullptr) const;
@@ -107,8 +114,15 @@ class MacroManager final : public QObject {
   // Path helper
   QString dbPath() const;
 
+  // defaults
+  MacroAction defaultAction = {
+    1, 0, ActionType::MOUSE, ClickType::CLICK, 1, "0, 0", true, 100, 1000, 1, MouseButton::LEFT, "A"
+  };
+  Macro defaultMacro = {
+    1, "DEFAULT", "The defaults.", "DEF"
+  };
+
  private:
-  explicit MacroManager(QObject* parent = nullptr);
   MacroManager(const MacroManager&) = delete;
   MacroManager& operator=(const MacroManager&) = delete;
 
@@ -121,5 +135,10 @@ class MacroManager final : public QObject {
   bool recreateMacrosTable(QString* error = nullptr);
   bool recreateActionsTable(QString* error = nullptr);
 
+  mutable QMap<QString, std::unique_ptr<QSqlQuery>> m_preparedQueries;
+
+  const int tempOrder = -1000;
+
   QSqlDatabase m_db;
+
 };
