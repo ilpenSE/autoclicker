@@ -18,6 +18,8 @@
 
 THIS PROJECT IS NO LONGER IN DEVELOPMENT! MAYBE IN FUTURE, I'LL MAKE NEW VERSIONS BUT NOW IT'S OVER.
 
+SEE THIS: [MY NEW PROJECT](https://github.com/ilpenSE/ultimatetoolbag)
+
 Written in C++, created with Qt, modernized with Fluent UI.
 
 ## Overview 📋
