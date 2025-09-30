@@ -1,4 +1,4 @@
-QT = core
+QT = core gui widgets
 QT += network
 CONFIG += c++17 windows
 
@@ -9,8 +9,9 @@ CONFIG += c++17 windows
 SOURCES += \
         main.cpp \
         updatechecker.cpp \
+        updatedialog.cpp \
         versioninfo.cpp
-
+RC_FILE = appicon.rc
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -18,4 +19,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
   updatechecker.h \
+  updatedialog.h \
   versioninfo.h
+
+FORMS += \
+  updatedialog.ui

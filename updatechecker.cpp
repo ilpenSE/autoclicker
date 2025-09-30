@@ -42,6 +42,7 @@ void UpdateChecker::checkForUpdates(const Version &currentVersion) {
   for (auto r : releases) {
     QJsonObject release = r.toObject();
     QString tag = release.value("tag_name").toString();
+    if (tag.startsWith("autoclicker")) continue;
     bool prerelease = release.value("prerelease").toBool();
     Version releaseVer = Version::fromString(tag);
 
